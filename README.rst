@@ -17,7 +17,10 @@ csvviz
 Create visualizations from CSV files and the command line
 
 
-**Current status:** Nothing to see here, just a random idea related to another side-project library that I'm struggling to make :D
+Current status
+--------------
+
+Nothing to see here, just a random idea related to another side-project library that I'm struggling to make :D
 
 
 
@@ -37,3 +40,18 @@ This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypack
 
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+
+
+
+Dev instructions
+----------------
+
+To install on your own machine for development::
+
+    $ make install
+
+
+
+(note to self) To publish on pypi::
+
+    $ make release
