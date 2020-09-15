@@ -48,6 +48,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/dannguyen/csvviz',
-    version='0.1.0-alpha',
+    version='0.1.1-alpha',
     zip_safe=False,
 )
