@@ -2,6 +2,16 @@
 History
 =======
 
+0-version-TK
+------------
+
+``csvviz -v`` prints out version
+
+cli.bars
+^^^^^^^^
+- x,y options accept integers (as strings)
+
+
 0.1.1-alpha (2020-09-15 16:30)
 ------------------------------
 

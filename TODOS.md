@@ -19,7 +19,7 @@ JUST DONE: `csvviz bars -x name -y things examples/tings.csv` works!
     - Datakit class
         - has common utils, like pandas stuff: read path/stdin, parsing options
         - write basic tests for current properties and methods
-
+        - need custom errors for out of index issues?
 - Housekeeping
     - Get some data files to store locally
 
@@ -27,3 +27,4 @@ JUST DONE: `csvviz bars -x name -y things examples/tings.csv` works!
     - Do some charts/apps require multiple CSVs? Or should we expect data to always be wrangled to single CSV?
         - leaning towards yes to single table only
     - setup.extras for selenium, etc. to do PNG rendering
+    - Should csvviz treat columns as 0-based or, like csvkit and xsv, 1-based?

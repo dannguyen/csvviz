@@ -9,6 +9,7 @@ from click.testing import CliRunner
 from csvviz import csvviz
 from csvviz import cli
 
+import re
 
 @pytest.fixture
 def response():
@@ -18,20 +19,21 @@ def response():
     """
     # import requests
     # return requests.get('https://github.com/audreyr/cookiecutter-pypackage')
-
+    pass
 
 def test_content(response):
     """Sample pytest test function with the pytest fixture as an argument."""
     # from bs4 import BeautifulSoup
     # assert 'GitHub' in BeautifulSoup(response.content).title.string
+    pass
 
-
-def test_command_line_interface():
-    """Test the CLI."""
+def test_apex_cli():
+    """Just the overarching CLI interface"""
     runner = CliRunner()
-    result = runner.invoke(cli.main)
+    result = runner.invoke(cli.apex)
     assert result.exit_code == 0
-    assert 'csvviz.cli.main' in result.output
-    help_result = runner.invoke(cli.main, ['--help'])
+    assert 'Welcome to csvviz' in result.output
+    help_result = runner.invoke(cli.apex, ['--help'])
     assert help_result.exit_code == 0
-    assert '--help  Show this message and exit.' in help_result.output
+
+    assert re.search(r'--help +Show this message and exit', help_result.output)

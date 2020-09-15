@@ -15,7 +15,7 @@ from typing import IO as typeIO
 import altair_viewer as altview
 import altair as alt
 
-from csvviz.csvviz import Datakit
+from csvviz.utils.datakit import Datakit
 
 
 @click.command()
@@ -37,8 +37,10 @@ def bars(input_file, xcol, ycol):
 
 
     dk = Datakit(input_file)
-    src = dk.df
-    chart = alt.Chart(src).mark_bar().encode(x=xcol, y=ycol)
+    x_id, x_name = dk.resolve_column(xcol)
+    y_id, y_name = dk.resolve_column(ycol)
+
+    chart = alt.Chart(dk.df).mark_bar().encode(x=x_name, y=y_name)
 
     altview.show(chart.interactive())
 
