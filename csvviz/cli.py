@@ -9,29 +9,32 @@ from typing import IO as typeIO
 
 import click
 
-from csvviz import __version__ as csvviz_version
-from csvviz.csvviz import clout, clerr
+# from csvviz import __version__ as csvviz_version
+from csvviz.csvviz import clout, clerr, print_version
 
 
-SUBCOMMAND_PATHS = Path('csvviz/viz').glob('*.py')
+SUBCOMMAND_PATHS = Path('csvviz/cmds/').glob('*.py')
 
 
 
 
-def _callback_print_version(ctx, param, value) -> typeNoReturn:
-    """
-    https://click.palletsprojects.com/en/3.x/options/#callbacks-and-eager-options
-    """
-    if not value or ctx.resilient_parsing:
-        return
-    clout(csvviz_version)
-    ctx.exit()
+# def _callback_print_version(ctx, param, value) -> typeNoReturn:
+#     """
+#     https://click.palletsprojects.com/en/3.x/options/#callbacks-and-eager-options
+#     """
+#     if not value or ctx.resilient_parsing:
+#         return
+#     clout(csvviz_version)
+#     ctx.exit()
 
 
 
 @click.group()
-@click.option('-v', '--version', callback=_callback_print_version, is_eager=True, is_flag=True,
+@click.option('--version',
+                callback=print_version,
+                is_eager=True, is_flag=True,
                 help="Print the version of csvviz")
+
 def apex(**kwargs):
     """Welcome to csvviz"""
 

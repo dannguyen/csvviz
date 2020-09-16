@@ -1,0 +1,17 @@
+product,season,region,revenue
+apples,fall,central,40
+apples,fall,north,60
+apples,fall,south,50
+apples,summer,central,30
+apples,summer,north,20
+apples,summer,south,40
+oranges,fall,central,50
+oranges,fall,north,70
+oranges,fall,south,40
+oranges,summer,central,70
+oranges,summer,north,110
+oranges,summer,south,80
+peaches,fall,north,90
+peaches,fall,south,110
+peaches,summer,north,70
+peaches,summer,south,130

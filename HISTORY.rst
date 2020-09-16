@@ -10,6 +10,18 @@ History
 cli.bars
 ^^^^^^^^
 - x,y options accept integers (as strings)
+- --series/-s
+
+
+
+- --colors/-c
+- --theme/-t to set chart theme
+
+
+cli.info
+^^^^^^^^
+
+- Show list of colors, colorschemes, themes, etc
 
 
 0.1.1-alpha (2020-09-15 16:30)
