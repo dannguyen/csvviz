@@ -3,27 +3,46 @@
 
 JUST DONE: 
 
+- [X] Create `info` subcommand
+
+
 On deck: 
 - `--colors`: https://altair-viz.github.io/user_guide/customization.html?highlight=colors#color-schemes
-- if "scheme:colorval", interpret colorval as a scheme name
-- create a constant var for schemes, or just default to whatever vega accepts?: https://vega.github.io/vega/docs/schemes/
+    - if "scheme:colorval", interpret colorval as a scheme name
+    - create a constant var for schemes, or just default to whatever vega accepts?: https://vega.github.io/vega/docs/schemes/
 
-- '--json' output option
+- [X] '--json' output option
+    - [ ] write tests for it
+    
+- kill the ability to refer to columns by index
 
-- Create `info` subcommand
 
 - csvviz.cli.charters.bars.py: Work on bar subcommand, generalize from there
     - `csvviz bars -x name -y things examples/tings.csv` works!
     - [x] read csv from command-line with pandas
+    
+
     - `-x` and `-y`: 
         - [X] should be optional and default to 0,1 respectively
         - [X] should accept integer indexes, not just column names as strings
-        - [x] `-s/--series` to specify variable for stacks/groups
-        - [ ] `-g/--group` to s
+        - [x] `-f/--fill` to specify variable for stacks/groups
+        - [later] `-g/--group` to s
+        - [ ] do we need a mini-syntax for column_name,data_type(ordinal, continuous, etc): https://altair-viz.github.io/user_guide/encoding.html#encoding-shorthands
+            - Maybe use brackets to specify that a field should be Altair shorthand, e.g.
+                `csvviz bar tings.csv -x name -y '@mean(amount):Q'  `
+
+    - `-s/--sort` allow
     - `--colors` allow user to set up a color wheel to pick from 
         - OR let user pass in a list of colors, which will be assigned to corresponding -y series
-    - [ ] do we need a mini-syntax for column_name,data_type(ordinal, continuous, etc)
-    - flag for aggregating y value?
+https://altair-viz.github.io/user_guide/encoding.html#ordering-marks
+
+- Encoding channel options
+    - Which options should be parsed/allowed? https://altair-viz.github.io/user_guide/encoding.html#encoding-channel-options
+    - Maybe just stick to what shorthand allows? https://altair-viz.github.io/user_guide/encoding.html#encoding-shorthands
+        - aggregate
+        - data type
+        - 
+
 
 - Overall design
     - subclass click.command
@@ -43,8 +62,6 @@ On deck:
 
 
 ## Stuff to read
-
-
 
 - line charts
     - multiseries: https://altair-viz.github.io/gallery/multi_series_line.html

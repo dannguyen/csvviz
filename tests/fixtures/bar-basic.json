@@ -1,0 +1,47 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v4.8.1.json",
+  "config": {
+    "view": {
+      "continuousHeight": 300,
+      "continuousWidth": 400
+    }
+  },
+  "data": {
+    "name": "data-ae10fb46fcfcc9388c94de33e54a1e67"
+  },
+  "datasets": {
+    "data-ae10fb46fcfcc9388c94de33e54a1e67": [
+      {
+        "amount": 20,
+        "name": "Alice"
+      },
+      {
+        "amount": 10,
+        "name": "Bob"
+      },
+      {
+        "amount": 30,
+        "name": "Carson"
+      },
+      {
+        "amount": 50,
+        "name": "Dina"
+      },
+      {
+        "amount": 42,
+        "name": "Ellie"
+      }
+    ]
+  },
+  "encoding": {
+    "x": {
+      "field": "name",
+      "type": "nominal"
+    },
+    "y": {
+      "field": "amount",
+      "type": "quantitative"
+    }
+  },
+  "mark": "bar"
+}

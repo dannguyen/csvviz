@@ -26,14 +26,16 @@ from csvviz.csvviz import clout, clerr
 # ycol, i.e. value columns, can accept more than one
 @click.option('--xvar', '-x', type=click.STRING, default='0', help='the label column')
 @click.option('--yvar', '-y', type=click.STRING, default='1', help='the value column')
-@click.option('--series', '-s', type=click.STRING, help='the column to use for series')
-@click.option('--theme', type=click.Choice(alt.themes.names(), case_sensitive=False),
-    default='default', help="choose a built-in theme for chart") # refactor alt.themes.names() to constant
+@click.option('--fill', '-f', type=click.STRING, help='The column used to specify fill color')
+@click.option('--horizontal', '-h', is_flag=True, help='Orient the bars horizontally')
+
 
 # common options
-@click.option('to_json', '--json/--no-json', '-j /', default=False, help='Output to stdout the Vega JSON representation')
-@click.option('do_not_preview', '--no-preview/--show-preview', default=False, help='Preview the chart in the web browser')
-def bars(input_file, xvar, yvar, series, **kwargs):
+@click.option('--theme', type=click.Choice(alt.themes.names(), case_sensitive=False),
+    default='default', help="choose a built-in theme for chart") # refactor alt.themes.names() to constant
+@click.option('--json/--no-json', '-j /', 'to_json',default=False, help='Output to stdout the Vega JSON representation')
+@click.option('--no-preview/--show-preview', 'do_not_preview', default=False, help='Preview the chart in the web browser')
+def bar(input_file, xvar, yvar, fill, horizontal, **kwargs):
     """
     Prints a horizontal bar chart.
 
@@ -45,19 +47,28 @@ def bars(input_file, xvar, yvar, series, **kwargs):
 
 
     dk = Datakit(input_file)
-
+    chart = alt.Chart(dk.df).mark_bar()
     # set up encoding
-    x_id, x_col = dk.resolve_column(xvar)
-    y_id, y_col = dk.resolve_column(yvar)
-    encode_kwargs = {'x': x_col, 'y': y_col}
-    if series:
-        s_id, series_col = dk.resolve_column(series)
-        encode_kwargs['color'] = series_col
+    _xvar, _yvar = (yvar, xvar) if horizontal else (xvar, yvar)
+
+    x_id, x_col = dk.resolve_column(_xvar)
+    y_id, y_col = dk.resolve_column(_yvar)
+    encode_kwargs = {'x': alt.X(x_col), 'y': alt.Y(y_col)}
+
+    # if colors:
+    #     color_scale = alt.Scale(range=colors)
+    #     alt.Color('product', scale= )
+
+    if fill:
+        s_id, fill_col = dk.resolve_column(fill)
+        encode_kwargs['fill'] = alt.Fill(fill_col)
+
+
+    chart = chart.encode(**encode_kwargs)
+
 
     # set up visual config
     alt.themes.enable(kwargs.get('theme'))
-
-    chart = alt.Chart(dk.df).mark_bar().encode(**encode_kwargs)
 
 
     if kwargs.get('to_json'):
@@ -67,27 +78,30 @@ def bars(input_file, xvar, yvar, series, **kwargs):
         altview.show(chart.interactive())
 
 
-
-__command__ = bars
-
+__command__ = bar
 
 """
 Notes:
 
 ## Stacked
 
-As long as --series and -x are different, y is implicitly taken as a sum:
+As long as --fill and -x are different, y is implicitly taken as a sum:
 
-    csvviz bars examples/fruits.csv -x product -y revenue -s region
+    csvviz bars examples/fruits.csv -x product -y revenue -f region
 
-However, if x and series are the same:
+However, if x and fill are the same:
 
-    csvviz bars examples/fruits.csv -x product -y revenue -s product
+    csvviz bars examples/fruits.csv -x product -y revenue -f region
 
 Then there is no stacked sum. It has to be set in Altair explicitly:
 
-    altview.show(alt.Chart(df).mark_bar().encode(x='product', y='sum(revenue)', color="product"))
+    altview.show(alt.Chart(df).mark_bar().encode(x='product', y='sum(revenue)', fill="product"))
 
+
+## Legend and colors and fill
+
+- When fill is set, legend is automatically set
+- When color range is set explicitly,
 
 
 - bar/column charts

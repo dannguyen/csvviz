@@ -10,7 +10,9 @@ History
 cli.bars
 ^^^^^^^^
 - x,y options accept integers (as strings)
-- --series/-s
+- --fill/-s
+- --json
+- -h/--horizontal for horizontal bars (vertical columns is default)
 
 
 

@@ -16,9 +16,9 @@ def test_datakit_init(tdk):
 
 
 def test_datakit_properties(tdk):
-    assert tdk.column_names == ['name', 'things']
+    assert tdk.column_names == ['name', 'amount']
     assert isinstance(tdk.schema, dict)
-    assert list(tdk.schema.keys()) == ['name', 'things']
+    assert list(tdk.schema.keys()) == ['name', 'amount']
 
 
 @pytest.mark.skip(reason="do it later")
@@ -29,8 +29,8 @@ def test_datakit_data_getters(tdk):
 def test_datakit_resolve_column_basics(tdk):
     """this reaffirms that columns are zero-indexed"""
     assert tdk.resolve_column('name')   == (0, 'name')
-    assert tdk.resolve_column('things') == (1, 'things')
-    assert tdk.resolve_column(1)        == (1, 'things')
+    assert tdk.resolve_column('amount') == (1, 'amount')
+    assert tdk.resolve_column(1)        == (1, 'amount')
     assert tdk.resolve_column('0')      == (0, 'name')
 
 
