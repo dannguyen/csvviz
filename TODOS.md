@@ -3,6 +3,10 @@
 
 ## JUST DONE 
 
+- Vizkit class
+    - [?] init
+    - [ ] _init_command and @self.command
+
 - `bar`
     - [X] kill the ability to refer to columns by index
     - [X] refactored internal chart building methods, to make it easier to make VizCommand
