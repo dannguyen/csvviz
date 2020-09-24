@@ -1,13 +1,14 @@
 """
 bar.py
 
-basically a Click.subcommand
+Make a bar/column chart
 """
 from pathlib import Path
 
 import altair as alt
 import click
 from csvviz.cli_utils import clout, clerr, clexit
+from csvviz.cli_utils import input_file_decor, output_options_decor, visual_options_decor
 from csvviz.exceptions import *
 from csvviz.kits.vizkit import Vizkit
 
@@ -25,7 +26,7 @@ from csvviz.kits.vizkit import Vizkit
 # @click.option('--sort-x',  type=click.Choice(['x', '-x', 'y', '-y', 'fill', '-fill'], case_sensitive=False), help='Optional: which axis to sort the marks by (e.g. x, y)')
 @click.option(
     "--sort",
-    "sort_x",
+    "sortx_var",
     type=click.STRING,
     help="Optional: sort the x-axis by a field other than the field specified by -x/--xvar",
 )
@@ -62,27 +63,9 @@ from csvviz.kits.vizkit import Vizkit
 @click.option("--x-min", type=click.STRING, help="TK TK testing")
 @click.option("--x-max", type=click.STRING, help="TK TK testing")
 
-# common input output/options
-@click.option(
-    "--json/--no-json",
-    "-j /",
-    "to_json",
-    default=False,
-    help="Output to stdout the Vega JSON representation",
-)
-@click.option(
-    "--preview/--no-preview",
-    "do_preview",
-    default=True,
-    help="Preview the chart in the web browser",
-)
-@click.option(
-    "--interactive/--static",
-    "is_interactive",
-    default=True,
-    help="Preview an interactive (default) or static version of the chart in the web browser",
-)
-@click.argument("input_file", type=click.File("r"))
+@visual_options_decor
+@output_options_decor
+@input_file_decor
 def bar( **kwargs):
     """
     Prints a horizontal bar chart.
@@ -93,10 +76,8 @@ def bar( **kwargs):
         and 2nd columns, respectively,
     """
     # set up theme config
-    input_file = kwargs.get('input_file')
-
     try:
-        vk = Vizkit(viz_type="bar", input_file=input_file, kwargs=kwargs)
+        vk = Barkit(input_file=kwargs.get('input_file'), kwargs=kwargs)
     except InvalidColumnName as err:
         clexit(1, err)
     else:
@@ -104,6 +85,43 @@ def bar( **kwargs):
 
 
 __command__ = bar
+
+
+
+class Barkit(Vizkit):
+    def __init__(self, input_file, kwargs):
+        super().__init__(viz_type='bar', input_file=input_file, kwargs=kwargs)
+
+
+    def declare_channels(self): # -> typeDict[str, typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]]:
+
+        channels = self._init_channels(self.channel_kwargs, self.datakit)
+
+
+        if self.kwargs.get("flipxy"): # i.e. -H/--horizontal flag
+            channels["x"], channels["y"] = (channels["y"], channels["x"])
+
+        if _fill := channels.get("fill"):
+            _fill.scale = alt.Scale(**self._config_colors(self.color_kwargs))
+            # _fill.legend = alt.Legend(title='mah legend', orient='bottom')
+            _legend = self._config_legend(self.legend_kwargs, colname=_fill.shorthand)
+            if _legend is False:  # then hide_legend was explicitly specified
+                _fill.legend = None
+            else:
+                _fill.legend = _legend
+
+        if _sort_config := self._config_sorting(self.kwargs, self.datakit):
+            channels["x"].sort = _sort_config
+
+        return channels
+
+
+
+
+
+
+
+
 
 
 """

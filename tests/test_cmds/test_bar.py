@@ -79,7 +79,7 @@ def test_bar_fill():
 ##############################################################################################################
 # sort-x
 ##############################################################################################################
-def test_sort_x_default():
+def test_sortx_var_default():
     """default sort is ascending"""
     result = CliRunner().invoke(
         bar, ["-x", "name", "-y", "amount", "--sort", "amount", *OUTPUT_ARGS]
@@ -94,7 +94,7 @@ def test_sort_x_default():
     assert dataset[-1]["name"] == "Ellie"
 
 
-def test_sort_x_reverse():
+def test_sortx_var_reverse():
     """column name prefixed with '-' indicated descending sort"""
     result = CliRunner().invoke(bar, ["--sort", "-amount", *OUTPUT_ARGS])
     cdata = jsonlib.loads(result.output)
@@ -102,7 +102,7 @@ def test_sort_x_reverse():
     assert cdata["encoding"]["x"]["sort"] == {"field": "amount", "order": "descending"}
 
 
-def test_sort_x_error_invalid_column():
+def test_sortx_var_error_invalid_column():
     """
     If a non-existent column name is passed into the sort field, Altair accepts it and
     includes it in the ['encoding']['x']['sort'] object, with no apparent effect (similar to sorting by none)
@@ -118,7 +118,7 @@ def test_sort_x_error_invalid_column():
 
 
 @pytest.mark.skip(reason="seems like a major edge case, but worth keeping in mind")
-def test_sort_x_handle_column_name_that_starts_with_hyphen():
+def test_sortx_var_handle_column_name_that_starts_with_hyphen():
     """
     TODO: need to create a fixture dataset with column name '-stuff'
     """

@@ -1,7 +1,7 @@
 import pytest
 
 from csvviz.kits.datakit import Datakit
-from csvviz.kits.vizkit import Vizkit, get_chart_methodname
+from csvviz.kits.vizkit import Vizkit, get_chart_mark_methodname
 
 import altair as alt
 import pandas as pd
@@ -23,6 +23,22 @@ def tvk():
         },
     )
 
+@pytest.fixture
+def dotvk():
+    SRC_PATH = "examples/vals.csv"
+    return Vizkit(
+        "scatter",
+        input_file=SRC_PATH,
+        kwargs={
+            "xvar": "mass",
+            "yvar": "volume",
+            "fillvar": "breed",
+            "is_interactive": True,
+            "do_preview": False,
+            "to_json": True,
+        },
+    )
+
 
 def test_vizkit_basic_init(tvk):
     assert isinstance(tvk, Vizkit)
@@ -30,6 +46,17 @@ def test_vizkit_basic_init(tvk):
     assert isinstance(tvk.chart, alt.Chart)
     assert tvk.chart.mark == "bar"
 
+
+def test_vizkit_properties(tvk, dotvk):
+    assert tvk.viz_type == "bar"
+    assert tvk.name == 'bar' # maybe viz_type isn't needed?
+    assert tvk.mark_type == 'mark_bar'
+    assert isinstance(tvk.df, pd.DataFrame)
+    assert tvk.column_names == ["name", "amount"]
+
+
+    assert dotvk.name == 'scatter'
+    assert dotvk.mark_type == 'mark_point'
 
 def test_vizkit_kwarg_properties(tvk):
     """
@@ -60,11 +87,6 @@ def test_vizkit_declarations(tvk):
     # assert tvk.declare_output['to_json'] is True
 
 
-def test_vizkit_properties(tvk):
-    assert tvk.viz_type == "bar"
-
-    assert isinstance(tvk.df, pd.DataFrame)
-    assert tvk.column_names == ["name", "amount"]
 
 
 ###################################################################################
@@ -94,7 +116,7 @@ def test_vizkit_output_basic(tvk, capsys):
 #####################################
 # get_chart_methodname
 #####################################
-def test_get_chart_methodname():
-    assert "mark_bar" == get_chart_methodname("bar")
-    assert "mark_line" == get_chart_methodname("line")
-    assert "mark_point" == get_chart_methodname("scatter")
+def test_get_chart_mark_methodname():
+    assert "mark_bar" == get_chart_mark_methodname("bar")
+    assert "mark_line" == get_chart_mark_methodname("line")
+    assert "mark_point" == get_chart_mark_methodname("scatter")

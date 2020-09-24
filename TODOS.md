@@ -7,42 +7,80 @@
 ## ON DECK
 
 
-- `scatter`:
-    - [ ] copy `bar` template with half-finished Vizkit
-    - [ ] legend for `size` appears
-    - [ ] need to actually subclass Vizkit, to do custom implementation of set_channels
 
+- Adopt Altair mini-syntax
+    - seems like using Altair's mini-syntax is the way to go?
+        - https://altair-viz.github.io/user_guide/encoding.html#encoding-shorthands
+        - maybe kill Datakit.resolve_column for validation, and just pass things straight into Altair and propogate its 'not a column errors'?
+            - [ ] what are the scenarios when passing invalid column names into alt.X, alt.Y, alt.Fill, etc?
+        - write a quick helpme for csvviz usecases
+            - `Vizkit.column_to_channel('sum(amount)')`
+
+
+
+- `scatter`:
+    - [X] copy `bar` template with half-finished Vizkit
+    - [ ] legend for `size` appears
+    - [X] need to actually subclass Vizkit, to do custom implementation of set_channels
+
+
+- how to independently invoke and manage Click commands
+    - https://stackoverflow.com/questions/40091347/call-another-click-command-from-a-click-command
 
 - Vizkit class
     - [?] init
     - [x] build_chart
     - [x] refactor bar.py using Vizkit class 
-    - [ ] _init_command and @self.command
+    - [NA] _init_command and @self.command
     - [ ] learn metaprogramming to delegate datakit->vizkit stuff
 
 
-- `--sort-x`: for sorting marks by the x-axis:
-    - https://vega.github.io/vega-lite/docs/sort.html#sort-field
-    - https://altair-viz.github.io/user_guide/encoding.html?highlight=sort%20marks
-    - [x] basic implementation
-    - [x] make sure horizontal bar sorts as expected
-    - [x] test, including robust error handling when invalid column name is passed in
-    - [ ? ] naming/syntax
-        - should it have a better name, like `--order`, or something?
-            - can't use `-o/--order` because `-o` should be for `--output`
-            - ggplot2 has a `reorder()` function that is applied to a given channel: https://www.r-graph-gallery.com/267-reorder-a-variable-in-ggplot2.html
-        - is `--sort-x` unnecessarily specific, e.g. user will only want to sort by x/independent variable, except in situation of `fill` and stacked charts...
-            - or should it have a mini-syntax, e.g. `--sort 'x:-amount'`
+
 
 - axis-range
-    - `-x-min/-x-max`: https://altair-viz.github.io/user_guide/customization.html?highlight=axis#adjusting-axis-limits
+    - `--x-min/--x-max`: https://altair-viz.github.io/user_guide/customization.html?highlight=axis#adjusting-axis-limits
+    - `--x-nonzero` as a shorthand way to indicate that the x-min should be set to the minval of the data, rather than zero, i.e.  `alt.X('miles', scale=alt.Scale(zero=False))`
+    - borrow ggplot2's `xlim/ylim` syntax: https://ggplot2.tidyverse.org/reference/lims.html
+        
+        For xlim() and ylim(): Two numeric values, specifying the left/lower limit and the right/upper limit of the scale. If the larger value is given first, the scale will be reversed. You can leave one value as NA if you want to compute the corresponding limit from the range of the data.
 
-- `dot`
-    - start with copying `bar.py` then generalize it into a VisualCommand class
+
+    - 'NA' is used to specify open-endedness
+        ```R
+        ggplot(mtcars, aes(mpg, wt)) +
+          geom_point() +
+          xlim(NA, 20)
+        ```
+
+- tooltips: https://altair-viz.github.io/gallery/scatter_tooltips.html
+
+- Handling datetimes: https://altair-viz.github.io/user_guide/times_and_dates.html
+    ```py
+    # https://altair-viz.github.io/user_guide/times_and_dates.html#altair-and-pandas-datetimes
+    # using temporal unit
+    alt.Chart(temps).mark_line().encode(
+        x='date:T',
+        y='temp:Q'
+    )
+
+    # using ordinal time units
+
+    alt.Chart(temps).mark_rect().encode(
+        alt.X('hoursminutes(date):O', title='hour of day'),
+        alt.Y('monthdate(date):O', title='date'),
+        alt.Color('temp:Q', title='temperature (F)')
+    )
+    ```
 
 
-- `reify`: print the Altair invocation used to create the graph, for users who would like to copy paste and tweak it
-    - figure this out much later, when we have a `VisualCommand` class
+
+- JSON output
+    - should include a 'csvviz' object with meta info, including:
+        - csvviz version
+        - input_path filename if applicable
+        - full command as a string
+        - `reify` the Python Altair code, so that users can eval/copy-paste it for further 
+
 
 ## Not on deck
 
@@ -80,6 +118,20 @@
     - Should csvviz treat columns as 0-based or, like csvkit and xsv, 1-based?
 
 
+tweaking on their own
+
+- `--sort`: for sorting marks by the x-axis:
+    - https://vega.github.io/vega-lite/docs/sort.html#sort-field
+    - https://altair-viz.github.io/user_guide/encoding.html?highlight=sort%20marks
+    - [x] basic implementation
+    - [x] make sure horizontal bar sorts as expected
+    - [x] test, including robust error handling when invalid column name is passed in
+    - [ ? ] naming/syntax
+        - should it have a better name, like `--order`, or something?
+            - can't use `-o/--order` because `-o` should be for `--output`
+            - ggplot2 has a `reorder()` function that is applied to a given channel: https://www.r-graph-gallery.com/267-reorder-a-variable-in-ggplot2.html
+        - is `--sort-x` unnecessarily specific, e.g. user will only want to sort by x/independent variable, except in situation of `fill` and stacked charts...
+            - or should it have a mini-syntax, e.g. `--sort 'x:-amount'`
 
 ## Stuff to read
 

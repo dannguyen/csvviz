@@ -3,7 +3,7 @@ from IPython import embed as IBREAKPOINT
 
 import altair as alt
 import altair_viewer as altview
-
+import click
 import pandas as pd
 from vega_datasets import data as vdata
 
@@ -20,7 +20,9 @@ def main():
     tk = Datakit('examples/tings.csv')
     fk = Datakit('examples/fruits.csv')
 
-    chart = alt.Chart(tk.df).mark_bar().encode(
+
+    ci = alt.Chart(tk.df).mark_bar()
+    chart = ci.encode(
         x=alt.X('name'),
         y='amount',
         fill=alt.Color('amount', scale=alt.Scale(range=['green', 'yellow', 'red'] )))

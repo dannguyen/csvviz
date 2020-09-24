@@ -72,6 +72,80 @@ def print_version(ctx=None, param=None, value=None) -> typeNoReturn:
 
 
 
+#########################################
+# common Click.command options decorators
+#########################################
+
+def input_file_decor(fn):
+    decorator = click.argument("input_file", type=click.File("r"))
+    fn = decorator(fn)
+    return fn
+
+def output_options_decor(fn):
+    """common input output/options"""
+    for decorator in reversed(
+        (
+            click.option(
+                "--json/--no-json",
+                "-j /",
+                "to_json",
+                default=False,
+                help="Output to stdout the Vega JSON representation",
+            ),
+            click.option(
+                "--preview/--no-preview",
+                "do_preview",
+                default=True,
+                help="Preview the chart in the web browser",
+            ),
+            click.option(
+                "--interactive/--static",
+                "is_interactive",
+                default=True,
+                help="Preview an interactive (default) or static version of the chart in the web browser",
+            ),
+        )
+    ):
+        fn = decorator(fn)
+    return fn
+
+
+def visual_options_decor(fn):
+    """common visual options"""
+    for decorator in ((
+        click.option(
+            "-c",
+            "--colors",
+            type=click.STRING,
+            help="A comma-delimited list of colors to use for the relevant marks",
+        ),
+        click.option(
+            "-C",
+            "--color-scheme",
+            type=click.STRING,
+            help="The name of a Vega color scheme to use for fill (this is overridden by -c/--colors)",
+        ),
+        click.option(
+            "--theme",
+            type=click.Choice(alt.themes.names(), case_sensitive=False),
+            default="default",
+            help="choose a built-in theme for chart",
+        ),  # TODO: refactor alt.themes.names() to constant
+        click.option("--title", "-t", type=click.STRING, help="A title for the chart"),
+        click.option("--hide-legend", is_flag=True, help="Omits the legend")    ,
+    )):
+        fn = decorator(fn)
+    return fn
+
+
+
+def axis_options_decor(fn):
+    pass
+    # # axis stuff
+    # @click.option("--x-title", type=click.STRING, help="TK TK testing")
+    # @click.option("--x-min", type=click.STRING, help="TK TK testing")
+    # @click.option("--x-max", type=click.STRING, help="TK TK testing")
+
 
 r'''
 

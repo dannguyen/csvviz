@@ -3,6 +3,7 @@ import re
 
 from typing import (
     Any as typeAny,
+    Callable as typeCallable,
     Dict as typeDict,
     IO as typeIO,
     List as typeList,
@@ -23,7 +24,7 @@ from csvviz.kits.datakit import Datakit
 from csvviz.settings import *
 
 
-def get_chart_methodname(viz_type: str) -> alt.Chart:
+def get_chart_mark_methodname(viz_type: str) -> alt.Chart:
     """
     convenience method that translates our command names, e.g. bar, dot, line, to
     the equivalent in altair
@@ -160,9 +161,19 @@ class Vizkit(object):
     def _init_chart(self) -> alt.Chart:
         alt.themes.enable(self.theme)
 
-        mname = get_chart_methodname(self.viz_type)
-        chartfoo = getattr(alt.Chart(self.df), mname)
+        chartfoo = getattr(alt.Chart(self.df), self.mark_type)
         return chartfoo()
+
+
+    #####################################################################
+    # properties
+    @property
+    def name(self) -> str:
+        return self.viz_type
+
+    @property
+    def mark_type(self) -> str:
+        return get_chart_mark_methodname(self.viz_type)
 
     @property
     def df(self) -> pd.DataFrame:
@@ -218,7 +229,7 @@ class Vizkit(object):
 
     @property
     def sorting_kwargs(self) -> typeDict:
-        _ARGKEYS = ("sort_x",)
+        _ARGKEYS = ("sortx_var",)
         return {k: self.kwargs.get(k) for k in _ARGKEYS}
 
     @property
@@ -267,7 +278,7 @@ class Vizkit(object):
     @staticmethod
     def _config_sorting(kwargs: typeDict, datakit: Datakit) -> typeDict:
         config = {}
-        if _sortx := kwargs.get("sort_x"):
+        if _sortx := kwargs.get("sortx_var"):
             _sign, _cname = re.match(r"(-?)(.+)", _sortx).groups()
             colname, _z = datakit.resolve_column(_cname)  # mostly validation
 

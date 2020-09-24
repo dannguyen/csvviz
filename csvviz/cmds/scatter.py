@@ -6,6 +6,7 @@ from pathlib import Path
 import altair as alt
 import click
 from csvviz.cli_utils import clout, clerr, clexit
+from csvviz.cli_utils import input_file_decor, output_options_decor, visual_options_decor
 from csvviz.exceptions import *
 from csvviz.kits.vizkit import Vizkit
 
@@ -25,54 +26,9 @@ from csvviz.kits.vizkit import Vizkit
 )
 
 
-# common visual options
-@click.option(
-    "-c",
-    "--colors",
-    type=click.STRING,
-    help="A comma-delimited list of colors to use for the bar fill",
-)
-@click.option(
-    "-C",
-    "--color-scheme",
-    type=click.STRING,
-    help="The name of a Vega color scheme to use for fill (this is overridden by -c/--colors)",
-)
-@click.option(
-    "--theme",
-    type=click.Choice(alt.themes.names(), case_sensitive=False),
-    default="default",
-    help="choose a built-in theme for chart",
-)  # refactor alt.themes.names() to constant
-@click.option("--title", "-t", type=click.STRING, help="A title for the chart")
-@click.option("--hide-legend", is_flag=True, help="Omits the legend")
-
-# # axis stuff
-# @click.option("--x-title", type=click.STRING, help="TK TK testing")
-# @click.option("--x-min", type=click.STRING, help="TK TK testing")
-# @click.option("--x-max", type=click.STRING, help="TK TK testing")
-
-# common input output/options
-@click.option(
-    "--json/--no-json",
-    "-j /",
-    "to_json",
-    default=False,
-    help="Output to stdout the Vega JSON representation",
-)
-@click.option(
-    "--preview/--no-preview",
-    "do_preview",
-    default=True,
-    help="Preview the chart in the web browser",
-)
-@click.option(
-    "--interactive/--static",
-    "is_interactive",
-    default=True,
-    help="Preview an interactive (default) or static version of the chart in the web browser",
-)
-@click.argument("input_file", type=click.File("r"))
+@visual_options_decor
+@output_options_decor
+@input_file_decor
 def scatter(**kwargs):
     """
     Prints a horizontal bar chart.
@@ -83,15 +39,43 @@ def scatter(**kwargs):
         and 2nd columns, respectively,
     """
     # set up theme config
-    input_file = kwargs.get('input_file')
-
-
     try:
-        vk = Vizkit(viz_type="scatter", input_file=input_file, kwargs=kwargs)
+        vk = ScatterKit(input_file=kwargs.get('input_file'), kwargs=kwargs)
     except InvalidColumnName as err:
         clexit(1, err)
     else:
         vk.output_chart()
+
+
+class ScatterKit(Vizkit):
+
+    def __init__(self, input_file, kwargs):
+        super().__init__(viz_type='scatter', input_file=input_file, kwargs=kwargs)
+
+
+    def declare_channels(self): # -> typeDict[str, typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]]:
+
+        channels = self._init_channels(self.channel_kwargs, self.datakit)
+
+        # unneeded: no horizontal thingy
+        # if self.kwargs.get("flipxy"): # i.e. -H/--horizontal flag
+        #     channels["x"], channels["y"] = (channels["y"], channels["x"])
+
+        if _fill := channels.get("fill"):
+            _fill.scale = alt.Scale(**self._config_colors(self.color_kwargs))
+            # TODO: deal with legend being created for fill and size channels
+            _legend = self._config_legend(self.legend_kwargs, colname=_fill.shorthand)
+            if _legend is False:  # then hide_legend was explicitly specified
+                _fill.legend = None
+            else:
+                _fill.legend = _legend
+
+        # unneeded for scatter charts
+        # if _sort_config := self._config_sorting(self.kwargs, self.datakit):
+        #     channels["x"].sort = _sort_config
+
+        return channels
+
 
 
 __command__ = scatter
