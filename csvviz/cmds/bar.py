@@ -68,7 +68,7 @@ def bar(horizontal, input_file, **kwargs):
 
     # encode stuff
     try:
-        _encoding = _handle_encoding(dk, kwargs)
+        _encoding = _handle_channels(dk, kwargs)
     except InvalidColumnName as err:
         clexit(1, err)
 
@@ -76,7 +76,7 @@ def bar(horizontal, input_file, **kwargs):
         _encoding['x'], _encoding['y'] = (_encoding['y'], _encoding['x'])
 
     if _fill := _encoding.get('fill'):
-        _fill.scale  = alt.Scale(**_handle_fill_color(kwargs))
+        _fill.scale  = alt.Scale(**_handle_colors(kwargs))
         # _fill.legend = alt.Legend(title='mah legend', orient='bottom')
         if kwargs.get('hide_legend'):
             _fill.legend = None
@@ -102,7 +102,7 @@ def bar(horizontal, input_file, **kwargs):
 
 
 
-def _handle_encoding(dk:Datakit, args:typeDict) -> typeDict[str, typeUnion[alt.X, alt.Y, alt.Fill]]:
+def _handle_channels(dk:Datakit, args:typeDict) -> typeDict[str, typeUnion[alt.X, alt.Y, alt.Fill]]:
     config = {}
 
     _x = args.get('xvar') if args.get('xvar') else dk.column_names[0]
@@ -122,7 +122,7 @@ def _handle_encoding(dk:Datakit, args:typeDict) -> typeDict[str, typeUnion[alt.X
 
 
 
-def _handle_fill_color(args:typeDict) -> typeDict:
+def _handle_colors(args:typeDict) -> typeDict:
     """
     returns a dict for alt.Scale()
     """
@@ -147,9 +147,12 @@ def _handle_legend(args:typeDict, colname:str) -> typeDict:
     # if args['hide_legend']:
     #     config = None
     # else:
-    config['title'] = colname if not args.get('TK-column-title') else colname
-    config['orient'] = DEFAULT_LEGEND_ORIENTATION
     # TODO: let users configure orientation and title...somehow
+    config['title'] = colname if not args.get('TK-column-title') else colname
+    if _o := args.get('TK-orientation'):
+        config['orient'] = _o
+    else:
+        config['orient'] = DEFAULT_LEGEND_ORIENTATION
 
     return config
 

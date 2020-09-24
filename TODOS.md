@@ -5,7 +5,10 @@
 
 - Vizkit class
     - [?] init
+    - [x] build_chart
+    - [ ] refactor bar.py using Vizkit class 
     - [ ] _init_command and @self.command
+    - [ ] learn metaprogramming to delegate datakit->vizkit stuff
 
 - `bar`
     - [X] kill the ability to refer to columns by index
