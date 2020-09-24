@@ -69,3 +69,67 @@ def print_version(ctx=None, param=None, value=None) -> typeNoReturn:
             return
         clout(__version__)
         ctx.exit()
+
+
+
+
+r'''
+
+
+def decor_option_sets(*option_sets):
+    def decorate(func):
+        for options in reversed(option_sets):
+            for opt in reversed(options):
+                func = opt(func)
+        return func
+
+    return decorate
+
+
+@click.command()
+@decor_option_sets(OPTIONS_COMMON, OPTIONS_OUTPUT)
+@click.argument(etc)
+def vizname(**kwargs):
+    ladeedah
+
+
+OPTIONS_COMMON = [
+    click.option(
+        "-s",
+        "--service",
+        type=click.Choice(["wayback",]),
+        default="wayback",
+        help="The service, e.g. wayback, permacc",
+    ),
+]
+
+OPTIONS_OUTPUT = [
+    click.option(
+        "-j",
+        "--json",
+        "output_json",
+        is_flag=True,
+        help="""By default, this subcommand returns a snapshot URL if successful, and nothing if not successful. Set this flag to return
+            the full JSON response""",
+    ),
+    click.option("-q", "--quiet", is_flag=True, help="Same as -v/--verbosity 0"),
+    click.option(
+        "-v",
+        "--verbosity",
+        type=click.IntRange(min=0, max=2),
+        default=2,
+        help="""\b
+                Verbosity of log messages:
+                  0: Silence (except errors)
+                  1: Informational messages logged
+                  2: Verbose debug log messages
+                  """,
+    ),
+]
+
+
+
+
+
+
+'''

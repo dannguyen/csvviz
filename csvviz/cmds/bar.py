@@ -83,7 +83,7 @@ from csvviz.kits.vizkit import Vizkit
     help="Preview an interactive (default) or static version of the chart in the web browser",
 )
 @click.argument("input_file", type=click.File("r"))
-def bar(input_file, **kwargs):
+def bar( **kwargs):
     """
     Prints a horizontal bar chart.
 
@@ -93,6 +93,7 @@ def bar(input_file, **kwargs):
         and 2nd columns, respectively,
     """
     # set up theme config
+    input_file = kwargs.get('input_file')
 
     try:
         vk = Vizkit(viz_type="bar", input_file=input_file, kwargs=kwargs)

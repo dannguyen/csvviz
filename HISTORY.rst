@@ -5,14 +5,23 @@ History
 TKTK-ongoing
 ------------
 
-- ``--sort-x`` for sorting arrangement of independent values
+cli.bar
+^^^^^^^
+- ``--sort`` for sorting arrangement of independent values
 
-
+cli.scatter
+^^^^^^^^^^^
+- can specify ``--size`` to vary by column
 
 0.2.1-alpha (2020-09-23)
 ------------------------
 
+
+General
+^^^^^^^
 - Fixed total breakage
+
+
 
 
 0.2.0-alpha (2020-09-23)
@@ -35,8 +44,8 @@ cli.info
 - Show list of colors, colorschemes, themes, etc
 
 
-cli.bars
-^^^^^^^^
+cli.bar
+^^^^^^^
 
 - arguments and options
     - x,y options accept integers (as strings)
@@ -52,8 +61,8 @@ cli.bars
 0.1.1-alpha (2020-09-15 16:30)
 ------------------------------
 
-cli.bars
-^^^^^^^^
+cli.bar
+^^^^^^^
 
 - Minimally functional: ``$ csvviz bars -x name -y things examples/tings.csv``
 
