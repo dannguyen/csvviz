@@ -34,7 +34,6 @@ SUBCOMMAND_PATHS = Path('csvviz/cmds/').glob('*.py')
                 callback=print_version,
                 is_eager=True, is_flag=True,
                 help="Print the version of csvviz")
-
 def apex(**kwargs):
     """Welcome to csvviz"""
 

@@ -5,7 +5,7 @@ import json as jsonlib
 import altair as alt
 import click
 import pandas as pd
-from csvviz.csvviz import clout, clerr, __version__ as csvviz_version
+from csvviz.cli_utils import clout, clerr, __version__ as csvviz_version
 
 # from typing import Mapping as typeMapping, NoReturn as typeNoReturn
 # from typing import List as typeList, Tuple as typeTuple, Union as typeUnion
