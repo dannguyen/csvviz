@@ -3,26 +3,20 @@
 
 ## JUST DONE 
 
+    
+## ON DECK
+
+
+- `scatter`:
+    - [ ] copy `bar` template with half-finished Vizkit
+
 - Vizkit class
     - [?] init
     - [x] build_chart
-    - [ ] refactor bar.py using Vizkit class 
+    - [x] refactor bar.py using Vizkit class 
     - [ ] _init_command and @self.command
     - [ ] learn metaprogramming to delegate datakit->vizkit stuff
 
-- `bar`
-    - [X] kill the ability to refer to columns by index
-    - [X] refactored internal chart building methods, to make it easier to make VizCommand
-- Top-level chart config https://altair-viz.github.io/user_guide/configuration.html
-    - [X] --title for chart title
-        - [?] do we need a mini-syntax for configuring title alignment, size, and font?
-        - [x] tested
-    - [X] --hide-legend
-        - [?] do we need a mini-syntax for configuring legend stuff, e.g. title and alignment?
-        - [x] tested
-
-    
-## ON DECK
 
 - `--sort-x`: for sorting marks by the x-axis:
     - https://vega.github.io/vega-lite/docs/sort.html#sort-field
@@ -125,6 +119,17 @@ chart examples
         - OR let user pass in a list of colors, which will be assigned to corresponding -y series
 https://altair-viz.github.io/user_guide/encoding.html#ordering-marks
 
+
+- `bar`
+    - [X] kill the ability to refer to columns by index
+    - [X] refactored internal chart building methods, to make it easier to make VizCommand
+- Top-level chart config https://altair-viz.github.io/user_guide/configuration.html
+    - [X] --title for chart title
+        - [?] do we need a mini-syntax for configuring title alignment, size, and font?
+        - [x] tested
+    - [X] --hide-legend
+        - [?] do we need a mini-syntax for configuring legend stuff, e.g. title and alignment?
+        - [x] tested
 
 - [X] Create `info` subcommand
 - `--colors`: https://altair-viz.github.io/user_guide/customization.html?highlight=colors#color-schemes

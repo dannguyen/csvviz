@@ -7,12 +7,16 @@
 from pathlib import Path
 import sys
 from typing import Any as typeAny, Mapping as typeMapping, NoReturn as typeNoReturn
-from typing import Dict as typeDict, List as typeList, Tuple as typeTuple, Union as typeUnion
+from typing import (
+    Dict as typeDict,
+    List as typeList,
+    Tuple as typeTuple,
+    Union as typeUnion,
+)
 from typing import IO as typeIO
 
 
 import altair as alt
-import altair_viewer as altview
 import click
 from csvviz import __version__
 
@@ -28,13 +32,14 @@ def clout(*args) -> typeNoReturn:
         else:
             obj = str(obj)
         outobjects.append(obj)
-    click.echo(' '.join(outobjects), err=False)
+    click.echo(" ".join(outobjects), err=False)
 
 
-def clexit(code:int, message:typeAny=None):
+def clexit(code: int, message: typeAny = None):
     if message:
         clerr(message)
     sys.exit(code)
+
 
 def clerr(*args) -> typeNoReturn:
     """
@@ -49,13 +54,11 @@ def clerr(*args) -> typeNoReturn:
         else:
             obj = str(obj)
         outobjects.append(obj)
-    click.echo(' '.join(outobjects), err=True)
+    click.echo(" ".join(outobjects), err=True)
 
 
 
-def preview_chart(chart:alt.Chart) -> typeNoReturn:
-    # a helpful wrapper around altair_viewer.altview
-    altview.show(chart)
+
 
 def print_version(ctx=None, param=None, value=None) -> typeNoReturn:
     """
@@ -69,5 +72,3 @@ def print_version(ctx=None, param=None, value=None) -> typeNoReturn:
             return
         clout(__version__)
         ctx.exit()
-
-

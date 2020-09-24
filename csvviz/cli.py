@@ -4,7 +4,12 @@ from pathlib import Path
 import re
 import sys
 from typing import Any as typeAny, Mapping as typeMapping, NoReturn as typeNoReturn
-from typing import Dict as typeDict, List as typeList, Tuple as typeTuple, Union as typeUnion
+from typing import (
+    Dict as typeDict,
+    List as typeList,
+    Tuple as typeTuple,
+    Union as typeUnion,
+)
 from typing import IO as typeIO
 
 import click
@@ -13,9 +18,7 @@ import click
 from csvviz.cli_utils import clout, clerr, print_version
 
 
-SUBCOMMAND_PATHS = Path('csvviz/cmds/').glob('*.py')
-
-
+SUBCOMMAND_PATHS = Path("csvviz/cmds/").glob("*.py")
 
 
 # def _callback_print_version(ctx, param, value) -> typeNoReturn:
@@ -28,21 +31,23 @@ SUBCOMMAND_PATHS = Path('csvviz/cmds/').glob('*.py')
 #     ctx.exit()
 
 
-
 @click.group()
-@click.option('--version',
-                callback=print_version,
-                is_eager=True, is_flag=True,
-                help="Print the version of csvviz")
+@click.option(
+    "--version",
+    callback=print_version,
+    is_eager=True,
+    is_flag=True,
+    help="Print the version of csvviz",
+)
 def apex(**kwargs):
     """Welcome to csvviz"""
 
-
     pass
 
+
 @apex.command()
-@click.argument('foo', nargs=1)
-@click.argument('bar', nargs=-1)
+@click.argument("foo", nargs=1)
+@click.argument("bar", nargs=-1)
 def foo(foo, bar):
     """
     this is just for foo!
@@ -57,7 +62,7 @@ def foo(foo, bar):
 def main():
     def _add_subcommands() -> typeNoReturn:
         for path in SUBCOMMAND_PATHS:
-            pmod_name = re.sub(f'/', '.',  str(path)).rpartition('.py')[0]
+            pmod_name = re.sub(f"/", ".", str(path)).rpartition(".py")[0]
             pmod = importlib.import_module(pmod_name)
             pcommand = pmod.__command__
 
