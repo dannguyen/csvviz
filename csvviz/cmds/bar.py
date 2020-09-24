@@ -4,6 +4,7 @@ bar.py
 basically a Click.subcommand
 """
 
+
 import click
 from pathlib import Path
 
@@ -12,29 +13,33 @@ from typing import List as typeList, Tuple as typeTuple, Union as typeUnion
 from typing import IO as typeIO
 
 # TODO: move to csvviz and generalize to a constant
-import altair_viewer as altview
 import altair as alt
 
 from csvviz.utils.datakit import Datakit
-from csvviz.csvviz import clout, clerr
+from csvviz.cli_utils import clout, clerr, preview_chart
+from csvviz.settings import *
+
+
+
 
 
 @click.command()
 @click.argument('input_file', type=click.File('r'))
-
-# TODO:
-# ycol, i.e. value columns, can accept more than one
 @click.option('--xvar', '-x', type=click.STRING, default='0', help='the label column')
 @click.option('--yvar', '-y', type=click.STRING, default='1', help='the value column')
 @click.option('--fill', '-f', type=click.STRING, help='The column used to specify fill color')
-@click.option('--horizontal', '-h', is_flag=True, help='Orient the bars horizontally')
-
+@click.option('--horizontal', '-H', is_flag=True, help='Orient the bars horizontally')
+@click.option('-c', '--colors', type=click.STRING, help='A comma-delimited list of colors to use for the bar fill')
+@click.option('-C', '--color-scheme', type=click.STRING, help='The name of a Vega color scheme to use for fill (this is overridden by -c/--colors)')
 
 # common options
 @click.option('--theme', type=click.Choice(alt.themes.names(), case_sensitive=False),
     default='default', help="choose a built-in theme for chart") # refactor alt.themes.names() to constant
-@click.option('--json/--no-json', '-j /', 'to_json',default=False, help='Output to stdout the Vega JSON representation')
-@click.option('--no-preview/--show-preview', 'do_not_preview', default=False, help='Preview the chart in the web browser')
+@click.option('--json/--no-json', '-j /', 'to_json', default=False, help='Output to stdout the Vega JSON representation')
+
+@click.option('--preview/--no-preview', 'do_preview', default=True, help='Preview the chart in the web browser')
+@click.option('--interactive/--static', 'is_interactive', default=False, help='Preview an interactive or static version of the chart in the web browser')
+
 def bar(input_file, xvar, yvar, fill, horizontal, **kwargs):
     """
     Prints a horizontal bar chart.
@@ -48,35 +53,49 @@ def bar(input_file, xvar, yvar, fill, horizontal, **kwargs):
 
     dk = Datakit(input_file)
     chart = alt.Chart(dk.df).mark_bar()
+
+
+    # set up theme config
+    alt.themes.enable(kwargs.get('theme'))
+
+
     # set up encoding
+    encode_kwargs = {}
+
     _xvar, _yvar = (yvar, xvar) if horizontal else (xvar, yvar)
+    x_id, encode_kwargs['x'] = dk.resolve_column(_xvar)
+    y_id, encode_kwargs['y'] = dk.resolve_column(_yvar)
 
-    x_id, x_col = dk.resolve_column(_xvar)
-    y_id, y_col = dk.resolve_column(_yvar)
-    encode_kwargs = {'x': alt.X(x_col), 'y': alt.Y(y_col)}
+    fill_scale_kwargs = {'scheme': DEFAULT_COLOR_SCHEME}
 
-    # if colors:
-    #     color_scale = alt.Scale(range=colors)
-    #     alt.Color('product', scale= )
+    if _cs := kwargs.get('color_scheme'):
+        fill_scale_kwargs['scheme'] = _cs
+        # TODO: if _cs does not match a valid color scheme, then raise a warning/error
+
+    if _colors := kwargs['colors']:
+        # don't think this needs to be a formal parser
+        fill_scale_kwargs['range'] = _colors.strip().split(',')
+        # for now, only colors OR color_scheme can be set, not both
+        fill_scale_kwargs.pop('scheme', None)
 
     if fill:
         s_id, fill_col = dk.resolve_column(fill)
-        encode_kwargs['fill'] = alt.Fill(fill_col)
+        encode_kwargs['fill'] = alt.Fill(fill_col, scale=alt.Scale(**fill_scale_kwargs))
 
 
     chart = chart.encode(**encode_kwargs)
 
+    # --interactive/--static chart is independent of whether or not we're previewing it,
+    #  which is reflected in its JSON representation
+    if kwargs['is_interactive']:
+        chart = chart.interactive()
 
-    # set up visual config
-    alt.themes.enable(kwargs.get('theme'))
-
-
+    # echo JSON before doing a preview
     if kwargs.get('to_json'):
         clout(chart.to_json(indent=2))
 
-    if not kwargs.get('do_not_preview'):
-        altview.show(chart.interactive())
-
+    if kwargs['do_preview']:
+        preview_chart(chart)
 
 __command__ = bar
 

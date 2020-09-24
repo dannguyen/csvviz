@@ -11,6 +11,8 @@ from typing import Dict as typeDict, List as typeList, Tuple as typeTuple, Union
 from typing import IO as typeIO
 
 
+import altair as alt
+import altair_viewer as altview
 from csvviz import __version__
 
 
@@ -45,15 +47,21 @@ def clerr(*args) -> typeNoReturn:
 
 
 
+def preview_chart(chart:alt.Chart) -> typeNoReturn:
+    # a helpful wrapper around altair_viewer.altview
+    altview.show(chart)
+
 def print_version(ctx=None, param=None, value=None) -> typeNoReturn:
     """
     https://click.palletsprojects.com/en/3.x/options/#callbacks-and-eager-options
     """
     if not ctx:
-        clout(csvviz_version)
+        clout(__version__)
     else:
         # this is being used as a callback
         if not value or ctx.resilient_parsing:
             return
-        clout(csvviz_version)
+        clout(__version__)
         ctx.exit()
+
+

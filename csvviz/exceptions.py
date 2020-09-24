@@ -1,0 +1,2 @@
+class InvalidColorScheme(ValueError):
+    pass

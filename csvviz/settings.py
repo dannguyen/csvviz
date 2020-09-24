@@ -1,0 +1,1 @@
+DEFAULT_COLOR_SCHEME = 'category10'

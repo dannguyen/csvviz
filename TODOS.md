@@ -1,21 +1,24 @@
 # TODOS
 
 
-JUST DONE: 
+## JUST DONE 
 
 - [X] Create `info` subcommand
-
-
-On deck: 
 - `--colors`: https://altair-viz.github.io/user_guide/customization.html?highlight=colors#color-schemes
-    - if "scheme:colorval", interpret colorval as a scheme name
-    - create a constant var for schemes, or just default to whatever vega accepts?: https://vega.github.io/vega/docs/schemes/
+    - [X] if `--colors` and `--colors-scheme` both exist, then use --colors first, and fall back to `--colors-scheme`
+    - [x] create a constant var for schemes, or just default to whatever vega accepts?: https://vega.github.io/vega/docs/schemes/
+        - Just fallback to Altair's handling, which is to use 'default', but also to not specify it in the metadata.
 
 - [X] '--json' output option
-    - [ ] write tests for it
+    - [X] write tests for it
     
+## On deck
+
+- Come up with syntax for labeling, e.g. chart title, x-title, y-title
 - kill the ability to refer to columns by index
 
+
+## Not on deck
 
 - csvviz.cli.charters.bars.py: Work on bar subcommand, generalize from there
     - `csvviz bars -x name -y things examples/tings.csv` works!

@@ -6,8 +6,7 @@ import pytest
 
 from click.testing import CliRunner
 
-from csvviz import csvviz
-from csvviz import cli
+from csvviz import cli, __version__
 
 import re
 
@@ -28,12 +27,21 @@ def test_content(response):
     pass
 
 def test_apex_cli():
-    """Just the overarching CLI interface"""
-    runner = CliRunner()
-    result = runner.invoke(cli.apex)
+    """Just the overall CLI interface"""
+    result = CliRunner().invoke(cli.apex)
     assert result.exit_code == 0
     assert 'Welcome to csvviz' in result.output
-    help_result = runner.invoke(cli.apex, ['--help'])
-    assert help_result.exit_code == 0
 
-    assert re.search(r'--help +Show this message and exit', help_result.output)
+    # test help invocation
+    helpr = CliRunner().invoke(cli.apex, ['--help'])
+    assert helpr.exit_code == 0
+
+    assert re.search(r'--help +Show this message and exit', helpr.output)
+
+
+
+def test_cli_version():
+    """--version flag"""
+    result = CliRunner().invoke(cli.apex, ['--version'])
+    assert result.exit_code == 0
+    assert result.output.strip() == __version__

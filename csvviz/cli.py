@@ -10,7 +10,7 @@ from typing import IO as typeIO
 import click
 
 # from csvviz import __version__ as csvviz_version
-from csvviz.csvviz import clout, clerr, print_version
+from csvviz.cli_utils import clout, clerr, print_version
 
 
 SUBCOMMAND_PATHS = Path('csvviz/cmds/').glob('*.py')
