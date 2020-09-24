@@ -24,10 +24,11 @@ def test_defaults():
         "usermeta" not in cdata
     )  # i.e. NOT cdata['usermeta']['embedOptions']['theme'] == 'default'
 
-    # default rendering is static mode, so 'selection' should not exist
-    assert "selection" not in cdata
-
+    # charts have no titles by default
     assert "title" not in cdata
+
+    # default rendering is interactive mode, which means 'selection' will exist
+    assert "selection" in cdata
 
 
 ##############################################################################################################

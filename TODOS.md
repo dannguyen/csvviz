@@ -9,6 +9,9 @@
 
 - `scatter`:
     - [ ] copy `bar` template with half-finished Vizkit
+    - [ ] legend for `size` appears
+    - [ ] need to actually subclass Vizkit, to do custom implementation of set_channels
+
 
 - Vizkit class
     - [?] init
@@ -42,6 +45,11 @@
     - figure this out much later, when we have a `VisualCommand` class
 
 ## Not on deck
+
+- [ ] static data point labels: 
+    - https://altair-viz.github.io/gallery/scatter_with_labels.html
+    - https://altair-viz.github.io/gallery/bar_chart_with_labels.html
+
 
 - [ ] `-g/--group` for grouped bar charts
 - [ ] do we need a mini-syntax for column_name,data_type(ordinal, continuous, etc): https://altair-viz.github.io/user_guide/encoding.html#encoding-shorthands

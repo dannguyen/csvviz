@@ -13,7 +13,6 @@ from typing import (
 )
 
 
-
 import altair as alt
 import altair_viewer as altview
 import pandas as pd
@@ -22,6 +21,7 @@ from csvviz.cli_utils import clout, clerr
 from csvviz.exceptions import *
 from csvviz.kits.datakit import Datakit
 from csvviz.settings import *
+
 
 def get_chart_methodname(viz_type: str) -> alt.Chart:
     """
@@ -43,6 +43,7 @@ def preview_chart(chart: alt.Chart) -> typeNoReturn:
     # a helpful wrapper around altair_viewer.altview
     altview.show(chart)
 
+
 class Vizkit(object):
     """
     The interface between Click.command, Altair.Chart, and Pandas.dataframe
@@ -54,34 +55,67 @@ class Vizkit(object):
         self.datakit = Datakit(input_file)
 
         # chart-related settings
-        self.viz_type = "bar"
+        self.viz_type = viz_type
         self.theme = kwargs.get("theme")
-        self.channels = self.set_channels()
-        self.style_properties = self.set_style()
+        self.channels = self.declare_channels()
+        self.style_properties = self.declare_styles()
         self.interactive_mode = self.kwargs.get("is_interactive")
 
         # the chart itself
-        self.chart = self.build_chart()
+        self.chart = self.build_chart(
+            channels=self.channels,
+            style_properties=self.style_properties,
+            interactive_mode=self.interactive_mode,
+        )
 
-    def _init_chart(self) -> alt.Chart:
-        alt.themes.enable(self.theme)
-
-        mname = get_chart_methodname(self.viz_type)
-        chartfoo = getattr(alt.Chart(self.df), mname)
-        return chartfoo()
-
-    def build_chart(self) -> alt.Chart:
+    def build_chart(
+        self, channels: dict, style_properties: dict, interactive_mode: bool
+    ) -> alt.Chart:
 
         chart = self._init_chart()
-        chart = chart.encode(**self.channels)
-        chart = chart.properties(**self.style_properties)
+        chart = chart.encode(**channels)
+        chart = chart.properties(**style_properties)
 
-        if self.interactive_mode:
+        if interactive_mode:
             chart = chart.interactive()
 
         return chart
         # implementing this for testing ease...
         # raise Exception('Need to implement build_chart for each viz subclass')
+
+    def declare_channels(
+        self,
+    ) -> typeDict[str, typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]]:
+        """
+        TK TODO:
+        _config_channels seems like the better name, though we're using that
+        for the more general/basic initializations (maybe it should be _init_channels?)
+
+        This method does the bespoke work to combine channels with legends/colors/etc
+        and should be implemented in every subclass
+        """
+
+        channels = self._init_channels(self.channel_kwargs, self.datakit)
+
+        if self.kwargs.get("flipxy"):
+            channels["x"], channels["y"] = (channels["y"], channels["x"])
+
+        if _fill := channels.get("fill"):
+            _fill.scale = alt.Scale(**self._config_colors(self.color_kwargs))
+            # _fill.legend = alt.Legend(title='mah legend', orient='bottom')
+            _legend = self._config_legend(self.legend_kwargs, colname=_fill.shorthand)
+            if _legend is False:  # then hide_legend was explicitly specified
+                _fill.legend = None
+            else:
+                _fill.legend = _legend
+
+        if _sort_config := self._config_sorting(self.kwargs, self.datakit):
+            channels["x"].sort = _sort_config
+
+        return channels
+
+    def declare_styles(self) -> typeDict:
+        return self._config_styles(self.kwargs)
 
     def output_chart(self, oargs={}) -> typeNoReturn:
         # --interactive/--static chart is independent of whether or not we're previewing it,
@@ -96,40 +130,39 @@ class Vizkit(object):
         if oargs["do_preview"]:
             preview_chart(self.chart)
 
-    def set_channels(
-        self,
+    #####################################################################
+    # internal helpers
+
+    def _init_channels(
+        self, kwargs: typeDict, datakit
     ) -> typeDict[str, typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]]:
-        """
-        TK TODO:
-        _declare_channels seems like the better name, though we're using that
-        for the more general/basic initializations (maybe it should be _init_channels?)
+        channels = {}
 
-        This method does the bespoke work to combine channels with legends/colors/etc
-        and should be implemented in every subclass
-        """
-        channels = self._declare_channels(self.channel_kwargs, self.datakit)
+        # configure x and y channels, which default to 0 and 1-indexed column
+        # if names aren't specified
+        for i, n in enumerate(("x", "y",)):
+            _arg = f"{n}var"
+            _v = kwargs[_arg] if kwargs[_arg] else datakit.column_names[i]
+            vname, _z = datakit.resolve_column(_v)
+            channels[n] = getattr(alt, n.capitalize())(vname)
 
-        if self.kwargs.get("horizontal"):
-            channels["x"], channels["y"] = (channels["y"], channels["x"])
-
-        if _fill := channels.get("fill"):
-            _fill.scale = alt.Scale(**self._declare_colors(self.color_kwargs))
-            # _fill.legend = alt.Legend(title='mah legend', orient='bottom')
-            _legend = self._declare_legend(self.legend_kwargs, colname=_fill.shorthand)
-            if _legend is False:  # then hide_legend was explicitly specified
-                _fill.legend = None
-            else:
-                _fill.legend = _legend
-
-
-        if _sort_config := self._declare_sorting(self.kwargs, self.datakit):
-            channels["x"].sort = _sort_config
-
+        for n in (
+            "fill",
+            "size",
+        ):
+            _arg = f"{n}var"
+            if _v := kwargs.get(_arg):
+                vname, _z = datakit.resolve_column(_v)
+                channels[n] = getattr(alt, n.capitalize())(vname)
 
         return channels
 
-    def set_style(self) -> typeDict:
-        return self._declare_styles(self.kwargs)
+    def _init_chart(self) -> alt.Chart:
+        alt.themes.enable(self.theme)
+
+        mname = get_chart_methodname(self.viz_type)
+        chartfoo = getattr(alt.Chart(self.df), mname)
+        return chartfoo()
 
     @property
     def df(self) -> pd.DataFrame:
@@ -140,14 +173,15 @@ class Vizkit(object):
         return list(self.df.columns)
 
     #####################################################################
-    #  kwargs helpers
-    # TODO: refactor later
+    #  kwarg properties
+    #  TODO: refactor later
     @property
     def channel_kwargs(self) -> typeDict:
         _ARGKEYS = (
             "xvar",
             "yvar",
             "fillvar",
+            "sizevar",
         )
         return {k: self.kwargs.get(k) for k in _ARGKEYS}
 
@@ -193,28 +227,10 @@ class Vizkit(object):
         return {k: self.kwargs.get(k) for k in _ARGKEYS}
 
     #####################################################################
-    ##### declarations
+    ##### chart aspect configurations (static helper methods)
 
     @staticmethod
-    def _declare_channels(kwargs: typeDict, datakit) -> typeDict:
-        config = {}
-
-        # configure x and y channels
-        for i, n in enumerate(("x", "y",)):
-            _arg = f"{n}var"
-            _v = kwargs[_arg] if kwargs[_arg] else datakit.column_names[i]
-            vname, _z = datakit.resolve_column(_v)
-            config[n] = getattr(alt, n.capitalize())(vname)
-
-        # configure fill channel
-        if _fill := kwargs.get("fillvar"):
-            _fill, _z = datakit.resolve_column(_fill)
-            config["fill"] = alt.Fill(_fill)
-
-        return config
-
-    @staticmethod
-    def _declare_colors(kwargs: typeDict) -> typeDict:
+    def _config_colors(kwargs: typeDict) -> typeDict:
         """
         returns a dict for alt.Scale()
         """
@@ -234,7 +250,7 @@ class Vizkit(object):
         return config
 
     @staticmethod
-    def _declare_legend(kwargs: typeDict, colname: str) -> typeUnion[typeDict, bool]:
+    def _config_legend(kwargs: typeDict, colname: str) -> typeUnion[typeDict, bool]:
         config = {}
         if kwargs["hide_legend"]:
             config = False
@@ -249,7 +265,7 @@ class Vizkit(object):
         return config
 
     @staticmethod
-    def _declare_sorting(kwargs: typeDict, datakit: Datakit) -> typeDict:
+    def _config_sorting(kwargs: typeDict, datakit: Datakit) -> typeDict:
         config = {}
         if _sortx := kwargs.get("sort_x"):
             _sign, _cname = re.match(r"(-?)(.+)", _sortx).groups()
@@ -261,7 +277,7 @@ class Vizkit(object):
         return config
 
     @staticmethod
-    def _declare_styles(kwargs: typeDict) -> typeDict:
+    def _config_styles(kwargs: typeDict) -> typeDict:
         config = {}
 
         if _title := kwargs.get("title"):

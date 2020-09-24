@@ -57,9 +57,6 @@ def clerr(*args) -> typeNoReturn:
     click.echo(" ".join(outobjects), err=True)
 
 
-
-
-
 def print_version(ctx=None, param=None, value=None) -> typeNoReturn:
     """
     https://click.palletsprojects.com/en/3.x/options/#callbacks-and-eager-options

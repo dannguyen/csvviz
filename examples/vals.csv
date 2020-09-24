@@ -1,4 +1,4 @@
-mass,volume,velocity,name
+mass,volume,velocity,breed
 0.1,10,1,linear
 0.2,20,2,linear
 0.3,30,3,linear
