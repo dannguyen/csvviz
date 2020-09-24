@@ -15,6 +15,7 @@ from typing import (
 
 
 import altair as alt
+from altair.utils import parse_shorthand
 import altair_viewer as altview
 import pandas as pd
 
@@ -22,6 +23,9 @@ from csvviz.cli_utils import clout, clerr
 from csvviz.exceptions import *
 from csvviz.kits.datakit import Datakit
 from csvviz.settings import *
+
+ENCODING_CHANNEL_NAMES = ("x", "y", "fill", "size",)
+
 
 
 def get_chart_mark_methodname(viz_type: str) -> alt.Chart:
@@ -49,17 +53,17 @@ class Vizkit(object):
     """
     The interface between Click.command, Altair.Chart, and Pandas.dataframe
     """
-
     def __init__(self, viz_type: str, input_file: typeUnion[typeIO, Path, str], kwargs):
         self.kwargs = kwargs
         self.input_file = input_file
         self.datakit = Datakit(input_file)
 
+        # TODO: too many properties?
         # chart-related settings
         self.viz_type = viz_type
         self.theme = kwargs.get("theme")
-        self.channels = self.declare_channels()
-        self.style_properties = self.declare_styles()
+        self.channels = self.prepare_channels()
+        self.style_properties = self.prepare_styles()
         self.interactive_mode = self.kwargs.get("is_interactive")
 
         # the chart itself
@@ -69,28 +73,18 @@ class Vizkit(object):
             interactive_mode=self.interactive_mode,
         )
 
-    def build_chart(
-        self, channels: dict, style_properties: dict, interactive_mode: bool
-    ) -> alt.Chart:
 
-        chart = self._init_chart()
-        chart = chart.encode(**channels)
-        chart = chart.properties(**style_properties)
+    def prepare_styles(self) -> typeDict:
+        return self._config_styles(self.kwargs)
 
-        if interactive_mode:
-            chart = chart.interactive()
-
-        return chart
-        # implementing this for testing ease...
-        # raise Exception('Need to implement build_chart for each viz subclass')
-
-    def declare_channels(
+    def prepare_channels(
         self,
     ) -> typeDict[str, typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]]:
         """
         TK TODO:
-        _config_channels seems like the better name, though we're using that
-        for the more general/basic initializations (maybe it should be _init_channels?)
+        prepare_channels is the better name
+        # TODO: this should be an abstract method in the base class, but for now, it's
+        #   an obsolete version of Barkit
 
         This method does the bespoke work to combine channels with legends/colors/etc
         and should be implemented in every subclass
@@ -103,8 +97,9 @@ class Vizkit(object):
 
         if _fill := channels.get("fill"):
             _fill.scale = alt.Scale(**self._config_colors(self.color_kwargs))
-            # _fill.legend = alt.Legend(title='mah legend', orient='bottom')
-            _legend = self._config_legend(self.legend_kwargs, colname=_fill.shorthand)
+
+
+            _legend = self._config_legend(self.legend_kwargs, colname=_fill.field)
             if _legend is False:  # then hide_legend was explicitly specified
                 _fill.legend = None
             else:
@@ -115,8 +110,34 @@ class Vizkit(object):
 
         return channels
 
-    def declare_styles(self) -> typeDict:
-        return self._config_styles(self.kwargs)
+
+
+    ##########################################################
+    # These are boilerplate methods, unlikely to be subclassed
+    ##########################################################
+    def build_chart(
+        self, channels: dict, style_properties: dict, interactive_mode: bool
+    ) -> alt.Chart:
+
+        chart = self._init_chart()
+        chart = chart.encode(**channels)
+
+        # # import IPython; IPython.embed()
+        # try:
+        #     chart.to_dict(validate=True) # just triggering validation; we don't use the dict
+        # except ValueError as err:
+        #     msg = str(err).replace('ValueError', 'InvalidColumnName')
+        #     raise InvalidColumnName(msg)
+
+        chart = chart.properties(**style_properties)
+
+        if interactive_mode:
+            chart = chart.interactive()
+
+        return chart
+        # implementing this for testing ease...
+        # raise Exception('Need to implement build_chart for each viz subclass')
+
 
     def output_chart(self, oargs={}) -> typeNoReturn:
         # --interactive/--static chart is independent of whether or not we're previewing it,
@@ -131,32 +152,48 @@ class Vizkit(object):
         if oargs["do_preview"]:
             preview_chart(self.chart)
 
+
+
+
+
+
     #####################################################################
     # internal helpers
-
+    #####################################################################
     def _init_channels(
-        self, kwargs: typeDict, datakit
+        self, kwargs:typeDict, datakit
     ) -> typeDict[str, typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]]:
-        channels = {}
 
+        def _validate_fieldname(shorthand:str, fieldname:str) -> bool:
+            if fieldname not in self.column_names:
+                return False
+            else:
+                return True
+
+        channels = {}
         # configure x and y channels, which default to 0 and 1-indexed column
         # if names aren't specified
-        for i, n in enumerate(("x", "y",)):
-            _arg = f"{n}var"
-            _v = kwargs[_arg] if kwargs[_arg] else datakit.column_names[i]
-            vname, _z = datakit.resolve_column(_v)
-            channels[n] = getattr(alt, n.capitalize())(vname)
 
-        for n in (
-            "fill",
-            "size",
-        ):
-            _arg = f"{n}var"
-            if _v := kwargs.get(_arg):
-                vname, _z = datakit.resolve_column(_v)
-                channels[n] = getattr(alt, n.capitalize())(vname)
+        cargs = kwargs.copy()
+        for i, n in enumerate(("xvar", "yvar",)):
+            # TODO: this kind of rickety tbh
+            #   colstr can be either a column name or Altair's shorthand syntax, e.g. 'sum(amount):Q'
+            #   if kwargs['xvar/yvar'] isn't defined, then pull 0/1 index from column_names
+            cargs[n] = cargs[n] if cargs[n] else self.column_names[i]
 
+
+        for n in ENCODING_CHANNEL_NAMES:
+            argname = f"{n}var"
+            if shorthand := cargs[argname]:
+                ed = parse_shorthand(shorthand, data=self.df)
+
+                if _validate_fieldname(shorthand=shorthand, fieldname=ed['field']):
+                    _channel = getattr(alt, n.capitalize()) # e.g. alt.X or alt.Y
+                    channels[n] = _channel(**ed)
+                else:
+                    raise InvalidColumnName(f"""'{shorthand}' is either an invalid column name, or invalid Altair shorthand""")
         return channels
+
 
     def _init_chart(self) -> alt.Chart:
         alt.themes.enable(self.theme)
@@ -188,12 +225,7 @@ class Vizkit(object):
     #  TODO: refactor later
     @property
     def channel_kwargs(self) -> typeDict:
-        _ARGKEYS = (
-            "xvar",
-            "yvar",
-            "fillvar",
-            "sizevar",
-        )
+        _ARGKEYS = [f'{n}var' for n in ENCODING_CHANNEL_NAMES]
         return {k: self.kwargs.get(k) for k in _ARGKEYS}
 
     @property
@@ -261,7 +293,7 @@ class Vizkit(object):
         return config
 
     @staticmethod
-    def _config_legend(kwargs: typeDict, colname: str) -> typeUnion[typeDict, bool]:
+    def _config_legend(kwargs:typeDict, colname:str) -> typeUnion[typeDict, bool]:
         config = {}
         if kwargs["hide_legend"]:
             config = False
@@ -272,7 +304,6 @@ class Vizkit(object):
                 config["orient"] = _o
             else:
                 config["orient"] = DEFAULT_LEGEND_ORIENTATION
-
         return config
 
     @staticmethod

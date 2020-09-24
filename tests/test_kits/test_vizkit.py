@@ -79,8 +79,8 @@ def test_vizkit_kwarg_properties(tvk):
 @pytest.mark.skip(reason="TODO")
 def test_vizkit_declarations(tvk):
     pass
-    # assert isinstance(tvk.declare_channels['x'], alt.X)
-    # assert isinstance(tvk.declare_channels['fill'], alt.Fill)
+    # assert isinstance(tvk.prepare_channels['x'], alt.X)
+    # assert isinstance(tvk.prepare_channels['fill'], alt.Fill)
 
     # assert tvk.declare_legend['orient'] == DEFAULT_LEGEND_ORIENTATION
     # assert tvk.declare_legend['title'] == 'name'

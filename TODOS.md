@@ -6,21 +6,18 @@
     
 ## ON DECK
 
+- Adopt Altair mini-syntax: seems like using Altair's mini-syntax is the way to go?
+    - [X] maybe kill Datakit.resolve_column for validation, and just pass things straight into Altair and propogate its 'not a column errors'?
+    - [ ] what are the scenarios when passing invalid column names into alt.X, alt.Y, alt.Fill, etc?
 
-
-- Adopt Altair mini-syntax
-    - seems like using Altair's mini-syntax is the way to go?
-        - https://altair-viz.github.io/user_guide/encoding.html#encoding-shorthands
-        - maybe kill Datakit.resolve_column for validation, and just pass things straight into Altair and propogate its 'not a column errors'?
-            - [ ] what are the scenarios when passing invalid column names into alt.X, alt.Y, alt.Fill, etc?
-        - write a quick helpme for csvviz usecases
-            - `Vizkit.column_to_channel('sum(amount)')`
-
+    - https://altair-viz.github.io/user_guide/encoding.html#encoding-shorthands
+    - write a quick helpme for csvviz usecases
+        - `Vizkit.column_to_channel('sum(amount)')`
 
 
 - `scatter`:
     - [X] copy `bar` template with half-finished Vizkit
-    - [ ] legend for `size` appears
+    - [ ] legend for `size` appears and do we want that?
     - [X] need to actually subclass Vizkit, to do custom implementation of set_channels
 
 
@@ -162,6 +159,9 @@ chart examples
 
 
 ## All done
+
+- [X] Look in Altair source to find when column name/shorthand is validated
+    - fix: found altair.utils.parse_shorthand(meta:dict, data:pd.DataFrame), and am using it in Vizkit
 
 
 - csvviz.cmds.bar: Work on bar subcommand, generalize from there

@@ -225,7 +225,7 @@ def test_error_if_user_specifies_columns_as_integers():
     # with pytest.raises(click.UsageError) as err:
     result = CliRunner().invoke(viz, ["-y", "0", *OUTPUT_ARGS])
     assert result.exit_code == 1
-    assert "InvalidColumnName: '0' is not a valid column name" in result.output.strip()
+    assert "InvalidColumnName: '0' is either an invalid column name, or invalid Altair shorthand" in result.output.strip()
 
 
 def test_error_if_invalid_theme_specified():

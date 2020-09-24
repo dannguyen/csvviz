@@ -53,26 +53,18 @@ class ScatterKit(Vizkit):
         super().__init__(viz_type='scatter', input_file=input_file, kwargs=kwargs)
 
 
-    def declare_channels(self): # -> typeDict[str, typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]]:
+    def prepare_channels(self): # -> typeDict[str, typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]]:
 
         channels = self._init_channels(self.channel_kwargs, self.datakit)
+        if the_fill := channels.get("fill"):
+            the_fill.scale = alt.Scale(**self._config_colors(self.color_kwargs))
+            _legend = self._config_legend(self.legend_kwargs, colname=the_fill.field)
 
-        # unneeded: no horizontal thingy
-        # if self.kwargs.get("flipxy"): # i.e. -H/--horizontal flag
-        #     channels["x"], channels["y"] = (channels["y"], channels["x"])
+            # legend = None effectively hides it, which is what we want
+            the_fill.legend = None if _legend is False else _legend
+            # emphasize that we're editing channels['fill']
+            channels['fill'] = the_fill
 
-        if _fill := channels.get("fill"):
-            _fill.scale = alt.Scale(**self._config_colors(self.color_kwargs))
-            # TODO: deal with legend being created for fill and size channels
-            _legend = self._config_legend(self.legend_kwargs, colname=_fill.shorthand)
-            if _legend is False:  # then hide_legend was explicitly specified
-                _fill.legend = None
-            else:
-                _fill.legend = _legend
-
-        # unneeded for scatter charts
-        # if _sort_config := self._config_sorting(self.kwargs, self.datakit):
-        #     channels["x"].sort = _sort_config
 
         return channels
 
