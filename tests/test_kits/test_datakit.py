@@ -1,6 +1,6 @@
 import pytest
 
-from csvviz.utils.datakit import Datakit
+from csvviz.kits.datakit import Datakit
 import pandas as pd
 
 @pytest.fixture

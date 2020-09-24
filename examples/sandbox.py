@@ -7,7 +7,7 @@ import altair_viewer as altview
 import pandas as pd
 from vega_datasets import data as vdata
 
-from csvviz.utils.datakit import Datakit
+from csvviz.kits.datakit import Datakit
 
 def av(chart):
      altview.show(chart.interactive())

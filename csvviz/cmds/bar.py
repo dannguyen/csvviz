@@ -18,7 +18,7 @@ import click
 from csvviz.cli_utils import clout, clerr, clexit, preview_chart
 from csvviz.exceptions import *
 from csvviz.settings import *
-from csvviz.utils.datakit import Datakit
+from csvviz.kits.datakit import Datakit
 
 
 @click.command()
@@ -26,7 +26,7 @@ from csvviz.utils.datakit import Datakit
 @click.option('--yvar', '-y', type=click.STRING, default='', help='the value column')
 @click.option('--fill', '-f', 'fillvar', type=click.STRING, help='The column used to specify fill color')
 # @click.option('--sort-x',  type=click.Choice(['x', '-x', 'y', '-y', 'fill', '-fill'], case_sensitive=False), help='Optional: which axis to sort the marks by (e.g. x, y)')
-@click.option('--sort-x',  type=click.STRING, help='Optional: sort the x-axis by a field other than the field specified by -x/--xvar')
+@click.option('--sort', 'sort_x',  type=click.STRING, help='Optional: sort the x-axis by a field other than the field specified by -x/--xvar')
 
 # unique to bar viz
 @click.option('--horizontal', '-H', is_flag=True, help='Orient the bars horizontally')
@@ -38,9 +38,12 @@ from csvviz.utils.datakit import Datakit
     default='default', help="choose a built-in theme for chart") # refactor alt.themes.names() to constant
 
 @click.option('--title', '-t', type=click.STRING, help='A title for the chart')
-
 @click.option('--hide-legend', is_flag=True, help='Omits the legend')
 
+# axis stuff
+@click.option('--x-title', type=click.STRING, help='TK TK testing')
+@click.option('--x-min', type=click.STRING, help='TK TK testing')
+@click.option('--x-max', type=click.STRING, help='TK TK testing')
 
 # common input output/options
 @click.option('--json/--no-json', '-j /', 'to_json', default=False, help='Output to stdout the Vega JSON representation')
@@ -59,113 +62,133 @@ def bar(horizontal, input_file, **kwargs):
     # set up theme config
 
     dk = Datakit(input_file)
-    chart = alt.Chart(dk.df).mark_bar()
 
     # global settings, e.g. theme
     alt.themes.enable(kwargs.get('theme'))
 
-
     # encode stuff
     try:
-        eargs = _encode_vars(dk, kwargs)
+        _encoding = _handle_encoding(dk, kwargs)
     except InvalidColumnName as err:
         clexit(1, err)
 
     if horizontal:
-        eargs['x'], eargs['y'] = (eargs['y'], eargs['x'])
+        _encoding['x'], _encoding['y'] = (_encoding['y'], _encoding['x'])
 
-    chart = chart.encode(**eargs)
+    if _fill := _encoding.get('fill'):
+        _fill.scale  = alt.Scale(**_handle_fill_color(kwargs))
+        # _fill.legend = alt.Legend(title='mah legend', orient='bottom')
+        if kwargs.get('hide_legend'):
+            _fill.legend = None
+        else:
+            _fill.legend = alt.Legend(**_handle_legend(kwargs, colname=_fill.shorthand))
+
+
+    try:
+        if _sort_config := _handle_sorting(dk, kwargs):
+            _encoding['x'].sort = _sort_config
+    except InvalidColumnName as err:
+        clexit(1, err)
+
+    chart = alt.Chart(dk.df).mark_bar()
+    chart = chart.encode(**_encoding)
 
 
     # chart properties
-    sprops = _style_chart(kwargs)
-    chart = chart.properties(**sprops)
+    _styling = _handle_styling(kwargs)
+    chart = chart.properties(**_styling)
 
     _output_chart(chart, kwargs)
 
 
 
-def _encode_vars(dk:Datakit, encoding_args:typeDict) -> typeDict:
-    ed = {}
+def _handle_encoding(dk:Datakit, args:typeDict) -> typeDict[str, typeUnion[alt.X, alt.Y, alt.Fill]]:
+    config = {}
 
-    _x = encoding_args.get('xvar') if encoding_args.get('xvar') else dk.column_names[0]
-    _y = encoding_args.get('yvar') if encoding_args.get('yvar') else dk.column_names[1]
-
-
-    ed['x'], _z = dk.resolve_column(_x)
-    ed['y'], _z = dk.resolve_column(_y)
+    _x = args.get('xvar') if args.get('xvar') else dk.column_names[0]
+    _y = args.get('yvar') if args.get('yvar') else dk.column_names[1]
 
 
+    _x, _z = dk.resolve_column(_x)
+    config['x'] = alt.X(_x)
+    _y, _z = dk.resolve_column(_y)
+    config['y'] = alt.Y(_y)
+
+    if _fill := args.get('fillvar'):
+        _fill, _z = dk.resolve_column(_fill)
+        config['fill'] = alt.Fill(_fill)
+
+    return config
 
 
-    if fill := encoding_args.get('fillvar'):
-        _fill, _z = dk.resolve_column(fill)
 
-        ## fill color stuff
-        scale_kwargs = {'scheme': DEFAULT_COLOR_SCHEME}
+def _handle_fill_color(args:typeDict) -> typeDict:
+    """
+    returns a dict for alt.Scale()
+    """
+    ## fill color stuff
+    config = {'scheme': DEFAULT_COLOR_SCHEME}
 
-        if _cs := encoding_args.get('color_scheme'):
-            scale_kwargs['scheme'] = _cs
-            # TODO: if _cs does not match a valid color scheme, then raise a warning/error
+    if _cs := args.get('color_scheme'):
+        config['scheme'] = _cs
+        # TODO: if _cs does not match a valid color scheme, then raise a warning/error
 
-        if _colors := encoding_args['colors']:
-            # don't think this needs to be a formal parser
-            scale_kwargs['range'] = _colors.strip().split(',')
-            # for now, only colors OR color_scheme can be set, not both
-            scale_kwargs.pop('scheme', None)
+    if _colors := args['colors']:
+        # don't think this needs to be a formal parser
+        config['range'] = _colors.strip().split(',')
+        # for now, only colors OR color_scheme can be set, not both
+        config.pop('scheme', None)
 
-        """
-        note: it currently stinks that legend stuff is buried in the encoding part.
-
-        Ideally, we would use alt.Chart.configure_legend to customize chart legend, but
-          that doesn't let us do a configure_legend(none/False) when we want to hdie it
-        """
-        if encoding_args['hide_legend']:
-            _legend = None
-        else:
-            _legend = alt.Legend(title=_fill, orient=DEFAULT_LEGEND_ORIENTATION)
-
-        ed['fill'] = alt.Fill(_fill, legend=_legend, scale=alt.Scale(**scale_kwargs))
+    return config
 
 
-    # TODO: refactor, error handle
-    if _sortx := encoding_args.get('sort_x'):
-        _sign, _colname = re.match(r'(-?)(.+)', _sortx).groups()
-        _order = 'descending' if _sign == '-' else 'ascending'
-        sortobj = {'field': _colname, 'order': _order}
+def _handle_legend(args:typeDict, colname:str) -> typeDict:
+    config = {}
+    # if args['hide_legend']:
+    #     config = None
+    # else:
+    config['title'] = colname if not args.get('TK-column-title') else colname
+    config['orient'] = DEFAULT_LEGEND_ORIENTATION
+    # TODO: let users configure orientation and title...somehow
 
-        ed['x'] = alt.X(ed['x'], sort=sortobj)
-
-        #   _colname = ed[_channel]
-        #   channel = getattr(alt, _channel.capitalize())
-        #   e.g. ed['x'] = alt.X('name', '-x')
-        #        ed[_channel] = channel(_colname, sort=_order)
+    return config
 
 
-    return ed
+
+def _handle_sorting(dk:Datakit, args:typeDict) -> typeDict:
+    config = {}
+    if _sortx := args.get('sort_x'):
+        _sign, _cname = re.match(r'(-?)(.+)', _sortx).groups()
+        colname, _z = dk.resolve_column(_cname)  # mostly validation
+
+        config['field'] = colname
+        config['order'] = 'descending' if _sign == '-' else 'ascending'
+
+    return config
 
 
-def _style_chart(style_args:typeDict) -> typeDict:
-    sd = {}
 
-    if _title := style_args.get('title'):
-        sd['title'] = _title
+def _handle_styling(args:typeDict) -> typeDict:
+    config = {}
 
-    return sd
+    if _title := args.get('title'):
+        config['title'] = _title
+
+    return config
 
 
-def _output_chart(chart:alt.Chart, render_args:typeDict) -> typeNoReturn:
+def _output_chart(chart:alt.Chart, args:typeDict) -> typeNoReturn:
 
     # --interactive/--static chart is independent of whether or not we're previewing it,
     #  which is reflected in its JSON representation
-    if render_args['is_interactive']:
+    if args.get('is_interactive'):
         chart = chart.interactive()
 
     # echo JSON before doing a preview
-    if render_args.get('to_json'):
+    if args.get('to_json'):
         clout(chart.to_json(indent=2))
 
-    if render_args['do_preview']:
+    if args['do_preview']:
         preview_chart(chart)
 
 

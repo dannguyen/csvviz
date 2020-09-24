@@ -2,6 +2,12 @@
 History
 =======
 
+TKTK-ongoing
+------------
+
+- ``--sort-x`` for sorting arrangement of independent values
+
+
 
 0.2.1-alpha (2020-09-23)
 ------------------------

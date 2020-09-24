@@ -5,7 +5,7 @@
 
 - `bar`
     - [X] kill the ability to refer to columns by index
-
+    - [X] refactored internal chart building methods, to make it easier to make VizCommand
 - Top-level chart config https://altair-viz.github.io/user_guide/configuration.html
     - [X] --title for chart title
         - [?] do we need a mini-syntax for configuring title alignment, size, and font?
@@ -22,16 +22,23 @@
     - https://altair-viz.github.io/user_guide/encoding.html?highlight=sort%20marks
     - [x] basic implementation
     - [x] make sure horizontal bar sorts as expected
-    - [ ] test, including robust error handling when invalid column name is passed in
-    - naming/syntax
+    - [x] test, including robust error handling when invalid column name is passed in
+    - [ ? ] naming/syntax
         - should it have a better name, like `--order`, or something?
+            - can't use `-o/--order` because `-o` should be for `--output`
+            - ggplot2 has a `reorder()` function that is applied to a given channel: https://www.r-graph-gallery.com/267-reorder-a-variable-in-ggplot2.html
         - is `--sort-x` unnecessarily specific, e.g. user will only want to sort by x/independent variable, except in situation of `fill` and stacked charts...
             - or should it have a mini-syntax, e.g. `--sort 'x:-amount'`
 
+- axis-range
+    - `-x-min/-x-max`: https://altair-viz.github.io/user_guide/customization.html?highlight=axis#adjusting-axis-limits
 
 - `dot`
     - start with copying `bar.py` then generalize it into a VisualCommand class
 
+
+- `reify`: print the Altair invocation used to create the graph, for users who would like to copy paste and tweak it
+    - figure this out much later, when we have a `VisualCommand` class
 
 ## Not on deck
 

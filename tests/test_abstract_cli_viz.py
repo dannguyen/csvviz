@@ -82,6 +82,7 @@ def test_basic_colors():
     -c/--colors
     """
     result = CliRunner().invoke(viz, ['-f', 'name', '-c', 'red,deeppink,#999 ', *OUTPUT_ARGS])
+    assert result.exit_code == 0
     cdata = jsonlib.loads(result.output)
 
     scale = cdata['encoding']['fill']['scale']
@@ -200,12 +201,12 @@ def test_warn_if_colors_and_color_scheme_specified(caplog):
 def test_error_if_user_specifies_columns_as_integers():
     # with pytest.raises(click.UsageError) as err:
     result = CliRunner().invoke(viz, ['-y', '0', *OUTPUT_ARGS])
-    assert 1 == result.exit_code
+    assert result.exit_code == 1
     assert "InvalidColumnName: '0' is not a valid column name" in result.output.strip()
 
 def test_error_if_invalid_theme_specified():
     result = CliRunner().invoke(viz, ['--theme', 'NotGood', *OUTPUT_ARGS])
-    assert 2 == result.exit_code
+    assert result.exit_code == 2
     assert """Error: Invalid value for '--theme': invalid choice: NotGood""" in result.output
 
 
@@ -220,7 +221,7 @@ def test_error_if_invalid_color_scheme_specified():
 
 
 @pytest.mark.curious(reason='Maybe it is better to silently fail, then to write a color string validator?')
-@pytest.mark.skip(reason='TODO')
+@pytest.mark.skip(reason="TODO; also, pytest.raises doesn't really work here")
 def test_error_if_invalid_color_name_value_specified():
     with pytest.raises(Exception) as err:
         CliRunner().invoke(viz, ['--colors', 'red,blue,000,#999,asdf', *OUTPUT_ARGS])
