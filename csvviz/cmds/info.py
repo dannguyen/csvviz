@@ -1,6 +1,4 @@
-from functools import reduce
 import json as jsonlib
-
 
 import altair as alt
 import click

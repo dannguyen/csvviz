@@ -3,9 +3,9 @@
 
 """Console script for csvviz."""
 
-import click
 
 from pathlib import Path
+import sys
 from typing import Any as typeAny, Mapping as typeMapping, NoReturn as typeNoReturn
 from typing import Dict as typeDict, List as typeList, Tuple as typeTuple, Union as typeUnion
 from typing import IO as typeIO
@@ -13,6 +13,7 @@ from typing import IO as typeIO
 
 import altair as alt
 import altair_viewer as altview
+import click
 from csvviz import __version__
 
 
@@ -29,6 +30,11 @@ def clout(*args) -> typeNoReturn:
         outobjects.append(obj)
     click.echo(' '.join(outobjects), err=False)
 
+
+def clexit(code:int, message:typeAny=None):
+    if message:
+        clerr(message)
+    sys.exit(code)
 
 def clerr(*args) -> typeNoReturn:
     """

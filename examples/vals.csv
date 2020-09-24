@@ -1,0 +1,15 @@
+mass,volume,velocity,name
+0.1,10,1,linear
+0.2,20,2,linear
+0.3,30,3,linear
+0.4,40,4,linear
+0.5,50,5,molt
+0.25,19,3,molt
+0.43,33,3,molt
+0.7,73,2,molt
+1,66,4,molt
+0.35,54,3,rando
+0.2,21,1,rando
+0.6,60,2,rando
+0.15,32,5,rando
+0.4,18,2,rando

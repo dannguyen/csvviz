@@ -2,6 +2,7 @@
 import pytest
 from click.testing import CliRunner
 
+import click
 import json as jsonlib
 from pathlib import Path
 
@@ -23,7 +24,22 @@ def test_defaults():
     # default rendering is static mode, so 'selection' should not exist
     assert 'selection' not in cdata
 
+    assert 'title' not in cdata
 
+
+##############################################################################################################
+# chart properties
+##############################################################################################################
+def test_title():
+    result = CliRunner().invoke(viz, ['-t', 'My Title', *OUTPUT_ARGS])
+    cdata = jsonlib.loads(result.output)
+    assert cdata['title'] == 'My Title'
+
+
+
+##############################################################################################################
+# output and preview
+##############################################################################################################
 
 def test_interactive_chart():
     result = CliRunner().invoke(viz, ['--static', *OUTPUT_ARGS])
@@ -32,7 +48,7 @@ def test_interactive_chart():
     assert 'selection' not in cdata
 
 
-def test_interactive_chart():
+def test_static_chart():
     result = CliRunner().invoke(viz, ['--interactive', *OUTPUT_ARGS])
     cdata = jsonlib.loads(result.output)
 
@@ -41,6 +57,7 @@ def test_interactive_chart():
 ##############################################################################################################
 # fill color
 ##############################################################################################################
+
 @pytest.mark.curious(reason="""
     This may not be a good idea, if the user specifies continuous fill variable, which looks like ****
      when the scale is categorical like category10.
@@ -100,6 +117,38 @@ def test_colors_overrides_color_scheme():
 
 
 
+
+##############################################################################################################
+# legend
+##############################################################################################################
+def test_legend_default():
+    """when there is a fill, there is a legend"""
+    result = CliRunner().invoke(viz, ['-f', 'name', *OUTPUT_ARGS])
+    cdata = jsonlib.loads(result.output)
+    legend = cdata['encoding']['fill']['legend']
+
+    assert legend['title'] == 'name'
+    assert legend['orient'] == DEFAULT_LEGEND_ORIENTATION
+
+
+def test_hide_legend():
+    """hiding the legend sets fill.legend to None explicitly"""
+
+    result = CliRunner().invoke(viz, ['-f', 'name',  '--hide-legend', *OUTPUT_ARGS])
+    cdata = jsonlib.loads(result.output)
+
+    assert None is cdata['encoding']['fill']['legend']
+
+@pytest.mark.skip(reason='TODO: figure out mini-syntax')
+def test_legend_settings():
+    """when there is a fill, there is a legend"""
+    result = CliRunner().invoke(viz, ['-f', 'name', '--legend', 'title=Legend of Titles;orient=left', *OUTPUT_ARGS])
+    cdata = jsonlib.loads(result.output)
+    legend = cdata['encoding']['fill']['legend']
+
+    assert legend['Legend of Titles'] == 'name'
+    assert legend['orient'] == 'left'
+
 ##############################################################################################################
 # --theme
 ##############################################################################################################
@@ -148,14 +197,20 @@ def test_warn_if_colors_and_color_scheme_specified(caplog):
 ##############################################################################################################
 # errors
 ##############################################################################################################
-def test_error_if_invalid_theme_specified(caplog):
+def test_error_if_user_specifies_columns_as_integers():
+    # with pytest.raises(click.UsageError) as err:
+    result = CliRunner().invoke(viz, ['-y', '0', *OUTPUT_ARGS])
+    assert 1 == result.exit_code
+    assert "InvalidColumnName: '0' is not a valid column name" in result.output.strip()
+
+def test_error_if_invalid_theme_specified():
     result = CliRunner().invoke(viz, ['--theme', 'NotGood', *OUTPUT_ARGS])
     assert 2 == result.exit_code
     assert """Error: Invalid value for '--theme': invalid choice: NotGood""" in result.output
 
 
 @pytest.mark.skip(reason='TODO')
-def test_error_if_invalid_color_scheme_specified(caplog):
+def test_error_if_invalid_color_scheme_specified():
     with pytest.raises(InvalidColorScheme) as err:
         CliRunner().invoke(viz, ['--color-scheme', 'not a color scheme', *OUTPUT_ARGS])
 
@@ -166,8 +221,8 @@ def test_error_if_invalid_color_scheme_specified(caplog):
 
 @pytest.mark.curious(reason='Maybe it is better to silently fail, then to write a color string validator?')
 @pytest.mark.skip(reason='TODO')
-def test_error_if_invalid_color_name_value_specified(caplog):
-    with pytest.raises(InvalidColorScheme) as err:
+def test_error_if_invalid_color_name_value_specified():
+    with pytest.raises(Exception) as err:
         CliRunner().invoke(viz, ['--colors', 'red,blue,000,#999,asdf', *OUTPUT_ARGS])
 
     assert (

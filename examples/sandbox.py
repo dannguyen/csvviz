@@ -20,7 +20,9 @@ def main():
     tk = Datakit('examples/tings.csv')
     fk = Datakit('examples/fruits.csv')
 
-    chart = alt.Chart(tk.df).mark_bar().encode(x='name', y='amount',
+    chart = alt.Chart(tk.df).mark_bar().encode(
+        x=alt.X('name'),
+        y='amount',
         fill=alt.Color('amount', scale=alt.Scale(range=['green', 'yellow', 'red'] )))
 
     print('Breakpoint time!')

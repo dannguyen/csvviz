@@ -6,6 +6,9 @@ from typing import IO as typeIO
 import numpy as np
 import pandas as pd
 
+
+from csvviz.exceptions import *
+
 class Datakit(object):
     def __init__(self, input_path:typeUnion[typeIO, Path, str]):
         self.input_path = input_path
@@ -53,18 +56,21 @@ class Datakit(object):
         return self.df.iloc[row_index, column_index]
 
 
-    def resolve_column(self, colname:typeUnion[str, int]) -> typeTuple[int, str]:
-        if isinstance(colname, int) or colname.isdigit():
-            col = int(colname)
-            if len(self.column_names) > col:
-                # bonafide integer index
-                cname = self.column_names[col]
-                cid = col
-                return (cid, cname)
+    def resolve_column(self, colname:typeUnion[str]) -> typeTuple[str, dict]:
+        """
+        Given a column parameter, e.g. a column name meant to be used as xvar/yvar/fill:
+            - 'name'
+            - 'amount'
+            - 'birthdate:time' # TODO meta syntax
 
-        # if we're here, then colname must refer to an actual string column_name
-        cname = str(colname)
-        cid = self.column_names.index(cname)
-        return (cid, cname)
+        Return the canonical column name, and the meta configuration stuff (e.g. datatype)
 
+        Note: this method was initially created to handle situation in which user specifies columns by ID
+            (i.e. integer). That functionality has been deemed not worth it, so now this method is very
+            very trivial (e.g. just returns colnmae)
+        """
+        meta = {}
+        if colname not in self.column_names:
+            raise InvalidColumnName(f"'{colname}' is not a valid column name for the given dataset")
 
+        return (colname, meta)
