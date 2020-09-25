@@ -6,7 +6,7 @@ from click.testing import CliRunner
 import json as jsonlib
 from pathlib import Path
 
-from csvviz.cmds.hist import hist
+from csvviz.cmds.hist import command as hist
 from csvviz.exceptions import *
 from csvviz.settings import *
 

@@ -1,8 +1,3 @@
-"""
-bar.py
-
-Make a bar/column chart
-"""
 import altair as alt
 import click
 from csvviz.cli_utils import clout, clerr, clexit
@@ -15,7 +10,7 @@ from csvviz.exceptions import *
 from csvviz.kits.vizkit import Vizkit
 
 
-@click.command()
+@click.command(name="bar")
 @input_file_decor
 @output_options_decor
 @visual_options_decor
@@ -29,7 +24,6 @@ from csvviz.kits.vizkit import Vizkit
     help="The column used to specify fill color",
 )
 
-
 ###### specific to bar charts
 @click.option(
     "--horizontal", "-H", "flipxy", is_flag=True, help="Orient the bars horizontally"
@@ -40,7 +34,7 @@ from csvviz.kits.vizkit import Vizkit
     type=click.STRING,
     help="Optional: sort the x-axis by a field other than the field specified by -x/--xvar",
 )
-def bar(**kwargs):
+def command(**kwargs):
     """
     Creates a bar chart
 
@@ -58,9 +52,6 @@ def bar(**kwargs):
         vk.output_chart()
 
 
-__command__ = bar
-
-
 class Barkit(Vizkit):
     def __init__(self, input_file, kwargs):
         super().__init__(viz_type="bar", input_file=input_file, kwargs=kwargs)
@@ -76,12 +67,6 @@ class Barkit(Vizkit):
 
         if channels.get("fill"):
             channels["fill"].scale = alt.Scale(**self._config_colors(self.color_kwargs))
-            _legend = self._config_legend(
-                self.legend_kwargs, colname=channels["fill"].field
-            )
-
-            # legend = None effectively hides it, which is what we want
-            channels["fill"].legend = None if _legend is False else _legend
 
         if _sort_config := self._config_sorting(self.kwargs, self.datakit):
             channels["x"].sort = _sort_config

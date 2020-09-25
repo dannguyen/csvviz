@@ -1,7 +1,7 @@
 import pytest
 
 from csvviz.kits.datakit import Datakit
-from csvviz.kits.vizkit import Vizkit, get_chart_mark_methodname
+from csvviz.kits.vizkit import Vizkit, lookup_mark_method
 
 import altair as alt
 import pandas as pd
@@ -115,7 +115,7 @@ def test_vizkit_output_basic(tvk, capsys):
 #####################################
 # get_chart_methodname
 #####################################
-def test_get_chart_mark_methodname():
-    assert "mark_bar" == get_chart_mark_methodname("bar")
-    assert "mark_line" == get_chart_mark_methodname("line")
-    assert "mark_point" == get_chart_mark_methodname("scatter")
+def test_lookup_mark_method():
+    assert "mark_bar" == lookup_mark_method("bar")
+    assert "mark_line" == lookup_mark_method("line")
+    assert "mark_point" == lookup_mark_method("scatter")

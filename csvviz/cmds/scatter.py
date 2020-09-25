@@ -15,7 +15,7 @@ from csvviz.exceptions import *
 from csvviz.kits.vizkit import Vizkit
 
 
-@click.command()
+@click.command(name="scatter")
 @input_file_decor
 @output_options_decor
 @visual_options_decor
@@ -34,7 +34,7 @@ from csvviz.kits.vizkit import Vizkit
     type=click.STRING,
     help="The column used to specify dot size",
 )
-def scatter(**kwargs):
+def command(**kwargs):
     """
     Prints a horizontal bar chart.
 
@@ -63,15 +63,5 @@ class ScatterKit(Vizkit):
         channels = self._init_channels(self.channel_kwargs, self.datakit)
         if channels.get("fill"):
             channels["fill"].scale = alt.Scale(**self._config_colors(self.color_kwargs))
-            _legend = self._config_legend(
-                self.legend_kwargs, colname=channels["fill"].field
-            )
-
-            # legend = None effectively hides it, which is what we want
-            channels["fill"].legend = None if _legend is False else _legend
-            # emphasize that we're editing channels['fill']
 
         return channels
-
-
-__command__ = scatter

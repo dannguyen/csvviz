@@ -212,7 +212,7 @@ https://altair-viz.github.io/user_guide/encoding.html#ordering-marks
     - [X] --title for chart title
         - [?] do we need a mini-syntax for configuring title alignment, size, and font?
         - [x] tested
-    - [X] --hide-legend
+    - [X] --no-legend
         - [?] do we need a mini-syntax for configuring legend stuff, e.g. title and alignment?
         - [x] tested
 

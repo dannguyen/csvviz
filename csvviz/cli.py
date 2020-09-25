@@ -64,9 +64,8 @@ def main():
         for path in SUBCOMMAND_PATHS:
             pmod_name = re.sub(f"/", ".", str(path)).rpartition(".py")[0]
             pmod = importlib.import_module(pmod_name)
-            pcommand = pmod.__command__
 
-            apex.add_command(pcommand)
+            apex.add_command(pmod.command)
 
     _add_subcommands()
     apex()

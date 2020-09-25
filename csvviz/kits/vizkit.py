@@ -32,7 +32,13 @@ ENCODING_CHANNEL_NAMES = (
 )
 
 
-def get_chart_mark_methodname(viz_type: str) -> alt.Chart:
+def get_channel_name(channel: typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]) -> str:
+    return next(
+        (getattr(channel, a) for a in ("field", "aggregate")), type(channel).__name__
+    )
+
+
+def lookup_mark_method(viz_type: str) -> alt.Chart:
     """
     convenience method that translates our command names, e.g. bar, dot, line, to
     the equivalent in altair
@@ -73,7 +79,9 @@ class Vizkit(object):
         # chart-related settings
         self.viz_type = viz_type
         self.theme = kwargs.get("theme")
+
         self.channels = self.prepare_channels()
+        self._manage_legends()  # TODO: this is only here b/c no better place to put it yet
         self.style_properties = self.prepare_styles()
         self.interactive_mode = self.kwargs.get("is_interactive")
 
@@ -84,57 +92,16 @@ class Vizkit(object):
             interactive_mode=self.interactive_mode,
         )
 
-    def prepare_styles(self) -> typeDict:
-        return self._config_styles(self.kwargs)
-
-    def prepare_channels(
-        self,
-    ) -> typeDict[str, typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]]:
-        """
-        TK TODO:
-        prepare_channels is the better name
-        # TODO: this should be an abstract method in the base class, but for now, it's
-        #   an obsolete version of Barkit
-
-        This method does the bespoke work to combine channels with legends/colors/etc
-        and should be implemented in every subclass
-        """
-
-        channels = self._init_channels(self.channel_kwargs, self.datakit)
-
-        if self.kwargs.get("flipxy"):
-            channels["x"], channels["y"] = (channels["y"], channels["x"])
-
-        if _fill := channels.get("fill"):
-            _fill.scale = alt.Scale(**self._config_colors(self.color_kwargs))
-
-            _legend = self._config_legend(self.legend_kwargs, colname=_fill.field)
-            if _legend is False:  # then hide_legend was explicitly specified
-                _fill.legend = None
-            else:
-                _fill.legend = _legend
-
-        if _sort_config := self._config_sorting(self.kwargs, self.datakit):
-            channels["x"].sort = _sort_config
-
-        return channels
-
     ##########################################################
     # These are boilerplate methods, unlikely to be subclassed
     ##########################################################
     def build_chart(
         self, channels: dict, style_properties: dict, interactive_mode: bool
     ) -> alt.Chart:
-
         chart = self._init_chart()
         chart = chart.encode(**channels)
 
-        # # import IPython; IPython.embed()
-        # try:
-        #     chart.to_dict(validate=True) # just triggering validation; we don't use the dict
-        # except ValueError as err:
-        #     msg = str(err).replace('ValueError', 'InvalidDataReference')
-        #     raise InvalidDataReference(msg)
+        # import IPython; IPython.embed()
 
         chart = chart.properties(**style_properties)
 
@@ -142,8 +109,6 @@ class Vizkit(object):
             chart = chart.interactive()
 
         return chart
-        # implementing this for testing ease...
-        # raise Exception('Need to implement build_chart for each viz subclass')
 
     def output_chart(self, oargs={}) -> typeNoReturn:
         # --interactive/--static chart is independent of whether or not we're previewing it,
@@ -157,6 +122,53 @@ class Vizkit(object):
 
         if not oargs["no_preview"]:
             preview_chart(self.chart)
+
+    def _manage_legends(self) -> typeNoReturn:
+        """
+        expects self.channels to already have been prepared; alters them inplace
+
+        TODO: no idea where to put this, other than to make it an internal method used by build_chart()
+        """
+        channels = self.channels
+        for cname in (
+            "fill",
+            "size",
+        ):
+            if channel := channels.get(cname):
+                channel.legend = self._config_legend(
+                    self.legend_kwargs, channel_name=get_channel_name(channel)
+                )
+
+        return
+
+    #################### prepare
+    def prepare_channels(
+        self,
+    ) -> typeDict[str, typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]]:
+        """
+        TK TODO:
+        prepare_channels is the better name
+        # TODO: this should be an abstract method in the base class, but for now, it's
+        #   an obsolete version of Barkit, for testing ease
+
+        This method does the bespoke work to combine channels with legends/colors/etc
+        and should be implemented in every subclass
+        """
+        channels = self._init_channels(self.channel_kwargs, self.datakit)
+
+        if self.kwargs.get("flipxy"):
+            channels["x"], channels["y"] = (channels["y"], channels["x"])
+
+        if _fill := channels.get("fill"):
+            _fill.scale = alt.Scale(**self._config_colors(self.color_kwargs))
+
+        if _sort_config := self._config_sorting(self.kwargs, self.datakit):
+            channels["x"].sort = _sort_config
+
+        return channels
+
+    def prepare_styles(self) -> typeDict:
+        return self._config_styles(self.kwargs)
 
     #####################################################################
     # internal helpers
@@ -214,7 +226,7 @@ class Vizkit(object):
 
     @property
     def mark_type(self) -> str:
-        return get_chart_mark_methodname(self.viz_type)
+        return lookup_mark_method(self.viz_type)
 
     @property
     def df(self) -> pd.DataFrame:
@@ -243,7 +255,7 @@ class Vizkit(object):
     @property
     def legend_kwargs(self) -> typeDict:
         _ARGKEYS = (
-            "hide_legend",
+            "no_legend",
             "TK-orient",
             "TK-title",
         )
@@ -297,17 +309,23 @@ class Vizkit(object):
         return config
 
     @staticmethod
-    def _config_legend(kwargs: typeDict, colname: str) -> typeUnion[typeDict, bool]:
+    def _config_legend(
+        kwargs: typeDict, channel_name: str = ""
+    ) -> typeUnion[typeDict, bool]:
+
         config = {}
-        if kwargs["hide_legend"]:
-            config = False
+        if kwargs["no_legend"]:
+            config = None
         else:
-            # TODO: let users configure orientation and title...somehow
-            config["title"] = colname if not kwargs.get("TK-column-title") else colname
-            if _o := kwargs.get("TK-orientation"):
-                config["orient"] = _o
-            else:
-                config["orient"] = DEFAULT_LEGEND_ORIENTATION
+            config["orient"] = DEFAULT_LEGEND_ORIENTATION
+            config["title"] = channel_name
+        # else:
+        #     # TODO: let users configure orientation and title...somehow
+        #     config["title"] = colname if not kwargs.get("TK-column-title") else colname
+        #     if _o := kwargs.get("TK-orientation"):
+        #         config["orient"] = _o
+        #     else:
+        #         config["orient"] = DEFAULT_LEGEND_ORIENTATION
         return config
 
     @staticmethod

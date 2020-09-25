@@ -17,7 +17,7 @@ from csvviz.exceptions import *
 from csvviz.kits.vizkit import Vizkit
 
 
-@click.command()
+@click.command(name="hist")
 @input_file_decor
 @output_options_decor
 @visual_options_decor
@@ -32,7 +32,7 @@ from csvviz.kits.vizkit import Vizkit
 @click.option(
     "--horizontal", "-H", "flipxy", is_flag=True, help="Orient the bars horizontally"
 )
-def hist(**kwargs):
+def command(**kwargs):
     """
     Creates a histogram: a bar chart in which the -x value is binned
 
@@ -47,9 +47,6 @@ def hist(**kwargs):
         clexit(1, err)
     else:
         vk.output_chart()
-
-
-__command__ = hist
 
 
 class Histkit(Vizkit):

@@ -5,9 +5,8 @@ import click
 import json as jsonlib
 from pathlib import Path
 
-from csvviz.cmds.bar import (
-    bar as viz,
-)  # for now, the bar chart seems like a good default viz
+# for now, the bar chart seems like a good default viz
+from csvviz.cmds.bar import command as viz
 from csvviz.exceptions import *
 from csvviz.settings import *
 
@@ -140,10 +139,10 @@ def test_legend_default():
     assert legend["orient"] == DEFAULT_LEGEND_ORIENTATION
 
 
-def test_hide_legend():
+def test_no_legend():
     """hiding the legend sets fill.legend to None explicitly"""
 
-    result = CliRunner().invoke(viz, ["-f", "name", "--hide-legend", *OUTPUT_ARGS])
+    result = CliRunner().invoke(viz, ["-f", "name", "--no-legend", *OUTPUT_ARGS])
     cdata = jsonlib.loads(result.output)
 
     assert None is cdata["encoding"]["fill"]["legend"]

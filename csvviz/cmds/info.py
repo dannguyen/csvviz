@@ -11,9 +11,12 @@ from csvviz.cli_utils import clout, clerr, __version__ as csvviz_version
 
 
 INFO_OPTIONS = {
+    "aggregates": "list vega-lite aggregate functions available for Altair shorthand syntax, e.g. `-y 'sum(amount)' ",
     "colors": "list the HTML-valid color names, e.g. 'firebrick', 'hotpink'",
     "colorschemes": "list the vega supported color scales, e.g. 'tableau10', 'purples'",
     "themes": "list the Altair themes, e.g. 'latimes', 'ggplot2', 'fivethirtyeight'",
+    "timeunits": "list the timeunits available to Vega and available Altair shorthand syntax, e.g. `-y 'year(birthday)' `",
+    "typecodes": "list datatypes and their shorthand syntax, e.g. `-x 'birthday:O'`",
     "versions": "list the versions of csvviz and main dependencies",
 }
 
@@ -22,7 +25,31 @@ def load_schema():
     return alt.vegalite.core.load_schema()
 
 
-@click.command()
+# class HelpfulCmd(click.Command):
+#     """
+#     https://stackoverflow.com/questions/62182687/custom-help-in-python-click
+#     """
+#     def format_help_text(self, ctx, formatter):
+#         super().format_help_text(ctx, formatter)
+#     def get_help(self, ctx):
+
+#         helptxt = super().get_help(ctx)
+
+
+#         click.echo("""Get more information about options and features, including lists of supported values.
+
+# Usage: csvinfo [TOPIC]
+
+# Topics:""")
+
+#         for k, v in INFO_OPTIONS.items():
+#             click.echo(f" - {k}: {v}\n")
+
+
+@click.command(
+    name="info",
+    epilog="Topics:\n" + "\n".join([f"\n  {k}: {v}" for k, v in INFO_OPTIONS.items()]),
+)
 @click.argument(
     "infotype", type=click.Choice(INFO_OPTIONS.keys(), case_sensitive=False)
 )
@@ -33,22 +60,28 @@ def load_schema():
     default=False,
     help="Output to stdout the Vega JSON representation",
 )
-def info(infotype, **kwargs):
+def command(infotype, **kwargs):
     """
-    Get more information about options and features, including lists of supported values:
+    Get more information about options and features, including lists of supported values.
 
-        'colors': "list the HTML-valid color names, e.g. 'firebrick', 'hotpink'",
+    Usage:
 
-        'colorschemes':"list the vega supported color scales, e.g. 'tableau10', 'purples'",
-
-        'themes': "list the Altair themes, e.g. 'latimes', 'ggplot2', 'fivethirtyeight'",
-
-        'versions':       "list the versions of csvviz and main dependencies",
-
+        csvinfo [TOPIC]
     """
 
     schema = load_schema()
-    if infotype == "colors":
+
+    ## from alt.Core
+    if infotype == "aggregates":
+        values = alt.utils.core.AGGREGATES
+    elif infotype == "timeunits":
+        values = alt.utils.core.TIMEUNITS
+
+    elif infotype == "typecodes":
+        values = alt.utils.core.INV_TYPECODE_MAP
+
+    ## from the schema
+    elif infotype == "colors":
         values = sorted(schema["definitions"]["ColorName"]["enum"])
 
     elif infotype == "colorschemes":
@@ -90,9 +123,6 @@ def info(infotype, **kwargs):
         else:
             for v in values:
                 clout(v)
-
-
-__command__ = info
 
 
 """
