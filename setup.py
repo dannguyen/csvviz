@@ -42,6 +42,11 @@ setup(
             'csvviz=csvviz.cli:main',
         ],
     },
+    extras_require={
+        "dev": ["black", "vega_datasets",],
+        "docs": ["sphinx_rtd_theme", "sphinx-autobuild"],
+        "test": test_requirements,
+    },
     install_requires=requirements,
     license="MIT license",
     long_description=readme + '\n\n' + history,

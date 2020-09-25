@@ -75,7 +75,7 @@ class Datakit(object):
         """
         meta = {}
         if colname not in self.column_names:
-            raise InvalidColumnName(
+            raise InvalidDataReference(
                 f"'{colname}' is not a valid column name for the given dataset"
             )
 

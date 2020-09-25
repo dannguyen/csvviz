@@ -2,6 +2,6 @@ class InvalidColorScheme(ValueError):
     pass
 
 
-class InvalidColumnName(ValueError):
+class InvalidDataReference(ValueError):
     def __init__(self, msg):
-        super().__init__(f"InvalidColumnName: {msg}")
+        super().__init__(f"InvalidDataReference: {msg}")

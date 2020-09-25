@@ -71,15 +71,16 @@ def print_version(ctx=None, param=None, value=None) -> typeNoReturn:
         ctx.exit()
 
 
-
 #########################################
 # common Click.command options decorators
 #########################################
+
 
 def input_file_decor(fn):
     decorator = click.argument("input_file", type=click.File("r"))
     fn = decorator(fn)
     return fn
+
 
 def output_options_decor(fn):
     """common input output/options"""
@@ -93,16 +94,16 @@ def output_options_decor(fn):
                 help="Output to stdout the Vega JSON representation",
             ),
             click.option(
-                "--preview/--no-preview",
-                "do_preview",
-                default=True,
-                help="Preview the chart in the web browser",
+                "--no-preview",
+                "--np",
+                is_flag=True,
+                help="By default, csvviz opens a web browser to show the chart",
             ),
             click.option(
                 "--interactive/--static",
                 "is_interactive",
                 default=True,
-                help="Preview an interactive (default) or static version of the chart in the web browser",
+                help="Produce an interactive (default) or static version of the chart, in HTML+JS",
             ),
         )
     ):
@@ -112,7 +113,7 @@ def output_options_decor(fn):
 
 def visual_options_decor(fn):
     """common visual options"""
-    for decorator in ((
+    for decorator in (
         click.option(
             "-c",
             "--colors",
@@ -132,11 +133,10 @@ def visual_options_decor(fn):
             help="choose a built-in theme for chart",
         ),  # TODO: refactor alt.themes.names() to constant
         click.option("--title", "-t", type=click.STRING, help="A title for the chart"),
-        click.option("--hide-legend", is_flag=True, help="Omits the legend")    ,
-    )):
+        click.option("--hide-legend", is_flag=True, help="Omits the legend"),
+    ):
         fn = decorator(fn)
     return fn
-
 
 
 def axis_options_decor(fn):

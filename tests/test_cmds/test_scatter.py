@@ -27,7 +27,7 @@ def test_scatter_defaults():
     assert cdata["mark"] == "point"
 
     datavals = list(cdata["datasets"].values())[0]
-    assert datavals[0]['mass'] == 0.1
+    assert datavals[0]["mass"] == 0.1
 
     assert cdata["encoding"]["x"] == {"field": "mass", "type": "quantitative"}
     assert cdata["encoding"]["y"] == {"field": "volume", "type": "quantitative"}
@@ -37,7 +37,9 @@ def test_scatter_fill_size():
     """
     setting fill and size
     """
-    result = CliRunner().invoke(scatter, ["--fill", "breed", "--size", "velocity",  *OUTPUT_ARGS])
+    result = CliRunner().invoke(
+        scatter, ["--fill", "breed", "--size", "velocity", *OUTPUT_ARGS]
+    )
     cdata = jsonlib.loads(result.output)
 
     assert cdata["encoding"]["fill"]["field"] == "breed"

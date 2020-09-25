@@ -27,6 +27,5 @@ this is me stumbling around with oop; delete it later
 # from csvviz.settings import *
 
 
-
 # class Wizkit(Vizkit):
 #     pass

@@ -112,7 +112,7 @@ def test_sortx_var_error_invalid_column():
     result = CliRunner().invoke(bar, ["--sort", "DUMB_COLUMN_NAME", *OUTPUT_ARGS])
     assert result.exit_code == 1
     assert (
-        "InvalidColumnName: 'DUMB_COLUMN_NAME' is not a valid column name"
+        "InvalidDataReference: 'DUMB_COLUMN_NAME' is not a valid column name"
         in result.output.strip()
     )
 

@@ -6,7 +6,11 @@ from pathlib import Path
 import altair as alt
 import click
 from csvviz.cli_utils import clout, clerr, clexit
-from csvviz.cli_utils import input_file_decor, output_options_decor, visual_options_decor
+from csvviz.cli_utils import (
+    input_file_decor,
+    output_options_decor,
+    visual_options_decor,
+)
 from csvviz.exceptions import *
 from csvviz.kits.vizkit import Vizkit
 
@@ -22,10 +26,11 @@ from csvviz.kits.vizkit import Vizkit
     help="The column used to specify fill color",
 )
 @click.option(
-    "--size", "sizevar", type=click.STRING, help="The column used to specify dot size",
+    "--size",
+    "sizevar",
+    type=click.STRING,
+    help="The column used to specify dot size",
 )
-
-
 @visual_options_decor
 @output_options_decor
 @input_file_decor
@@ -40,20 +45,20 @@ def scatter(**kwargs):
     """
     # set up theme config
     try:
-        vk = ScatterKit(input_file=kwargs.get('input_file'), kwargs=kwargs)
-    except InvalidColumnName as err:
+        vk = ScatterKit(input_file=kwargs.get("input_file"), kwargs=kwargs)
+    except InvalidDataReference as err:
         clexit(1, err)
     else:
         vk.output_chart()
 
 
 class ScatterKit(Vizkit):
-
     def __init__(self, input_file, kwargs):
-        super().__init__(viz_type='scatter', input_file=input_file, kwargs=kwargs)
+        super().__init__(viz_type="scatter", input_file=input_file, kwargs=kwargs)
 
-
-    def prepare_channels(self): # -> typeDict[str, typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]]:
+    def prepare_channels(
+        self,
+    ):  # -> typeDict[str, typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]]:
 
         channels = self._init_channels(self.channel_kwargs, self.datakit)
         if the_fill := channels.get("fill"):
@@ -63,11 +68,9 @@ class ScatterKit(Vizkit):
             # legend = None effectively hides it, which is what we want
             the_fill.legend = None if _legend is False else _legend
             # emphasize that we're editing channels['fill']
-            channels['fill'] = the_fill
-
+            channels["fill"] = the_fill
 
         return channels
-
 
 
 __command__ = scatter

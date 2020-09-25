@@ -48,7 +48,7 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .pytest_cache
 
 lint: ## check style with flake8
-	flake8 csvviz tests
+	black csvviz tests
 
 test: ## run tests quickly with the default Python
 	pytest
@@ -83,3 +83,4 @@ dist: clean ## builds source and wheel package
 
 install: clean ## install the package to the active Python's site-packages
 	python setup.py install
+	pip install -e ".[dev,docs,test]"

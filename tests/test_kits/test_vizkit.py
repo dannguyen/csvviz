@@ -18,10 +18,11 @@ def tvk():
             "yvar": "amount",
             "fillvar": "name",
             "is_interactive": True,
-            "do_preview": False,
+            "no_preview": True,
             "to_json": True,
         },
     )
+
 
 @pytest.fixture
 def dotvk():
@@ -34,7 +35,7 @@ def dotvk():
             "yvar": "volume",
             "fillvar": "breed",
             "is_interactive": True,
-            "do_preview": False,
+            "no_preview": True,
             "to_json": True,
         },
     )
@@ -49,14 +50,14 @@ def test_vizkit_basic_init(tvk):
 
 def test_vizkit_properties(tvk, dotvk):
     assert tvk.viz_type == "bar"
-    assert tvk.name == 'bar' # maybe viz_type isn't needed?
-    assert tvk.mark_type == 'mark_bar'
+    assert tvk.name == "bar"  # maybe viz_type isn't needed?
+    assert tvk.mark_type == "mark_bar"
     assert isinstance(tvk.df, pd.DataFrame)
     assert tvk.column_names == ["name", "amount"]
 
+    assert dotvk.name == "scatter"
+    assert dotvk.mark_type == "mark_point"
 
-    assert dotvk.name == 'scatter'
-    assert dotvk.mark_type == 'mark_point'
 
 def test_vizkit_kwarg_properties(tvk):
     """
@@ -69,7 +70,7 @@ def test_vizkit_kwarg_properties(tvk):
     assert tvk.channel_kwargs["fillvar"] == "name"
 
     assert tvk.output_kwargs["to_json"] is True
-    assert tvk.output_kwargs["do_preview"] is False
+    assert tvk.output_kwargs["no_preview"] is True
 
     # duh:
     assert tvk.color_kwargs["colors"] is None
@@ -85,8 +86,6 @@ def test_vizkit_declarations(tvk):
     # assert tvk.declare_legend['orient'] == DEFAULT_LEGEND_ORIENTATION
     # assert tvk.declare_legend['title'] == 'name'
     # assert tvk.declare_output['to_json'] is True
-
-
 
 
 ###################################################################################
