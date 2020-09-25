@@ -32,8 +32,8 @@ from csvviz.kits.vizkit import Vizkit
     "--sort",
     "sortx_var",
     type=click.STRING,
-    help="Optional: sort the x-axis by a field other than the field specified by -x/--xvar",
-)
+    help="Sort the x-axis by the values of the x/y/fill channel. Prefix with '-' to do reverse sort",
+)  # https://altair-viz.github.io/user_guide/encoding.html#sorting
 def command(**kwargs):
     """
     Creates a bar chart
@@ -68,8 +68,15 @@ class Barkit(Vizkit):
         if channels.get("fill"):
             channels["fill"].scale = alt.Scale(**self._config_colors(self.color_kwargs))
 
-        if _sort_config := self._config_sorting(self.kwargs, self.datakit):
-            channels["x"].sort = _sort_config
+        if _sortvar := self.kwargs.get("sortx_var"):
+            # _sort_config := self._config_sorting(self.kwargs, self.datakit):
+            _cname = _sortvar.lstrip("-")
+            if not channels.get(_cname):
+                raise InvalidDataReference(
+                    f"'{_cname}' is not a valid channel to sort by"
+                )
+            else:
+                channels["x"].sort = _sortvar
 
         return channels
 

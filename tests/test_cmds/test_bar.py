@@ -82,11 +82,13 @@ def test_bar_fill():
 def test_sortx_var_default():
     """default sort is ascending"""
     result = CliRunner().invoke(
-        bar, ["-x", "name", "-y", "amount", "--sort", "amount", *OUTPUT_ARGS]
+        bar, ["-x", "name", "-y", "amount", "--sort", "y", *OUTPUT_ARGS]
     )
     cdata = jsonlib.loads(result.output)
 
-    assert cdata["encoding"]["x"]["sort"] == {"field": "amount", "order": "ascending"}
+    assert (
+        cdata["encoding"]["x"]["sort"] == "y"
+    )  # {"field": "amount", "order": "ascending"}
 
     # data ordering is unchanged
     dataset = cdata["datasets"][cdata["data"]["name"]]
@@ -96,10 +98,12 @@ def test_sortx_var_default():
 
 def test_sortx_var_reverse():
     """column name prefixed with '-' indicated descending sort"""
-    result = CliRunner().invoke(bar, ["--sort", "-amount", *OUTPUT_ARGS])
+    result = CliRunner().invoke(bar, ["--sort", "-x", *OUTPUT_ARGS])
     cdata = jsonlib.loads(result.output)
 
-    assert cdata["encoding"]["x"]["sort"] == {"field": "amount", "order": "descending"}
+    assert (
+        cdata["encoding"]["x"]["sort"] == "-x"
+    )  # {"field": "amount", "order": "descending"}
 
 
 def test_sortx_var_error_invalid_column():
@@ -109,10 +113,10 @@ def test_sortx_var_error_invalid_column():
 
     However, we want to stop and notify the user of the error
     """
-    result = CliRunner().invoke(bar, ["--sort", "DUMB_COLUMN_NAME", *OUTPUT_ARGS])
+    result = CliRunner().invoke(bar, ["--sort", "-name", *OUTPUT_ARGS])
     assert result.exit_code == 1
     assert (
-        "InvalidDataReference: 'DUMB_COLUMN_NAME' is not a valid column name"
+        "InvalidDataReference: 'name' is not a valid channel to sort by"
         in result.output.strip()
     )
 

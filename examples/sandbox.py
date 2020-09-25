@@ -2,6 +2,7 @@
 from IPython import embed as IBREAKPOINT
 
 import altair as alt
+from altair.utils import parse_shorthand as pshort
 import altair_viewer as altview
 import click
 import pandas as pd

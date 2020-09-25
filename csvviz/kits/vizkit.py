@@ -156,14 +156,11 @@ class Vizkit(object):
         """
         channels = self._init_channels(self.channel_kwargs, self.datakit)
 
-        if self.kwargs.get("flipxy"):
-            channels["x"], channels["y"] = (channels["y"], channels["x"])
+        # if self.kwargs.get("flipxy"):
+        #     channels["x"], channels["y"] = (channels["y"], channels["x"])
 
-        if _fill := channels.get("fill"):
-            _fill.scale = alt.Scale(**self._config_colors(self.color_kwargs))
-
-        if _sort_config := self._config_sorting(self.kwargs, self.datakit):
-            channels["x"].sort = _sort_config
+        if channels.get("fill"):
+            channels["fill"].scale = alt.Scale(**self._config_colors(self.color_kwargs))
 
         return channels
 
@@ -275,10 +272,10 @@ class Vizkit(object):
     #     _ARGKEYS = ('is_interactive',)
     #     return {k: self.kwargs.get(k) for k in _ARGKEYS}
 
-    @property
-    def sorting_kwargs(self) -> typeDict:
-        _ARGKEYS = ("sortx_var",)
-        return {k: self.kwargs.get(k) for k in _ARGKEYS}
+    # @property
+    # def sorting_kwargs(self) -> typeDict:
+    #     _ARGKEYS = ("sortx_var",)
+    #     return {k: self.kwargs.get(k) for k in _ARGKEYS}
 
     @property
     def styling_kwargs(self) -> typeDict:
@@ -328,17 +325,17 @@ class Vizkit(object):
         #         config["orient"] = DEFAULT_LEGEND_ORIENTATION
         return config
 
-    @staticmethod
-    def _config_sorting(kwargs: typeDict, datakit: Datakit) -> typeDict:
-        config = {}
-        if _sortx := kwargs.get("sortx_var"):
-            _sign, _cname = re.match(r"(-?)(.+)", _sortx).groups()
-            colname, _z = datakit.resolve_column(_cname)  # mostly validation
+    # @staticmethod
+    # def _config_sorting(kwargs: typeDict) -> typeDict:
+    #     config = {}
+    #     if _sortx := kwargs.get("sortx_var"):
+    #         _sign, _cname = re.match(r"(-?)(.+)", _sortx).groups()
 
-            config["field"] = colname
-            config["order"] = "descending" if _sign == "-" else "ascending"
+    #         # TODO: this needs to be changed; should handle altair shorthand: https://stackoverflow.com/questions/52877697/order-bar-chart-in-altair
+    #         config["field"] = _cname
+    #         config["order"] = "descending" if _sign == "-" else "ascending"
 
-        return config
+    #     return config
 
     @staticmethod
     def _config_styles(kwargs: typeDict) -> typeDict:
