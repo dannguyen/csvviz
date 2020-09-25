@@ -3,8 +3,6 @@ bar.py
 
 Make a bar/column chart
 """
-from pathlib import Path
-
 import altair as alt
 import click
 from csvviz.cli_utils import clout, clerr, clexit
@@ -18,6 +16,9 @@ from csvviz.kits.vizkit import Vizkit
 
 
 @click.command()
+@input_file_decor
+@output_options_decor
+@visual_options_decor
 @click.option("--xvar", "-x", type=click.STRING, default="", help="the label column")
 @click.option("--yvar", "-y", type=click.STRING, default="", help="the value column")
 @click.option(
@@ -27,53 +28,23 @@ from csvviz.kits.vizkit import Vizkit
     type=click.STRING,
     help="The column used to specify fill color",
 )
-# @click.option('--sort-x',  type=click.Choice(['x', '-x', 'y', '-y', 'fill', '-fill'], case_sensitive=False), help='Optional: which axis to sort the marks by (e.g. x, y)')
+
+
+###### specific to bar charts
+@click.option(
+    "--horizontal", "-H", "flipxy", is_flag=True, help="Orient the bars horizontally"
+)
 @click.option(
     "--sort",
     "sortx_var",
     type=click.STRING,
     help="Optional: sort the x-axis by a field other than the field specified by -x/--xvar",
 )
-
-# unique to bar viz
-@click.option(
-    "--horizontal", "-H", "flipxy", is_flag=True, help="Orient the bars horizontally"
-)
-
-# common visual options
-@click.option(
-    "-c",
-    "--colors",
-    type=click.STRING,
-    help="A comma-delimited list of colors to use for the bar fill",
-)
-@click.option(
-    "-C",
-    "--color-scheme",
-    type=click.STRING,
-    help="The name of a Vega color scheme to use for fill (this is overridden by -c/--colors)",
-)
-@click.option(
-    "--theme",
-    type=click.Choice(alt.themes.names(), case_sensitive=False),
-    default="default",
-    help="choose a built-in theme for chart",
-)  # refactor alt.themes.names() to constant
-@click.option("--title", "-t", type=click.STRING, help="A title for the chart")
-@click.option("--hide-legend", is_flag=True, help="Omits the legend")
-
-# axis stuff
-@click.option("--x-title", type=click.STRING, help="TK TK testing")
-@click.option("--x-min", type=click.STRING, help="TK TK testing")
-@click.option("--x-max", type=click.STRING, help="TK TK testing")
-@visual_options_decor
-@output_options_decor
-@input_file_decor
 def bar(**kwargs):
     """
-    Prints a horizontal bar chart.
+    Creates a bar chart
 
-    https://altair-viz.github.io/gallery/bar_chart_horizontal.html
+    https://altair-viz.github.io/gallery/simple_bar_chart.html
 
     If the -x and -y flags aren't supplied, we assume they are represented by the 1st
         and 2nd columns, respectively,
@@ -82,8 +53,6 @@ def bar(**kwargs):
     try:
         vk = Barkit(input_file=kwargs.get("input_file"), kwargs=kwargs)
     except InvalidDataReference as err:
-        clexit(1, err)
-    except ValueError as err:
         clexit(1, err)
     else:
         vk.output_chart()
@@ -105,14 +74,14 @@ class Barkit(Vizkit):
         if self.kwargs.get("flipxy"):  # i.e. -H/--horizontal flag
             channels["x"], channels["y"] = (channels["y"], channels["x"])
 
-        if the_fill := channels.get("fill"):
-            the_fill.scale = alt.Scale(**self._config_colors(self.color_kwargs))
-            _legend = self._config_legend(self.legend_kwargs, colname=the_fill.field)
+        if channels.get("fill"):
+            channels["fill"].scale = alt.Scale(**self._config_colors(self.color_kwargs))
+            _legend = self._config_legend(
+                self.legend_kwargs, colname=channels["fill"].field
+            )
 
             # legend = None effectively hides it, which is what we want
-            the_fill.legend = None if _legend is False else _legend
-            # emphasize that we're editing channels['fill']
-            channels["fill"] = the_fill
+            channels["fill"].legend = None if _legend is False else _legend
 
         if _sort_config := self._config_sorting(self.kwargs, self.datakit):
             channels["x"].sort = _sort_config

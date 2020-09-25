@@ -9,6 +9,11 @@ cli.bar
 ^^^^^^^
 - ``--sort`` for sorting arrangement of independent values
 
+cli.hist
+^^^^^^^^
+
+- like ``csvviz bar``, except simplified for histogram count binning
+
 cli.scatter
 ^^^^^^^^^^^
 - can specify ``--size`` to vary by column

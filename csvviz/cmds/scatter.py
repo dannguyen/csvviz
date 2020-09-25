@@ -16,6 +16,9 @@ from csvviz.kits.vizkit import Vizkit
 
 
 @click.command()
+@input_file_decor
+@output_options_decor
+@visual_options_decor
 @click.option("--xvar", "-x", type=click.STRING, default="", help="the label column")
 @click.option("--yvar", "-y", type=click.STRING, default="", help="the value column")
 @click.option(
@@ -31,9 +34,6 @@ from csvviz.kits.vizkit import Vizkit
     type=click.STRING,
     help="The column used to specify dot size",
 )
-@visual_options_decor
-@output_options_decor
-@input_file_decor
 def scatter(**kwargs):
     """
     Prints a horizontal bar chart.
@@ -61,14 +61,15 @@ class ScatterKit(Vizkit):
     ):  # -> typeDict[str, typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]]:
 
         channels = self._init_channels(self.channel_kwargs, self.datakit)
-        if the_fill := channels.get("fill"):
-            the_fill.scale = alt.Scale(**self._config_colors(self.color_kwargs))
-            _legend = self._config_legend(self.legend_kwargs, colname=the_fill.field)
+        if channels.get("fill"):
+            channels["fill"].scale = alt.Scale(**self._config_colors(self.color_kwargs))
+            _legend = self._config_legend(
+                self.legend_kwargs, colname=channels["fill"].field
+            )
 
             # legend = None effectively hides it, which is what we want
-            the_fill.legend = None if _legend is False else _legend
+            channels["fill"].legend = None if _legend is False else _legend
             # emphasize that we're editing channels['fill']
-            channels["fill"] = the_fill
 
         return channels
 

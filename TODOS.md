@@ -6,10 +6,22 @@
     
 ## ON DECK
 
+- hist.py
+    - https://altair-viz.github.io/gallery/simple_histogram.html
+    - https://altair-viz.github.io/gallery/histogram_responsive.html
+    - [x] skeleton
+    - [ ] test
+    - figure out how to specify bin size and intervals and counts
+
+- need to rethink how legend works; can't depend on encoding.fill.field, as it may sometimes be encoding.fill.aggregate or whatever
+
+
 - kill Datakit, move dataframe stuff into Vizkit
     - what's the point of specific row/column selection? End-user isn't using csvviz to do that
     - Vizkit.data == Vizkit.df
 
+
+- Figure out a way to re-use/simplify command boilerplate, as simple as it already is
 
 - `scatter`:
     - [ ] legend for `size` appears and do we want that?

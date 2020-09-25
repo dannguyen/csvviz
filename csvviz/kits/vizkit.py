@@ -45,6 +45,8 @@ def get_chart_mark_methodname(viz_type: str) -> alt.Chart:
         "line",
     ):
         m = f"mark_{vname}"
+    elif vname == "hist":
+        m = "mark_bar"
     elif vname == "scatter":
         m = "mark_point"
     else:

@@ -36,3 +36,19 @@ if __name__ == '__main__':
 
 
 
+
+def foo():
+
+    srcpath = 'examples/real/congress.csv'
+    cdf = pd.read_csv(srcpath)
+    ci = alt.Chart(cdf).mark_bar()
+    cj = ci.encode(
+            x=alt.X('gender'),
+            y='count()',
+        )
+
+    ck = ci.encode(
+            x=alt.X('year(birthday):T', bin=True),
+            y='count()',
+        )
+    av(ck)
