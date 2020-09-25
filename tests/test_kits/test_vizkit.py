@@ -100,7 +100,6 @@ def test_vizkit_chart_basic(tvk):
     assert vega["mark"] == "bar"
     assert vega["encoding"]["y"]["field"] == "amount"
     assert vega["encoding"]["fill"]["field"] == "name"
-    assert vega["encoding"]["fill"]["legend"]["title"] == "name"
 
 
 def test_vizkit_output_basic(tvk, capsys):

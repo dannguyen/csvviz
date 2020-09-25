@@ -16,6 +16,7 @@ from typing import (
 
 import altair as alt
 from altair.utils import parse_shorthand
+from altair.utils.schemapi import Undefined as altUndefined
 import altair_viewer as altview
 import pandas as pd
 
@@ -34,7 +35,12 @@ ENCODING_CHANNEL_NAMES = (
 
 def get_channel_name(channel: typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]) -> str:
     return next(
-        (getattr(channel, a) for a in ("field", "aggregate")), type(channel).__name__
+        (
+            getattr(channel, a)
+            for a in ("title", "field", "aggregate")
+            if getattr(channel, a) != altUndefined
+        ),
+        altUndefined,
     )
 
 
@@ -130,6 +136,7 @@ class Vizkit(object):
         TODO: no idea where to put this, other than to make it an internal method used by build_chart()
         """
         channels = self.channels
+
         for cname in (
             "fill",
             "size",

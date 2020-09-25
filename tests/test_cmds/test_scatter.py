@@ -33,6 +33,18 @@ def test_scatter_defaults():
     assert cdata["encoding"]["y"] == {"field": "volume", "type": "quantitative"}
 
 
+def test_scatter_default_legends():
+    """
+    by default, --fill and --size will have legends when specified
+    """
+    result = CliRunner().invoke(
+        scatter, ["-f", "breed", "-s", "velocity", *OUTPUT_ARGS]
+    )
+    cdata = jsonlib.loads(result.output)
+    assert cdata["encoding"]["fill"]["legend"]["title"] == "breed"
+    assert cdata["encoding"]["size"]["legend"]["title"] == "velocity"
+
+
 def test_scatter_fill_size():
     """
     setting fill and size

@@ -30,6 +30,7 @@ from csvviz.kits.vizkit import Vizkit
 )
 @click.option(
     "--size",
+    "-s",
     "sizevar",
     type=click.STRING,
     help="The column used to specify dot size",

@@ -3,7 +3,9 @@
 
 ## JUST DONE 
 
-    
+- [x] fixed how `--sort` and `--hide-legend` works
+    - [ ] need to rethink how legend works; can't depend on encoding.fill.field, as it may sometimes be encoding.fill.aggregate or whatever
+
 ## ON DECK
 
 - hist.py
@@ -13,7 +15,6 @@
     - [ ] test
     - figure out how to specify bin size and intervals and counts
 
-- need to rethink how legend works; can't depend on encoding.fill.field, as it may sometimes be encoding.fill.aggregate or whatever
 
 
 - kill Datakit, move dataframe stuff into Vizkit

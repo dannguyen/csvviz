@@ -126,28 +126,6 @@ def test_colors_overrides_color_scheme():
     assert scale["range"] == ["yellow"]
 
 
-##############################################################################################################
-# legend
-##############################################################################################################
-def test_legend_default():
-    """when there is a fill, there is a legend"""
-    result = CliRunner().invoke(viz, ["-f", "name", *OUTPUT_ARGS])
-    cdata = jsonlib.loads(result.output)
-    legend = cdata["encoding"]["fill"]["legend"]
-
-    assert legend["title"] == "name"
-    assert legend["orient"] == DEFAULT_LEGEND_ORIENTATION
-
-
-def test_no_legend():
-    """hiding the legend sets fill.legend to None explicitly"""
-
-    result = CliRunner().invoke(viz, ["-f", "name", "--no-legend", *OUTPUT_ARGS])
-    cdata = jsonlib.loads(result.output)
-
-    assert None is cdata["encoding"]["fill"]["legend"]
-
-
 @pytest.mark.skip(reason="TODO: figure out mini-syntax")
 def test_legend_settings():
     """when there is a fill, there is a legend"""
