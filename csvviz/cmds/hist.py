@@ -8,19 +8,13 @@ csvviz hist 'year(birthday)' examples/real/congress.csv
 import altair as alt
 import click
 from csvviz.cli_utils import clout, clerr, clexit
-from csvviz.cli_utils import (
-    input_file_decor,
-    output_options_decor,
-    visual_options_decor,
-)
+from csvviz.cli_utils import standard_options_decor
 from csvviz.exceptions import *
 from csvviz.kits.vizkit import Vizkit
 
 
 @click.command(name="hist")
-@input_file_decor
-@output_options_decor
-@visual_options_decor
+@standard_options_decor
 @click.option("--xvar", "-x", type=click.STRING, default="", help="the thing to bin TK")
 @click.option(
     "--fill",

@@ -24,7 +24,7 @@ def test_scatter_defaults():
     result = CliRunner().invoke(scatter, [*OUTPUT_ARGS])
     cdata = jsonlib.loads(result.output)
 
-    assert cdata["mark"] == "point"
+    assert cdata["mark"]["type"] == "point"
 
     datavals = list(cdata["datasets"].values())[0]
     assert datavals[0]["mass"] == 0.1

@@ -214,13 +214,30 @@ class Vizkit(object):
                     raise InvalidDataReference(
                         f"""'{shorthand}' is either an invalid column name, or invalid Altair shorthand"""
                     )
+
+        ##################################################################
+        # set xlim and ylim, if they exist
+        for i in (
+            "x",
+            "y",
+        ):
+            j = f"{i}lim"
+            if limstr := self.kwargs.get(j):
+                channels[
+                    i
+                ].scale = (
+                    alt.Scale()
+                )  # if channels[i].scale == alt.Undefined else channels[i].scale
+                _min, _max = [k.strip() for k in limstr.split(",")]
+                channels[i].scale.domain = [_min, _max]
+
         return channels
 
     def _init_chart(self) -> alt.Chart:
         alt.themes.enable(self.theme)
 
         chartfoo = getattr(alt.Chart(self.df), self.mark_type)
-        return chartfoo()
+        return chartfoo(clip=True)
 
     #####################################################################
     # properties

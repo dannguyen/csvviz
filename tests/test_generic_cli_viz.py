@@ -29,6 +29,9 @@ def test_defaults():
     # default rendering is interactive mode, which means 'selection' will exist
     assert "selection" in cdata
 
+    # clip is always True, whether xlim/ylim is set
+    assert cdata["mark"]["clip"] is True
+
 
 ##############################################################################################################
 # chart properties
@@ -138,6 +141,19 @@ def test_legend_settings():
 
     assert legend["Legend of Titles"] == "name"
     assert legend["orient"] == "left"
+
+
+##############################################################################################################
+# --xlim,--ylim
+##############################################################################################################
+def test_lims():
+    result = CliRunner().invoke(
+        viz, ["--xlim", "-10,30", "--ylim", "-40,50", *OUTPUT_ARGS]
+    )
+    cdata = jsonlib.loads(result.output)
+    cdata["mark"]["clip"] is True  # this is always true, whether xlim/ylim are set
+    cdata["encoding"]["x"]["scale"]["domain"] == [-10, 30]
+    cdata["encoding"]["y"]["scale"]["domain"] == [-40, 50]
 
 
 ##############################################################################################################

@@ -27,7 +27,7 @@ def test_hist_defaults():
     result = CliRunner().invoke(hist, ["-x", "amount", *OUTPUT_ARGS])
     cdata = jsonlib.loads(result.output)
 
-    assert cdata["mark"] == "bar"
+    assert cdata["mark"]["type"] == "bar"
 
     datavals = list(cdata["datasets"].values())[0]
     assert datavals[0] == {"amount": 20, "name": "Alice"}

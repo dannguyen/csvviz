@@ -5,6 +5,9 @@ History
 TKTK-ongoing
 ------------
 
+- ``--xlim,--ylim``
+
+
 cli.bar
 ^^^^^^^
 - ``--sort`` for sorting arrangement of independent values

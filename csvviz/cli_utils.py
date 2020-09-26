@@ -140,8 +140,27 @@ def visual_options_decor(fn):
 
 
 def axis_options_decor(fn):
-    pass
+    fn = click.option(
+        "--xlim",
+        type=click.STRING,
+        help="Set the min,max of the x-axis with a comma delimited string, e.g. '-10,50'",
+    )(fn)
+    fn = click.option(
+        "--ylim",
+        type=click.STRING,
+        help="Set the min,max of the y-axis with a comma delimited string, e.g. '-10,50'",
+    )(fn)
+
+    return fn
     # # axis stuff
     # @click.option("--x-title", type=click.STRING, help="TK TK testing")
     # @click.option("--x-min", type=click.STRING, help="TK TK testing")
     # @click.option("--x-max", type=click.STRING, help="TK TK testing")
+
+
+def standard_options_decor(fn):
+    fn = input_file_decor(fn)
+    fn = output_options_decor(fn)
+    fn = visual_options_decor(fn)
+    fn = axis_options_decor(fn)
+    return fn

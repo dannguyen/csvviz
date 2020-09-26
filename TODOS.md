@@ -1,12 +1,17 @@
 # TODOS
 
-
 ## JUST DONE 
 
 - [x] fixed how `--sort` and `--hide-legend` works
-    - [ ] need to rethink how legend works; can't depend on encoding.fill.field, as it may sometimes be encoding.fill.aggregate or whatever
+    - [x] need to rethink how legend default title works; can't depend on encoding.fill.field, as it may sometimes be encoding.fill.aggregate or whatever
+        - [ ] need to test
 
 ## ON DECK
+
+- axis-range
+    - [X] `--xlim/--ylim`: https://altair-viz.github.io/user_guide/customization.html?highlight=axis#adjusting-axis-limits
+
+
 
 - hist.py
     - https://altair-viz.github.io/gallery/simple_histogram.html
@@ -25,7 +30,7 @@
 - Figure out a way to re-use/simplify command boilerplate, as simple as it already is
 
 - `scatter`:
-    - [ ] legend for `size` appears and do we want that?
+    - [X] legend for `size` appears and do we want that?
     - [X] copy `bar` template with half-finished Vizkit
     - [X] need to actually subclass Vizkit, to do custom implementation of set_channels
 
@@ -38,21 +43,6 @@
 - chart-wide attributes:
     - width
     - height (combine into a dimensions flag)
-
-- axis-range
-    - `--x-min/--x-max`: https://altair-viz.github.io/user_guide/customization.html?highlight=axis#adjusting-axis-limits
-    - `--x-nonzero` as a shorthand way to indicate that the x-min should be set to the minval of the data, rather than zero, i.e.  `alt.X('miles', scale=alt.Scale(zero=False))`
-    - borrow ggplot2's `xlim/ylim` syntax: https://ggplot2.tidyverse.org/reference/lims.html
-        
-        For xlim() and ylim(): Two numeric values, specifying the left/lower limit and the right/upper limit of the scale. If the larger value is given first, the scale will be reversed. You can leave one value as NA if you want to compute the corresponding limit from the range of the data.
-
-
-    - 'NA' is used to specify open-endedness
-        ```R
-        ggplot(mtcars, aes(mpg, wt)) +
-          geom_point() +
-          xlim(NA, 20)
-        ```
 
 - tooltips: https://altair-viz.github.io/gallery/scatter_tooltips.html
 

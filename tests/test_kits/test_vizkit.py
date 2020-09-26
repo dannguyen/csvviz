@@ -45,7 +45,6 @@ def test_vizkit_basic_init(tvk):
     assert isinstance(tvk, Vizkit)
     assert isinstance(tvk.datakit, Datakit)
     assert isinstance(tvk.chart, alt.Chart)
-    assert tvk.chart.mark == "bar"
 
 
 def test_vizkit_properties(tvk, dotvk):
@@ -97,7 +96,9 @@ def test_vizkit_chart_basic(tvk):
     assert "selection" in vega  # because of is_interactive
 
     # import pdb; pdb.set_trace()
-    assert vega["mark"] == "bar"
+    assert vega["mark"]["type"] == "bar"
+    assert vega["mark"]["clip"] is True
+
     assert vega["encoding"]["y"]["field"] == "amount"
     assert vega["encoding"]["fill"]["field"] == "name"
 
@@ -107,7 +108,7 @@ def test_vizkit_output_basic(tvk, capsys):
     outs = capsys.readouterr().out
     assert "{" == outs.splitlines()[0]
     assert '"amount": 20' in outs
-    assert '"mark": "bar"' in outs
+    assert '"type": "bar"' in outs
     assert '"$schema"' in outs
 
 

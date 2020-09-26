@@ -1,19 +1,14 @@
 import altair as alt
 import click
 from csvviz.cli_utils import clout, clerr, clexit
-from csvviz.cli_utils import (
-    input_file_decor,
-    output_options_decor,
-    visual_options_decor,
-)
+from csvviz.cli_utils import standard_options_decor
+
 from csvviz.exceptions import *
 from csvviz.kits.vizkit import Vizkit
 
 
 @click.command(name="bar")
-@input_file_decor
-@output_options_decor
-@visual_options_decor
+@standard_options_decor
 @click.option("--xvar", "-x", type=click.STRING, default="", help="the label column")
 @click.option("--yvar", "-y", type=click.STRING, default="", help="the value column")
 @click.option(

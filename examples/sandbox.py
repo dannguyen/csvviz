@@ -11,7 +11,8 @@ from vega_datasets import data as vdata
 from csvviz.kits.datakit import Datakit
 
 def av(chart):
-     altview.show(chart.interactive())
+    print(chart.to_json())
+    altview.show(chart)
 
 def main():
     la_input_path = vdata.la_riots.filepath
