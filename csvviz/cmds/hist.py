@@ -47,11 +47,8 @@ class Histkit(Vizkit):
     def __init__(self, input_file, kwargs):
         super().__init__(viz_type="hist", input_file=input_file, kwargs=kwargs)
 
-    def prepare_channels(
-        self,
-    ):  # -> typeDict[str, typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]]:
-
-        channels = self._init_channels(self.channel_kwargs, self.datakit)
+    def prepare_channels(self):
+        channels = self._channels_init(self.channel_kwargs, self.datakit)
 
         ##### bin time
         channels["x"].bin = True

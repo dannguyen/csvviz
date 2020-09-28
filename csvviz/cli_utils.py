@@ -152,10 +152,12 @@ def axis_options_decor(fn):
     )(fn)
 
     return fn
-    # # axis stuff
-    # @click.option("--x-title", type=click.STRING, help="TK TK testing")
-    # @click.option("--x-min", type=click.STRING, help="TK TK testing")
-    # @click.option("--x-max", type=click.STRING, help="TK TK testing")
+
+
+def facet_options_decor(fn):
+    return click.option(
+        "--facet", "-F", "facetvar", type=click.STRING, help="The var to facet by TKTK"
+    )(fn)
 
 
 def standard_options_decor(fn):
@@ -163,4 +165,5 @@ def standard_options_decor(fn):
     fn = output_options_decor(fn)
     fn = visual_options_decor(fn)
     fn = axis_options_decor(fn)
+    fn = facet_options_decor(fn)
     return fn

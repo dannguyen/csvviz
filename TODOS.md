@@ -6,11 +6,32 @@
     - [x] need to rethink how legend default title works; can't depend on encoding.fill.field, as it may sometimes be encoding.fill.aggregate or whatever
         - [ ] need to test
 
+- line chart
+    - https://altair-viz.github.io/gallery/simple_line_chart.html
+    - [X] skeleton and basic tests
+    - `-s/--stroke` conflicts with `--sort/-s`; change `--sort` to `-S`?
+
+
 ## ON DECK
 
-- axis-range
-    - [X] `--xlim/--ylim`: https://altair-viz.github.io/user_guide/customization.html?highlight=axis#adjusting-axis-limits
+- add faceting
+https://stackoverflow.com/questions/61840072/show-x-and-y-labels-in-each-facet-subplot-in-altair
+    - `-F/--facet`
+    - [X] basic skeleton and test; made `Vizkit._manage_axis()` for now
+    - `-Fc/--facet-columns`
+    - `--facet-axis-independent??`
+    - `--facet-sort`; change bar's `--sort` to `--xsort`?
 
+- how will `facet=` conflict with `columns=` (i.e. for grouped bar charts?). Or maybe just not have grouped bar charts?
+- if `--facet-columns` is set to `None`, then let it be infinite
+
+    ```
+    av(alt.Chart(data.iris()).mark_point().encode(x='petalLength', y='petal
+        ...: Width', facet=alt.Facet('species', columns=2)).resolve_axis( 
+        ...:     y='independent', 
+        ...:      
+        ...: ))    
+    ```
 
 
 - hist.py
@@ -20,6 +41,14 @@
     - [ ] test
     - figure out how to specify bin size and intervals and counts
 
+
+- axis-range
+    - [X] `--xlim/--ylim`: https://altair-viz.github.io/user_guide/customization.html?highlight=axis#adjusting-axis-limits
+
+
+- custom visuals
+    - conditional highlighting: https://altair-viz.github.io/gallery/bar_chart_with_highlighted_bar.html
+    - tooltips: https://altair-viz.github.io/gallery/scatter_tooltips.html
 
 
 - kill Datakit, move dataframe stuff into Vizkit
@@ -44,7 +73,6 @@
     - width
     - height (combine into a dimensions flag)
 
-- tooltips: https://altair-viz.github.io/gallery/scatter_tooltips.html
 
 - Handling datetimes: https://altair-viz.github.io/user_guide/times_and_dates.html
     ```py

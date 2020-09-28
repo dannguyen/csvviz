@@ -30,6 +30,8 @@ ENCODING_CHANNEL_NAMES = (
     "y",
     "fill",
     "size",
+    "stroke",
+    "facet",
 )
 
 
@@ -87,7 +89,6 @@ class Vizkit(object):
         self.theme = kwargs.get("theme")
 
         self.channels = self.prepare_channels()
-        self._manage_legends()  # TODO: this is only here b/c no better place to put it yet
         self.style_properties = self.prepare_styles()
         self.interactive_mode = self.kwargs.get("is_interactive")
 
@@ -98,13 +99,16 @@ class Vizkit(object):
             interactive_mode=self.interactive_mode,
         )
 
+        self._manage_legends()  # TODO: this is only here b/c no better place to put it yet
+        self._manage_axis()
+
     ##########################################################
     # These are boilerplate methods, unlikely to be subclassed
     ##########################################################
     def build_chart(
         self, channels: dict, style_properties: dict, interactive_mode: bool
     ) -> alt.Chart:
-        chart = self._init_chart()
+        chart = self._chart_init()
         chart = chart.encode(**channels)
 
         # import IPython; IPython.embed()
@@ -128,6 +132,16 @@ class Vizkit(object):
 
         if not oargs["no_preview"]:
             preview_chart(self.chart)
+
+    def _manage_axis(self) -> typeNoReturn:
+        """
+        expects self.chart and self.channels to have been initialized; alters alt.chart inplace
+
+        TODO: no idea where to put this, other than to make it an internal method used by build_chart()
+
+        """
+        if self.channels.get("facet"):
+            self.chart = self.chart.resolve_axis(x="independent")
 
     def _manage_legends(self) -> typeNoReturn:
         """
@@ -161,7 +175,7 @@ class Vizkit(object):
         This method does the bespoke work to combine channels with legends/colors/etc
         and should be implemented in every subclass
         """
-        channels = self._init_channels(self.channel_kwargs, self.datakit)
+        channels = self._channels_init(self.channel_kwargs, self.datakit)
 
         # if self.kwargs.get("flipxy"):
         #     channels["x"], channels["y"] = (channels["y"], channels["x"])
@@ -177,7 +191,7 @@ class Vizkit(object):
     #####################################################################
     # internal helpers
     #####################################################################
-    def _init_channels(
+    def _channels_init(
         self, kwargs: typeDict, datakit
     ) -> typeDict[str, typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]]:
         def _validate_fieldname(shorthand: str, fieldname: str) -> bool:
@@ -231,9 +245,12 @@ class Vizkit(object):
                 _min, _max = [k.strip() for k in limstr.split(",")]
                 channels[i].scale.domain = [_min, _max]
 
+        if channels.get("facet"):
+            channels["facet"].columns = DEFAULT_FACET_COLUMNS
+
         return channels
 
-    def _init_chart(self) -> alt.Chart:
+    def _chart_init(self) -> alt.Chart:
         alt.themes.enable(self.theme)
 
         chartfoo = getattr(alt.Chart(self.df), self.mark_type)

@@ -51,11 +51,9 @@ class Barkit(Vizkit):
     def __init__(self, input_file, kwargs):
         super().__init__(viz_type="bar", input_file=input_file, kwargs=kwargs)
 
-    def prepare_channels(
-        self,
-    ):  # -> typeDict[str, typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]]:
+    def prepare_channels(self):
 
-        channels = self._init_channels(self.channel_kwargs, self.datakit)
+        channels = self._channels_init(self.channel_kwargs, self.datakit)
 
         if self.kwargs.get("flipxy"):  # i.e. -H/--horizontal flag
             channels["x"], channels["y"] = (channels["y"], channels["x"])

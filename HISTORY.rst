@@ -6,11 +6,12 @@ TKTK-ongoing
 ------------
 
 - ``--xlim,--ylim``
-
+- ``line chart, --stroke option``
+- ``--facet``
 
 cli.bar
 ^^^^^^^
-- ``--sort`` for sorting arrangement of independent values
+- ``-s\--sort`` for sorting arrangement of independent values
 
 cli.hist
 ^^^^^^^^
