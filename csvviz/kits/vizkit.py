@@ -22,7 +22,6 @@ import pandas as pd
 
 from csvviz.cli_utils import clout, clerr
 from csvviz.exceptions import *
-from csvviz.kits.datakit import Datakit
 from csvviz.settings import *
 
 ENCODING_CHANNEL_NAMES = (
@@ -81,7 +80,8 @@ class Vizkit(object):
     def __init__(self, viz_type: str, input_file: typeUnion[typeIO, Path, str], kwargs):
         self.kwargs = kwargs
         self.input_file = input_file
-        self.datakit = Datakit(input_file)
+        self._dataframe = pd.read_csv(self.input_file)
+        #        self.datakit = Datakit(input_file) TK: deprecated
 
         # TODO: too many properties?
         # chart-related settings
@@ -175,7 +175,7 @@ class Vizkit(object):
         This method does the bespoke work to combine channels with legends/colors/etc
         and should be implemented in every subclass
         """
-        channels = self._channels_init(self.channel_kwargs, self.datakit)
+        channels = self._channels_init(self.channel_kwargs)
 
         # if self.kwargs.get("flipxy"):
         #     channels["x"], channels["y"] = (channels["y"], channels["x"])
@@ -192,7 +192,7 @@ class Vizkit(object):
     # internal helpers
     #####################################################################
     def _channels_init(
-        self, kwargs: typeDict, datakit
+        self, kwargs: typeDict
     ) -> typeDict[str, typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]]:
         def _validate_fieldname(shorthand: str, fieldname: str) -> bool:
             if fieldname not in self.column_names:
@@ -268,7 +268,7 @@ class Vizkit(object):
 
     @property
     def df(self) -> pd.DataFrame:
-        return self.datakit.df
+        return self._dataframe
 
     @property
     def column_names(self) -> typeList[str]:

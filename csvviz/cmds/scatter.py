@@ -53,7 +53,7 @@ class ScatterKit(Vizkit):
         super().__init__(viz_type="scatter", input_file=input_file, kwargs=kwargs)
 
     def prepare_channels(self):
-        channels = self._channels_init(self.channel_kwargs, self.datakit)
+        channels = self._channels_init(self.channel_kwargs)
         if channels.get("fill"):
             channels["fill"].scale = alt.Scale(**self._config_colors(self.color_kwargs))
 

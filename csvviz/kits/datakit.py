@@ -14,6 +14,8 @@ import pandas as pd
 
 from csvviz.exceptions import *
 
+"""to be deprecated"""
+
 
 class Datakit(object):
     def __init__(self, input_path: typeUnion[typeIO, Path, str]):

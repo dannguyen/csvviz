@@ -53,7 +53,7 @@ class Barkit(Vizkit):
 
     def prepare_channels(self):
 
-        channels = self._channels_init(self.channel_kwargs, self.datakit)
+        channels = self._channels_init(self.channel_kwargs)
 
         if self.kwargs.get("flipxy"):  # i.e. -H/--horizontal flag
             channels["x"], channels["y"] = (channels["y"], channels["x"])

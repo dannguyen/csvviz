@@ -15,7 +15,12 @@ import csvviz as csvviz_vals
 
 
 
-requirements = ['Click>=7.0', ]
+requirements = [
+    'altair>=4.1',
+    'altair-viewer>=0.3.0',
+    'Click>=7.0',
+
+]
 setup_requirements = ['pytest-runner', ]
 test_requirements = ['pytest>=3', ]
 

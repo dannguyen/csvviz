@@ -11,7 +11,10 @@
     - [X] skeleton and basic tests
     - `-s/--stroke` conflicts with `--sort/-s`; change `--sort` to `-S`?
 
-
+- [ ] kill Datakit
+    - [x] removed reference/usage in Vizkit; Datakit is now unused except in tests
+    - [ ] move dataframe functions into Vizkit
+    
 ## ON DECK
 
 - add faceting
@@ -51,9 +54,6 @@ https://stackoverflow.com/questions/61840072/show-x-and-y-labels-in-each-facet-s
     - tooltips: https://altair-viz.github.io/gallery/scatter_tooltips.html
 
 
-- kill Datakit, move dataframe stuff into Vizkit
-    - what's the point of specific row/column selection? End-user isn't using csvviz to do that
-    - Vizkit.data == Vizkit.df
 
 
 - Figure out a way to re-use/simplify command boilerplate, as simple as it already is
