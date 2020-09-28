@@ -24,6 +24,10 @@ from csvviz.cli_utils import clout, clerr
 from csvviz.exceptions import *
 from csvviz.settings import *
 
+
+import click
+from csvviz.cli_utils import clout, clerr, clexit
+
 ENCODING_CHANNEL_NAMES = (
     "x",
     "y",
@@ -62,6 +66,8 @@ def lookup_mark_method(viz_type: str) -> alt.Chart:
         m = "mark_bar"
     elif vname == "scatter":
         m = "mark_point"
+    elif vname == 'abstract':
+        m = "mark_bar" # for testing purposes
     else:
         raise ValueError(f"{viz_type} is not a recognized viz/chart type")
     return m
@@ -76,18 +82,21 @@ class Vizkit(object):
     """
     The interface between Click.command, Altair.Chart, and Pandas.dataframe
     """
+    viz_type = "abstract"
 
-    def __init__(self, viz_type: str, input_file: typeUnion[typeIO, Path, str], kwargs):
+
+    def __init__(self, input_file, kwargs):
+    # def __init__(self, viz_type: str, input_file: typeUnion[typeIO, Path, str], kwargs):
         self.kwargs = kwargs
         self.input_file = input_file
         self._dataframe = pd.read_csv(self.input_file)
         #        self.datakit = Datakit(input_file) TK: deprecated
 
-        # TODO: too many properties?
         # chart-related settings
-        self.viz_type = viz_type
-        self.theme = kwargs.get("theme")
+#       self.viz_type = viz_type  # this is a class and an instance property, for some reason
 
+        # TODO: too many properties?
+        self.theme = kwargs.get("theme")
         self.channels = self.prepare_channels()
         self.style_properties = self.prepare_styles()
         self.interactive_mode = self.kwargs.get("is_interactive")
@@ -386,3 +395,59 @@ class Vizkit(object):
             config["title"] = _title
 
         return config
+
+
+    @classmethod
+    def get_command(klass):
+        def _foo(**kwargs):
+            try:
+                vk = klass(input_file=kwargs.get("input_file"), kwargs=kwargs)
+            except InvalidDataReference as err:
+                clexit(1, err)
+            else:
+                vk.output_chart()
+
+
+        command = _foo
+        command = click.command(name=klass.viz_type)(command)
+        for decor in klass.command_decorators:
+            command = decor(command)
+
+        return command
+
+    # @classmethod
+    # def get_command(klass):
+    #     pass
+    #     # @click.command(name=klass.viz_type)
+    #     # @standard_options_decor
+    #     # @click.option("--xvar", "-x", type=click.STRING, default="", help="the label column")
+    #     # @click.option("--yvar", "-y", type=click.STRING, default="", help="the value column")
+    #     # @click.option(
+    #     #     "--fill",
+    #     #     "-f",
+    #     #     "fillvar",
+    #     #     type=click.STRING,
+    #     #     help="The column used to specify fill color",
+    #     # )
+    #     # @click.option(
+    #     #     "--size",
+    #     #     "-s",
+    #     #     "sizevar",
+    #     #     type=click.STRING,
+    #     #     help="The column used to specify dot size",
+    #     # )
+
+
+    # @staticmethod
+    # def click_command(viz_type):
+    #     def _cmd(**kwargs):
+    #         try:
+    #             vk = Vizkit(viz_type=viz_type, input_file=kwargs.get("input_file"), kwargs=kwargs)
+    #         except InvalidDataReference as err:
+    #             clexit(1, err)
+    #         else:
+    #             vk.output_chart()
+
+    #     return _cmd
+
+

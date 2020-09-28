@@ -2,6 +2,7 @@ import pytest
 
 #  from csvviz.kits.datakit import Datakit
 from csvviz.kits.vizkit import Vizkit, lookup_mark_method
+from csvviz.cmds.scatter import Scatterkit
 
 import altair as alt
 import pandas as pd
@@ -11,7 +12,6 @@ import pandas as pd
 def tvk():
     SRC_PATH = "examples/tings.csv"
     return Vizkit(
-        "bar",
         input_file=SRC_PATH,
         kwargs={
             "xvar": "name",
@@ -27,8 +27,7 @@ def tvk():
 @pytest.fixture
 def dotvk():
     SRC_PATH = "examples/vals.csv"
-    return Vizkit(
-        "scatter",
+    return Scatterkit(
         input_file=SRC_PATH,
         kwargs={
             "xvar": "mass",
@@ -48,14 +47,17 @@ def test_vizkit_basic_init(tvk):
 
 
 def test_vizkit_properties(tvk, dotvk):
-    assert tvk.viz_type == "bar"
-    assert tvk.name == "bar"  # maybe viz_type isn't needed?
+    assert tvk.viz_type == "abstract"
     assert tvk.mark_type == "mark_bar"
     assert isinstance(tvk.df, pd.DataFrame)
     assert tvk.column_names == ["name", "amount"]
 
     assert dotvk.name == "scatter"
     assert dotvk.mark_type == "mark_point"
+
+
+def test_vizkit_unneeded_properties_to_deprecate(tvk):
+    assert tvk.name == "abstract"  # maybe viz_type isn't needed?
 
 
 def test_vizkit_kwarg_properties(tvk):

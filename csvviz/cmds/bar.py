@@ -7,49 +7,9 @@ from csvviz.exceptions import *
 from csvviz.kits.vizkit import Vizkit
 
 
-@click.command(name="bar")
-@standard_options_decor
-@click.option("--xvar", "-x", type=click.STRING, default="", help="the label column")
-@click.option("--yvar", "-y", type=click.STRING, default="", help="the value column")
-@click.option(
-    "--fill",
-    "-f",
-    "fillvar",
-    type=click.STRING,
-    help="The column used to specify fill color",
-)
-
-###### specific to bar charts
-@click.option(
-    "--horizontal", "-H", "flipxy", is_flag=True, help="Orient the bars horizontally"
-)
-@click.option(
-    "--sort",
-    "sortx_var",
-    type=click.STRING,
-    help="Sort the x-axis by the values of the x/y/fill channel. Prefix with '-' to do reverse sort",
-)  # https://altair-viz.github.io/user_guide/encoding.html#sorting
-def command(**kwargs):
-    """
-    Creates a bar chart
-
-    https://altair-viz.github.io/gallery/simple_bar_chart.html
-
-    If the -x and -y flags aren't supplied, we assume they are represented by the 1st
-        and 2nd columns, respectively,
-    """
-    # set up theme config
-    try:
-        vk = Barkit(input_file=kwargs.get("input_file"), kwargs=kwargs)
-    except InvalidDataReference as err:
-        clexit(1, err)
-    else:
-        vk.output_chart()
-
 
 class Barkit(Vizkit):
-    def __init__(self, input_file, kwargs):
-        super().__init__(viz_type="bar", input_file=input_file, kwargs=kwargs)
+    viz_type = 'bar'
 
     def prepare_channels(self):
 
@@ -72,6 +32,35 @@ class Barkit(Vizkit):
                 channels["x"].sort = _sortvar
 
         return channels
+
+
+
+    # @click.command(name="bar")
+
+    command_decorators = (
+        standard_options_decor,
+        click.option("--xvar", "-x", type=click.STRING, default="", help="the label column"),
+        click.option("--yvar", "-y", type=click.STRING, default="", help="the value column"),
+        click.option(
+            "--fill",
+            "-f",
+            "fillvar",
+            type=click.STRING,
+            help="The column used to specify fill color",
+        ),
+
+        ###### specific to bar charts
+        click.option(
+            "--horizontal", "-H", "flipxy", is_flag=True, help="Orient the bars horizontally"
+        ),
+        click.option(
+            "--sort", # https://altair-viz.github.io/user_guide/encoding.html#sorting
+            "sortx_var",
+            type=click.STRING,
+            help="Sort the x-axis by the values of the x/y/fill channel. Prefix with '-' to do reverse sort",
+        ),)
+
+
 
 
 """

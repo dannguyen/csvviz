@@ -6,9 +6,11 @@ from click.testing import CliRunner
 import json
 from pathlib import Path
 
-from csvviz.cmds.line import command as line
 from csvviz.exceptions import *
 from csvviz.settings import *
+
+from csvviz.cmds.line import Linekit
+line = Linekit.get_command()
 
 TONK_ARGS = [
     "examples/tonk.csv",

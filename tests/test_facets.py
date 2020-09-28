@@ -5,10 +5,13 @@ import click
 import json as json
 from pathlib import Path
 
-from csvviz.cmds.bar import command as viz
-
 from csvviz.exceptions import *
 from csvviz.settings import *
+
+
+from csvviz.cmds.bar import Barkit
+viz = Barkit.get_command()
+
 
 DEFAULT_ARGS = [
     "-x",

@@ -6,9 +6,11 @@ from click.testing import CliRunner
 import json as jsonlib
 from pathlib import Path
 
-from csvviz.cmds.scatter import command as scatter
 from csvviz.exceptions import *
 from csvviz.settings import *
+
+from csvviz.cmds.scatter import Scatterkit
+scatter = Scatterkit.get_command()
 
 OUTPUT_ARGS = [
     "--json",

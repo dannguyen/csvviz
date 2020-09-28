@@ -6,9 +6,12 @@ from click.testing import CliRunner
 import json as jsonlib
 from pathlib import Path
 
-from csvviz.cmds.hist import command as hist
 from csvviz.exceptions import *
 from csvviz.settings import *
+
+from csvviz.cmds.hist import Histkit
+hist = Histkit.get_command()
+
 
 OUTPUT_ARGS = [
     "--json",

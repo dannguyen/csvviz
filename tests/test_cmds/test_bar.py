@@ -6,9 +6,12 @@ from click.testing import CliRunner
 import json as jsonlib
 from pathlib import Path
 
-from csvviz.cmds.bar import command as bar
 from csvviz.exceptions import *
 from csvviz.settings import *
+
+from csvviz.cmds.bar import Barkit
+bar = Barkit.get_command()
+
 
 OUTPUT_ARGS = [
     "--json",

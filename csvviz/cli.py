@@ -62,10 +62,13 @@ def foo(foo, bar):
 def main():
     def _add_subcommands() -> typeNoReturn:
         for path in SUBCOMMAND_PATHS:
-            pmod_name = re.sub(f"/", ".", str(path)).rpartition(".py")[0]
-            pmod = importlib.import_module(pmod_name)
+            modname = re.sub(f"/", ".", str(path)).rpartition(".py")[0] # e.g. "csvviz.cmds.bar" or "csvviz.cmds.info"
+            klassname = modname.split('.')[-1].capitalize() + 'kit' # e.g. "Barkit" or "Infokit"
+            mod = importlib.import_module(modname)
+            klass = getattr(mod, klassname)
 
-            apex.add_command(pmod.command)
+            if getattr(klass, 'get_command', None): # TODO: remove after testing
+                apex.add_command(klass.get_command())
 
     _add_subcommands()
     apex()
