@@ -10,40 +10,6 @@ class Barkit(Vizkit):
     viz_type = "bar"
     viz_info = f"""An bar/column chart. TK"""
 
-    def prepare_channels(self):
-
-        channels = self._channels_init(self.channel_kwargs)
-
-        if self.kwargs.get("flipxy"):  # i.e. -H/--horizontal flag
-            channels["x"], channels["y"] = (channels["y"], channels["x"])
-
-        if channels.get("fill"):
-            channels["fill"].scale = alt.Scale(**self._config_colors(self.color_kwargs))
-
-        if _sortvar := self.kwargs.get("sortx_var"):
-            # _sort_config := self._config_sorting(self.kwargs, self.datakit):
-            _cname = _sortvar.lstrip("-")
-            if not channels.get(_cname):
-                raise InvalidDataReference(
-                    f"'{_cname}' is not a valid channel to sort by"
-                )
-            else:
-                channels["x"].sort = _sortvar
-
-        # sort by fill/stack is not the same as sorting the x-axis:
-        # https://altair-viz.github.io/user_guide/encoding.html?#ordering-marks
-        if _fillsort := self.kwargs.get("fillsort"):
-            if not channels.get("fill"):
-                raise MissingDataReference(
-                    f"--fill-sort '{_fillsort}' was specified, but no --fill value was provided"
-                )
-            else:
-                fname = self.resolve_channel_name(channels["fill"])
-                fsort = "descending" if _fillsort == "-" else "ascending"
-                channels["order"] = alt.Order(fname, sort=fsort)
-
-        return channels
-
     COMMAND_DECORATORS = (
         click.option(
             "--xvar", "-x", type=click.STRING, default="", help="the label column"
@@ -52,8 +18,8 @@ class Barkit(Vizkit):
             "--yvar", "-y", type=click.STRING, default="", help="the value column"
         ),
         click.option(
-            "--fill",
-            "-f",
+            "--color",
+            "-c",
             "fillvar",
             type=click.STRING,
             help="The column used to specify fill color",
@@ -77,13 +43,47 @@ class Barkit(Vizkit):
         ),
         # https://altair-viz.github.io/user_guide/encoding.html?#ordering-marks
         click.option(
-            "--fill-sort",
-            "-fs",
+            "--color-sort",
+            "-cs",
             "fillsort",
             type=click.Choice(("+", "-")),
             help="Whether to sort the fill stack in ascending (+) or descending (-) order by nominal name TKTK",
         ),
     )
+
+    def prepare_channels(self):
+
+        channels = self._create_channels(self.channel_kwargs)
+
+        if self.kwargs.get("flipxy"):  # i.e. -H/--horizontal flag
+            channels["x"], channels["y"] = (channels["y"], channels["x"])
+
+        if channels.get("fill"):
+            channels["fill"].scale = alt.Scale(**self._config_colors(self.color_kwargs))
+
+        if _sortvar := self.kwargs.get("sortx_var"):
+            # _sort_config := self._config_sorting(self.kwargs, self.datakit):
+            _cname = _sortvar.lstrip("-")
+            if not channels.get(_cname):
+                raise InvalidDataReference(
+                    f"'{_cname}' is not a valid channel to sort by"
+                )
+            else:
+                channels["x"].sort = _sortvar
+
+        # sort by fill/stack is not the same as sorting the x-axis:
+        # https://altair-viz.github.io/user_guide/encoding.html?#ordering-marks
+        if _fillsort := self.kwargs.get("fillsort"):
+            if not channels.get("fill"):
+                raise MissingDataReference(
+                    f"--color-sort '{_fillsort}' was specified, but no --color value was provided"
+                )
+            else:
+                fname = self.resolve_channel_name(channels["fill"])
+                fsort = "descending" if _fillsort == "-" else "ascending"
+                channels["order"] = alt.Order(fname, sort=fsort)
+
+        return channels
 
 
 """

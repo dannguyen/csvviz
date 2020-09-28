@@ -49,7 +49,7 @@ def test_area_defaults():
 def test_area_multiseries_defaults():
     cdata = json.loads(
         CliRunner()
-        .invoke(area, ["-x", "date", "-y", "price", "-f", "company", *STOCK_ARGS])
+        .invoke(area, ["-x", "date", "-y", "price", "--color", "company", *STOCK_ARGS])
         .output
     )
     e = cdata["encoding"]["fill"]
@@ -68,9 +68,9 @@ def test_area_fill_sort():
                 "date",
                 "-y",
                 "price",
-                "-f",
+                "--color",
                 "company",
-                "--fill-sort",
+                "--color-sort",
                 "+",
                 *STOCK_ARGS,
             ],
@@ -85,7 +85,7 @@ def test_area_fill_sort():
         CliRunner()
         .invoke(
             area,
-            ["-x", "date", "-y", "price", "-f", "company", "-fs", "-", *STOCK_ARGS],
+            ["-x", "date", "-y", "price", "-c", "company", "-cs", "-", *STOCK_ARGS],
         )
         .output
     )
@@ -96,10 +96,10 @@ def test_area_fill_sort():
 
 def test_error_when_fill_sort_but_no_fill():
     result = CliRunner().invoke(
-        area, ["-x", "date", "-y", "price", "-fs", "+", *STOCK_ARGS]
+        area, ["-x", "date", "-y", "price", "-cs", "+", *STOCK_ARGS]
     )
     assert result.exit_code == 1
     assert (
-        "MissingDataReference: --fill-sort '+' was specified, but no --fill value"
+        "MissingDataReference: --color-sort '+' was specified, but no --color value"
         in result.output.strip()
     )

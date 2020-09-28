@@ -3,7 +3,7 @@
 import pytest
 from click.testing import CliRunner
 
-import json as jsonlib
+import json
 from pathlib import Path
 
 from csvviz.exceptions import *
@@ -29,7 +29,7 @@ def test_hist_defaults():
     Should resemble what's in tests/fixtures/bar-basic.json
     """
     result = CliRunner().invoke(hist, ["-x", "amount", *OUTPUT_ARGS])
-    cdata = jsonlib.loads(result.output)
+    cdata = json.loads(result.output)
 
     assert cdata["mark"]["type"] == "bar"
 

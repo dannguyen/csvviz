@@ -2,8 +2,8 @@
 History
 =======
 
-TKTK-ongoing
-------------
+0.3.0-alpha (ongoing)
+---------------------
 
 - area chart
 - line chart

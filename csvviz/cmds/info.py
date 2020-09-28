@@ -1,4 +1,4 @@
-import json as jsonlib
+import json
 
 import altair as alt
 import click
@@ -97,7 +97,7 @@ class Infokit(object):
             # values = [f'{k}: {v}' for k, v in _versions.items()]
 
         if kwargs.get("to_json"):
-            clout(jsonlib.dumps(values, indent=2))
+            clout(json.dumps(values, indent=2))
         else:
             if isinstance(values, dict):
                 max_key_length = max(len(k) for k in values.keys())

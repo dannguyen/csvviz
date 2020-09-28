@@ -2,7 +2,7 @@ import pytest
 from click.testing import CliRunner
 
 import click
-import json as jsonlib
+import json
 from pathlib import Path
 
 from csvviz.exceptions import *
@@ -21,7 +21,7 @@ def test_defaults():
     assert result.exit_code is 0
 
     # no usermeta, i.e. default theme is specified
-    cdata = jsonlib.loads(result.output)
+    cdata = json.loads(result.output)
     assert (
         "usermeta" not in cdata
     )  # i.e. NOT cdata['usermeta']['embedOptions']['theme'] == 'default'
@@ -41,7 +41,7 @@ def test_defaults():
 ##############################################################################################################
 def test_title():
     result = CliRunner().invoke(viz, ["-t", "My Title", *OUTPUT_ARGS])
-    cdata = jsonlib.loads(result.output)
+    cdata = json.loads(result.output)
     assert cdata["title"] == "My Title"
 
 
@@ -52,14 +52,14 @@ def test_title():
 
 def test_interactive_chart():
     result = CliRunner().invoke(viz, ["--static", *OUTPUT_ARGS])
-    cdata = jsonlib.loads(result.output)
+    cdata = json.loads(result.output)
 
     assert "selection" not in cdata
 
 
 def test_static_chart():
     result = CliRunner().invoke(viz, ["--interactive", *OUTPUT_ARGS])
-    cdata = jsonlib.loads(result.output)
+    cdata = json.loads(result.output)
 
     assert "selection" in cdata
 
@@ -81,8 +81,8 @@ def test_fill_default_color_scheme():
     """
     by default, a viz chart with fill should have scheme=DEFAULT_COLOR_SCHEME
     """
-    result = CliRunner().invoke(viz, ["-f", "amount", *OUTPUT_ARGS])
-    cdata = jsonlib.loads(result.output)
+    result = CliRunner().invoke(viz, ["--color", "amount", *OUTPUT_ARGS])
+    cdata = json.loads(result.output)
 
     fill = cdata["encoding"]["fill"]
     assert fill["type"] == "quantitative"
@@ -94,10 +94,10 @@ def test_basic_colors():
     -c/--colors
     """
     result = CliRunner().invoke(
-        viz, ["-f", "name", "-c", "red,deeppink,#999 ", *OUTPUT_ARGS]
+        viz, ["-c", "name", "-C", "red,deeppink,#999 ", *OUTPUT_ARGS]
     )
     assert result.exit_code == 0
-    cdata = jsonlib.loads(result.output)
+    cdata = json.loads(result.output)
 
     scale = cdata["encoding"]["fill"]["scale"]
     assert scale["range"] == ["red", "deeppink", "#999"]
@@ -110,8 +110,8 @@ def test_basic_color_scheme():
     """
     -C/--color-scheme
     """
-    result = CliRunner().invoke(viz, ["-f", "name", "-C", "dark2", *OUTPUT_ARGS])
-    cdata = jsonlib.loads(result.output)
+    result = CliRunner().invoke(viz, ["-c", "name", "-CS", "dark2", *OUTPUT_ARGS])
+    cdata = json.loads(result.output)
 
     scale = cdata["encoding"]["fill"]["scale"]
     assert scale["scheme"] == "dark2"
@@ -123,9 +123,9 @@ def test_colors_overrides_color_scheme():
     """
     result = CliRunner().invoke(
         viz,
-        ["-f", "name", "--color-scheme", "dark2", "--colors", "yellow", *OUTPUT_ARGS],
+        ["-c", "name", "--color-scheme", "dark2", "--colors", "yellow", *OUTPUT_ARGS],
     )
-    cdata = jsonlib.loads(result.output)
+    cdata = json.loads(result.output)
 
     scale = cdata["encoding"]["fill"]["scale"]
     assert "scheme" not in scale
@@ -137,9 +137,9 @@ def test_legend_settings():
     """when there is a fill, there is a legend"""
     result = CliRunner().invoke(
         viz,
-        ["-f", "name", "--legend", "title=Legend of Titles;orient=left", *OUTPUT_ARGS],
+        ["-c", "name", "--legend", "title=Legend of Titles;orient=left", *OUTPUT_ARGS],
     )
-    cdata = jsonlib.loads(result.output)
+    cdata = json.loads(result.output)
     legend = cdata["encoding"]["fill"]["legend"]
 
     assert legend["Legend of Titles"] == "name"
@@ -153,7 +153,7 @@ def test_lims():
     result = CliRunner().invoke(
         viz, ["--xlim", "-10,30", "--ylim", "-40,50", *OUTPUT_ARGS]
     )
-    cdata = jsonlib.loads(result.output)
+    cdata = json.loads(result.output)
     cdata["mark"]["clip"] is True  # this is always true, whether xlim/ylim are set
     cdata["encoding"]["x"]["scale"]["domain"] == [-10, 30]
     cdata["encoding"]["y"]["scale"]["domain"] == [-40, 50]
@@ -166,14 +166,14 @@ def test_lims():
 
 def test_specify_theme():
     result = CliRunner().invoke(viz, ["--theme", "latimes", *OUTPUT_ARGS])
-    cdata = jsonlib.loads(result.output)
+    cdata = json.loads(result.output)
 
     assert "latimes" == cdata["usermeta"]["embedOptions"]["theme"]
 
 
 def test_specify_default_theme_has_no_effect():
     result = CliRunner().invoke(viz, ["--theme", "default", *OUTPUT_ARGS])
-    cdata = jsonlib.loads(result.output)
+    cdata = json.loads(result.output)
     assert (
         "usermeta" not in cdata
     )  # i.e. NOT cdata['usermeta']['embedOptions']['theme'] == 'default'

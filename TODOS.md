@@ -3,6 +3,11 @@
 ## JUST DONE 
 
 
+
+
+
+## 0.3.0
+
 - area chart
     - [x] skeleton and basic tests
     - [x] sorting the fill
@@ -13,26 +18,16 @@
         - [ ] practically speaking, `--fill-sort '-'` has the same effect as not setting anything
         - [ ] maybe change '+/-' signage to 'asc/dsc'
 
-## ON DECK
 
 - add faceting
 https://stackoverflow.com/questions/61840072/show-x-and-y-labels-in-each-facet-subplot-in-altair
-    - `-F/--facet`
+    - Maybe call it `-g/--grid`? That makes grouped bar charts easier to reason with.
     - [X] basic skeleton and test; made `Vizkit._manage_axis()` for now
-    - `-Fc/--facet-columns`
-    - `--facet-axis-independent??`
-    - `--facet-sort`; change bar's `--sort` to `--xsort`?
+    - `-gs/--grid-sort`
+    - `-gc/--grid-columns`
+    - how about independent axis
 
-- how will `facet=` conflict with `columns=` (i.e. for grouped bar charts?). Or maybe just not have grouped bar charts?
-- if `--facet-columns` is set to `None`, then let it be infinite
 
-    ```
-    av(alt.Chart(data.iris()).mark_point().encode(x='petalLength', y='petal
-        ...: Width', facet=alt.Facet('species', columns=2)).resolve_axis( 
-        ...:     y='independent', 
-        ...:      
-        ...: ))    
-    ```
 
 - [x] fixed how `--sort` and `--hide-legend` works
     - [x] need to rethink how legend default title works; can't depend on encoding.fill.field, as it may sometimes be encoding.fill.aggregate or whatever
@@ -43,6 +38,25 @@ https://stackoverflow.com/questions/61840072/show-x-and-y-labels-in-each-facet-s
     - [x] skeleton
     - [ ] test
     - figure out how to specify bin size and intervals and counts
+
+## ON DECK
+
+- normalized bar/area stacks
+
+- change `-f/--fill` to `-c/--color`, so handles line.stroke and bar/area/scatter.fill. 'color' is also easier for user.
+
+- make a density chart? 
+    - https://www.r-graph-gallery.com/density-plot.html
+    - https://altair-viz.github.io/user_guide/transform/density.html
+- make stream chart? https://altair-viz.github.io/gallery/streamgraph.html
+- heatmap? https://altair-viz.github.io/gallery/simple_heatmap.html
+
+Check out R-guides:
+- hist: https://www.r-graph-gallery.com/histogram.html
+- density: https://www.r-graph-gallery.com/density-plot.html
+- heatmap https://www.r-graph-gallery.com/heatmap.html
+
+
 
 - bar width: https://altair-viz.github.io/user_guide/customization.html#adjusting-the-width-of-bar-marks
 
@@ -129,23 +143,7 @@ https://stackoverflow.com/questions/61840072/show-x-and-y-labels-in-each-facet-s
     - [x] basic implementation
     - [x] make sure horizontal bar sorts as expected
     - [x] test, including robust error handling when invalid column name is passed in
-    - [ ? ] naming/syntax
-        - should it have a better name, like `--order`, or something?
-            - can't use `-o/--order` because `-o` should be for `--output`
-            - ggplot2 has a `reorder()` function that is applied to a given channel: https://www.r-graph-gallery.com/267-reorder-a-variable-in-ggplot2.html
-        - is `--sort-x` unnecessarily specific, e.g. user will only want to sort by x/independent variable, except in situation of `fill` and stacked charts...
-            - or should it have a mini-syntax, e.g. `--sort 'x:-amount'`
-
-- Vizkit class
-    - [x] init
-    - [x] build_chart
-    - [x] refactor bar.py using Vizkit class 
-    - [NA] _init_command and @self.command
-        - no need for now to wrap click.Command into Vizkit
-    - [NA] learn metaprogramming to delegate datakit->vizkit stuff
-
-- [NA] how to independently invoke and manage Click commands
-    - https://stackoverflow.com/questions/40091347/call-another-click-command-from-a-click-command
+    - [x] naming/syntax: changed to `-xs/--x-sort` and `-fs/--fill-sort`
 
 
 
@@ -260,3 +258,17 @@ https://altair-viz.github.io/user_guide/encoding.html#ordering-marks
     - https://altair-viz.github.io/gallery/simple_line_chart.html
     - [X] skeleton and basic tests
     - `-s/--stroke` conflicts with `--sort/-s`; change `--sort` to `-S`?
+
+
+
+
+- Vizkit class
+    - [x] init
+    - [x] build_chart
+    - [x] refactor bar.py using Vizkit class 
+    - [NA] _init_command and @self.command
+        - no need for now to wrap click.Command into Vizkit
+    - [NA] learn metaprogramming to delegate datakit->vizkit stuff
+
+- [NA] how to independently invoke and manage Click commands
+    - https://stackoverflow.com/questions/40091347/call-another-click-command-from-a-click-command

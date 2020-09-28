@@ -2,8 +2,6 @@
 
 
 """Console script for csvviz."""
-
-
 from pathlib import Path
 import sys
 from typing import Any as typeAny, Mapping as typeMapping, NoReturn as typeNoReturn
@@ -14,7 +12,6 @@ from typing import (
     Union as typeUnion,
 )
 from typing import IO as typeIO
-
 
 import altair as alt
 import click
@@ -28,7 +25,7 @@ def clout(*args) -> typeNoReturn:
     outobjects = []
     for obj in args:
         if isinstance(obj, typeMapping):
-            obj = jsonlib.dumps(obj, indent=2)
+            obj = json.dumps(obj, indent=2)
         else:
             obj = str(obj)
         outobjects.append(obj)
@@ -46,11 +43,11 @@ def clerr(*args) -> typeNoReturn:
     top-level method that is used to output to stderr
     """
 
-    # TODO: refactor/decorate this jsonlibs stuff
+    # TODO: refactor/decorate this jsons stuff
     outobjects = []
     for obj in args:
         if isinstance(obj, typeMapping):
-            obj = jsonlib.dumps(obj, indent=2)
+            obj = json.dumps(obj, indent=2)
         else:
             obj = str(obj)
         outobjects.append(obj)
@@ -76,94 +73,107 @@ def print_version(ctx=None, param=None, value=None) -> typeNoReturn:
 #########################################
 
 
-def input_file_decor(fn):
-    decorator = click.argument("input_file", type=click.File("r"))
-    fn = decorator(fn)
-    return fn
+# TODO: figure out how to use stdin without '-':
+# https://stackoverflow.com/questions/56351195/how-to-specify-a-default-value-for-argument-list-processed-by-click
+# class FilesDefaultToStdin(click.Argument):
+#     def __init__(self, *args, **kwargs):
+#         kwargs['nargs'] = -1
+#         kwargs['type'] = click.File('r')
+#         super().__init__(*args, **kwargs)
+
+#     # def full_process_value(self, ctx, value):
+#     #     return super().process_value(ctx, value or ('-', ))
+
+STANDARD_OPTS = {}
+
+"""common input output/options"""
+STANDARD_OPTS["io"] = {
+    "input_file": click.argument("input_file", type=click.File("r")),
+    "is_interactive": click.option(
+        "--interactive/--static",
+        "is_interactive",
+        default=True,
+        help="Produce an interactive (default) or static version of the chart, in HTML+JS",
+    ),
+    "json": click.option(
+        "--json/--no-json",
+        "-j /",
+        "to_json",
+        default=False,
+        help="Output to stdout the Vega JSON representation",
+    ),
+    "no_preview": click.option(
+        "--no-preview",
+        "--np",
+        is_flag=True,
+        help="By default, csvviz opens a web browser to show the chart",
+    ),
+}
 
 
-def output_options_decor(fn):
-    """common input output/options"""
-    for decorator in reversed(
-        (
-            click.option(
-                "--json/--no-json",
-                "-j /",
-                "to_json",
-                default=False,
-                help="Output to stdout the Vega JSON representation",
-            ),
-            click.option(
-                "--no-preview",
-                "--np",
-                is_flag=True,
-                help="By default, csvviz opens a web browser to show the chart",
-            ),
-            click.option(
-                "--interactive/--static",
-                "is_interactive",
-                default=True,
-                help="Produce an interactive (default) or static version of the chart, in HTML+JS",
-            ),
-        )
-    ):
-        fn = decorator(fn)
-    return fn
+STANDARD_OPTS["visual"] = {
+    "colors": click.option(
+        "--colors",
+        "-C",
+        type=click.STRING,
+        help="A comma-delimited list of colors to use for the relevant marks",
+    ),
+    "color_scheme": click.option(
+        "--color-scheme",
+        "-CS",
+        type=click.STRING,
+        help="The name of a Vega color scheme to use for fill (this is overridden by -C/--colors)",
+    ),
+    "theme": click.option(
+        "--theme",
+        type=click.Choice(alt.themes.names(), case_sensitive=False),
+        default="default",
+        help="choose a built-in theme for chart",
+    ),  # TODO: refactor alt.themes.names() to constant
+    "title": click.option(
+        "--title", "-t", type=click.STRING, help="A title for the chart"
+    ),
+    "no_legend": click.option(
+        "--no-legend", is_flag=True, help="Omits any/all legends"
+    ),
+}
 
 
-def visual_options_decor(fn):
-    """common visual options"""
-    for decorator in (
-        click.option(
-            "-c",
-            "--colors",
-            type=click.STRING,
-            help="A comma-delimited list of colors to use for the relevant marks",
-        ),
-        click.option(
-            "-C",
-            "--color-scheme",
-            type=click.STRING,
-            help="The name of a Vega color scheme to use for fill (this is overridden by -c/--colors)",
-        ),
-        click.option(
-            "--theme",
-            type=click.Choice(alt.themes.names(), case_sensitive=False),
-            default="default",
-            help="choose a built-in theme for chart",
-        ),  # TODO: refactor alt.themes.names() to constant
-        click.option("--title", "-t", type=click.STRING, help="A title for the chart"),
-        click.option("--no-legend", is_flag=True, help="Omits the legend"),
-    ):
-        fn = decorator(fn)
-    return fn
-
-
-def axis_options_decor(fn):
-    fn = click.option(
+STANDARD_OPTS["axis"] = {
+    "xlim": click.option(
         "--xlim",
         type=click.STRING,
         help="Set the min,max of the x-axis with a comma delimited string, e.g. '-10,50'",
-    )(fn)
-    fn = click.option(
+    ),
+    "ylim": click.option(
         "--ylim",
         type=click.STRING,
         help="Set the min,max of the y-axis with a comma delimited string, e.g. '-10,50'",
-    )(fn)
-
-    return fn
-
-
-def facet_options_decor(fn):
-    return click.option(
-        "--facet", "-F", "facetvar", type=click.STRING, help="The var to facet by TKTK"
-    )(fn)
+    ),
+}
 
 
-def standard_options_decor(fn):
-    fn = input_file_decor(fn)
-    fn = output_options_decor(fn)
-    fn = visual_options_decor(fn)
-    fn = axis_options_decor(fn)
-    fn = facet_options_decor(fn)
+STANDARD_OPTS["facet"] = {
+    "facetvar": click.option(
+        "--grid",
+        "-g",
+        "facetvar",
+        type=click.STRING,
+        help="The var to facet/grid by TKTK",
+    ),
+    "facetsort": click.option(
+        "--grid-sort",
+        "-gs",
+        "facetsort",
+        type=click.STRING,
+        help="Sort the grid by something",
+    ),
+}
+
+
+def standard_options_decor(fn, exclude_options=[]):
+    for groupkey, opts in STANDARD_OPTS.items():
+        for oname, o in opts.items():
+            if oname not in exclude_options:
+                fn = o(fn)
     return fn

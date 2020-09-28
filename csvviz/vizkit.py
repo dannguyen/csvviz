@@ -35,7 +35,6 @@ ENCODING_CHANNEL_NAMES = (
     "size",
     "stroke",
     "facet",
-    "order",
 )
 
 
@@ -104,7 +103,7 @@ class Vizkit(object):
     def build_chart(
         self, channels: dict, style_properties: dict, interactive_mode: bool
     ) -> alt.Chart:
-        chart = self._chart_init()
+        chart = self._create_chart()
         chart = chart.encode(**channels)
 
         # import IPython; IPython.embed()
@@ -172,7 +171,7 @@ class Vizkit(object):
         This method does the bespoke work to combine channels with legends/colors/etc
         and should be implemented in every subclass
         """
-        channels = self._channels_init(self.channel_kwargs)
+        channels = self._create_channels(self.channel_kwargs)
 
         # if self.kwargs.get("flipxy"):
         #     channels["x"], channels["y"] = (channels["y"], channels["x"])
@@ -188,7 +187,7 @@ class Vizkit(object):
     #####################################################################
     # internal helpers
     #####################################################################
-    def _channels_init(
+    def _create_channels(
         self, kwargs: typeDict
     ) -> typeDict[str, typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]]:
         def _validate_fieldname(shorthand: str, fieldname: str) -> bool:
@@ -247,7 +246,7 @@ class Vizkit(object):
 
         return channels
 
-    def _chart_init(self) -> alt.Chart:
+    def _create_chart(self) -> alt.Chart:
         alt.themes.enable(self.theme)
 
         chartfoo = getattr(alt.Chart(self.df), self.mark_type)

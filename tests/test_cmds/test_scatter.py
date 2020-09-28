@@ -3,7 +3,7 @@
 import pytest
 from click.testing import CliRunner
 
-import json as jsonlib
+import json
 from pathlib import Path
 
 from csvviz.exceptions import *
@@ -25,7 +25,7 @@ def test_scatter_defaults():
     MVP, where x is columns[0] and y is columns[1]
     """
     result = CliRunner().invoke(scatter, [*OUTPUT_ARGS])
-    cdata = jsonlib.loads(result.output)
+    cdata = json.loads(result.output)
 
     assert cdata["mark"]["type"] == "point"
 
@@ -43,7 +43,7 @@ def test_scatter_default_legends():
     result = CliRunner().invoke(
         scatter, ["-f", "breed", "-s", "velocity", *OUTPUT_ARGS]
     )
-    cdata = jsonlib.loads(result.output)
+    cdata = json.loads(result.output)
     assert cdata["encoding"]["fill"]["legend"]["title"] == "breed"
     assert cdata["encoding"]["size"]["legend"]["title"] == "velocity"
 
@@ -55,7 +55,7 @@ def test_scatter_fill_size():
     result = CliRunner().invoke(
         scatter, ["--fill", "breed", "--size", "velocity", *OUTPUT_ARGS]
     )
-    cdata = jsonlib.loads(result.output)
+    cdata = json.loads(result.output)
 
     assert cdata["encoding"]["fill"]["field"] == "breed"
     assert cdata["encoding"]["fill"]["type"] == "nominal"
@@ -70,6 +70,6 @@ def test_no_legend_hides_fill_and_size():
     result = CliRunner().invoke(
         scatter, ["--no-legend", "--fill", "breed", "--size", "velocity", *OUTPUT_ARGS]
     )
-    cdata = jsonlib.loads(result.output)
+    cdata = json.loads(result.output)
 
     assert None is cdata["encoding"]["size"]["legend"]

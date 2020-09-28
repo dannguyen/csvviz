@@ -17,7 +17,7 @@ class Linekit(Vizkit):
     viz_info = f"""A line chart TK"""
 
     def prepare_channels(self):
-        channels = self._channels_init(self.channel_kwargs)
+        channels = self._create_channels(self.channel_kwargs)
         return channels
 
     COMMAND_DECORATORS = (
@@ -28,8 +28,8 @@ class Linekit(Vizkit):
             "--yvar", "-y", type=click.STRING, default="", help="the value column"
         ),
         click.option(
-            "--stroke",
-            "-s",
+            "--color",
+            "-c",
             "strokevar",
             type=click.STRING,
             help="The column used to specify stroke color",

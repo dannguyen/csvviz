@@ -2,7 +2,7 @@ import pytest
 from click.testing import CliRunner
 
 import click
-import json as jsonlib
+import json
 from pathlib import Path
 
 from csvviz.cmds.scatter import Scatterkit
@@ -29,7 +29,7 @@ DEFAULT_ARGS = [
 def test_legend_default():
     """when there is a fill, there is a legend"""
     result = CliRunner().invoke(viz, ["-f", "breed", *DEFAULT_ARGS])
-    cdata = jsonlib.loads(result.output)
+    cdata = json.loads(result.output)
     legend = cdata["encoding"]["fill"]["legend"]
 
     assert legend["title"] == "breed"
@@ -42,7 +42,7 @@ def test_no_legend():
     result = CliRunner().invoke(
         viz, ["--fill", "breed", "--size", "velocity", "--no-legend", *DEFAULT_ARGS]
     )
-    cdata = jsonlib.loads(result.output)
+    cdata = json.loads(result.output)
 
     assert None is cdata["encoding"]["fill"]["legend"]
     assert None is cdata["encoding"]["size"]["legend"]

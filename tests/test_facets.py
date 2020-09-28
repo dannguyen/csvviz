@@ -2,7 +2,7 @@ import pytest
 from click.testing import CliRunner
 
 import click
-import json as json
+import json
 from pathlib import Path
 
 from csvviz.exceptions import *
@@ -15,21 +15,21 @@ viz = Barkit.register_command()
 
 
 DEFAULT_ARGS = [
+    "examples/stocks.csv",
     "-x",
     "date",
     "-y",
     "price",
-    "-F",
+    "-g",
     "company",
     "--json",
     "--no-preview",
-    "examples/stocks.csv",
 ]
 
 
 def test_facet_defaults():
-
-    cdata = json.loads(CliRunner().invoke(viz, DEFAULT_ARGS).output)
+    out = CliRunner().invoke(viz, DEFAULT_ARGS).output
+    cdata = json.loads(out)
     assert cdata["encoding"]["facet"] == {
         "field": "company",
         "type": "nominal",

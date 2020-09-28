@@ -17,7 +17,7 @@ class Histkit(Vizkit):
     viz_info = f"""An bar chart, showing counts/bins TK"""
 
     def prepare_channels(self):
-        channels = self._channels_init(self.channel_kwargs)
+        channels = self._create_channels(self.channel_kwargs)
 
         ##### bin time
         channels["x"].bin = True

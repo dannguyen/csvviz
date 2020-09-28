@@ -15,7 +15,7 @@ class Scatterkit(Vizkit):
     viz_info = f"""A scatterplot for showing relationship between two independent variables x and y. Can vary by size and fill too. TK"""
 
     def prepare_channels(self):
-        channels = self._channels_init(self.channel_kwargs)
+        channels = self._create_channels(self.channel_kwargs)
         if channels.get("fill"):
             channels["fill"].scale = alt.Scale(**self._config_colors(self.color_kwargs))
 

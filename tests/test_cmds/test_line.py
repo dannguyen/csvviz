@@ -33,7 +33,7 @@ def test_line_defaults():
     just a catch all sanity test...
     Should resemble what's in tests/fixtures/bar-basic.json
     """
-    cdata = json.loads(CliRunner().invoke(line, [*TONK_ARGS]).output)
+    cdata = json.loads(CliRunner().invoke(line, TONK_ARGS).output)
 
     assert cdata["mark"]["type"] == "line"
 
@@ -49,7 +49,7 @@ def test_line_defaults():
 def test_line_multiseries_defaults():
     cdata = json.loads(
         CliRunner()
-        .invoke(line, ["-x", "date", "-y", "price", "-s", "company", *STOCK_ARGS])
+        .invoke(line, ["-x", "date", "-y", "price", "-c", "company", *STOCK_ARGS])
         .output
     )
     e = cdata["encoding"]["stroke"]
