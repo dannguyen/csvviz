@@ -5,13 +5,17 @@ History
 TKTK-ongoing
 ------------
 
+- area chart
+- line chart
+
 - ``--xlim,--ylim``
-- ``line chart, --stroke option``
 - ``--facet``
 
 cli.bar
 ^^^^^^^
-- ``-s\--sort`` for sorting arrangement of independent values
+- ``-xs/--x-sort`` for sorting arrangement of independent values
+- ``-fs/--f-sort`` for sorting arrangement of independent values
+
 
 cli.hist
 ^^^^^^^^

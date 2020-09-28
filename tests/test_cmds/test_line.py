@@ -38,7 +38,7 @@ def test_line_defaults():
     assert cdata["mark"]["type"] == "line"
 
     datavals = list(cdata["datasets"].values())[0]
-    assert datavals[0] == {"date": "2000-01-01", "price": 64.56}
+    assert datavals[0] == {"date": "2007-01-01", "price": 37.67}
     assert datavals[-1] == {"date": "2010-03-01", "price": 128.82}
 
     # even though date is in YYYY-MM-DD format, Altair doesn't automatically know it's temporal
@@ -52,4 +52,7 @@ def test_line_multiseries_defaults():
         .invoke(line, ["-x", "date", "-y", "price", "-s", "company", *STOCK_ARGS])
         .output
     )
-    assert cdata["encoding"]["stroke"] == {"field": "company", "type": "nominal"}
+    e = cdata["encoding"]["stroke"]
+    assert e["field"] == "company"
+    assert e["type"] == "nominal"
+    assert e["legend"]["title"] == "company"

@@ -80,13 +80,40 @@ def test_bar_fill():
     assert fill["type"] == "nominal"
 
 
+def test_bar_fill_sort():
+    cdata = jsonlib.loads(
+        CliRunner().invoke(bar, ["-f", "name", "--fill-sort", "+", *OUTPUT_ARGS]).output
+    )
+
+    o = cdata["encoding"]["order"]
+    assert o["field"] == "name"
+    assert o["sort"] == "ascending"
+
+    cdata = jsonlib.loads(
+        CliRunner().invoke(bar, ["-f", "name", "-fs", "-", *OUTPUT_ARGS]).output
+    )
+
+    o = cdata["encoding"]["order"]
+    assert o["field"] == "name"
+    assert o["sort"] == "descending"
+
+
+def test_error_when_fill_sort_but_no_fill():
+    result = CliRunner().invoke(bar, ["-fs", "-", *OUTPUT_ARGS])
+    assert result.exit_code == 1
+    assert (
+        "MissingDataReference: --fill-sort '-' was specified, but no --fill value"
+        in result.output.strip()
+    )
+
+
 ##############################################################################################################
 # sort-x
 ##############################################################################################################
 def test_sortx_var_default():
     """default sort is ascending"""
     result = CliRunner().invoke(
-        bar, ["-x", "name", "-y", "amount", "--sort", "y", *OUTPUT_ARGS]
+        bar, ["-x", "name", "-y", "amount", "-xs", "y", *OUTPUT_ARGS]
     )
     cdata = jsonlib.loads(result.output)
 
@@ -102,7 +129,7 @@ def test_sortx_var_default():
 
 def test_sortx_var_reverse():
     """column name prefixed with '-' indicated descending sort"""
-    result = CliRunner().invoke(bar, ["--sort", "-x", *OUTPUT_ARGS])
+    result = CliRunner().invoke(bar, ["--x-sort", "-x", *OUTPUT_ARGS])
     cdata = jsonlib.loads(result.output)
 
     assert (
@@ -117,7 +144,7 @@ def test_sortx_var_error_invalid_column():
 
     However, we want to stop and notify the user of the error
     """
-    result = CliRunner().invoke(bar, ["--sort", "-name", *OUTPUT_ARGS])
+    result = CliRunner().invoke(bar, ["--x-sort", "-name", *OUTPUT_ARGS])
     assert result.exit_code == 1
     assert (
         "InvalidDataReference: 'name' is not a valid channel to sort by"
@@ -130,10 +157,10 @@ def test_sortx_var_handle_column_name_that_starts_with_hyphen():
     """
     TODO: need to create a fixture dataset with column name '-stuff'
     """
-    a_result = CliRunner().invoke(bar, ["--sort", r"\-stuff", *OUTPUT_ARGS])
+    a_result = CliRunner().invoke(bar, ["-xs", r"\-stuff", *OUTPUT_ARGS])
     a_data = jsonlib.loads(a_result.output)
     assert a_data["encoding"]["x"]["sort"] == {"field": "-stuff", "order": "ascending"}
 
-    b_result = CliRunner().invoke(bar, ["--sort", r"--stuff", *OUTPUT_ARGS])
+    b_result = CliRunner().invoke(bar, ["-xs", r"--stuff", *OUTPUT_ARGS])
     b_data = jsonlib.loads(b_result.output)
     assert b_data["encoding"]["x"]["sort"] == {"field": "-stuff", "order": "descending"}

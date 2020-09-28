@@ -1,7 +1,6 @@
 import altair as alt
 import click
-from csvviz.cli_utils import clout, clerr, clexit
-from csvviz.cli_utils import standard_options_decor
+
 
 from csvviz.exceptions import *
 from csvviz.vizkit import Vizkit
@@ -9,6 +8,7 @@ from csvviz.vizkit import Vizkit
 
 class Barkit(Vizkit):
     viz_type = "bar"
+    viz_info = f"""An bar/column chart. TK"""
 
     def prepare_channels(self):
 
@@ -29,6 +29,18 @@ class Barkit(Vizkit):
                 )
             else:
                 channels["x"].sort = _sortvar
+
+        # sort by fill/stack is not the same as sorting the x-axis:
+        # https://altair-viz.github.io/user_guide/encoding.html?#ordering-marks
+        if _fillsort := self.kwargs.get("fillsort"):
+            if not channels.get("fill"):
+                raise MissingDataReference(
+                    f"--fill-sort '{_fillsort}' was specified, but no --fill value was provided"
+                )
+            else:
+                fname = self.resolve_channel_name(channels["fill"])
+                fsort = "descending" if _fillsort == "-" else "ascending"
+                channels["order"] = alt.Order(fname, sort=fsort)
 
         return channels
 
@@ -54,11 +66,22 @@ class Barkit(Vizkit):
             is_flag=True,
             help="Orient the bars horizontally",
         ),
+        # https://altair-viz.github.io/user_guide/encoding.html?highlight=sort%20marks#sorting
+        # https://altair-viz.github.io/user_guide/encoding.html#sorting
         click.option(
-            "--sort",  # https://altair-viz.github.io/user_guide/encoding.html#sorting
+            "--x-sort",
+            "-xs",
             "sortx_var",
             type=click.STRING,
             help="Sort the x-axis by the values of the x/y/fill channel. Prefix with '-' to do reverse sort",
+        ),
+        # https://altair-viz.github.io/user_guide/encoding.html?#ordering-marks
+        click.option(
+            "--fill-sort",
+            "-fs",
+            "fillsort",
+            type=click.Choice(("+", "-")),
+            help="Whether to sort the fill stack in ascending (+) or descending (-) order by nominal name TKTK",
         ),
     )
 

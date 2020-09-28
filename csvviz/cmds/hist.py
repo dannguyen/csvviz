@@ -7,14 +7,14 @@ csvviz hist 'year(birthday)' examples/real/congress.csv
 
 import altair as alt
 import click
-from csvviz.cli_utils import clout, clerr, clexit
-from csvviz.cli_utils import standard_options_decor
+
 from csvviz.exceptions import *
 from csvviz.vizkit import Vizkit
 
 
 class Histkit(Vizkit):
     viz_type = "hist"
+    viz_info = f"""An bar chart, showing counts/bins TK"""
 
     def prepare_channels(self):
         channels = self._channels_init(self.channel_kwargs)

@@ -3,20 +3,15 @@
 ## JUST DONE 
 
 
-- [ ] kill Datakit
-    - [x] removed reference/usage in Vizkit; Datakit is now unused except in tests
-    - [ ] move dataframe functions into Vizkit
-
-
-
-- [x] fixed how `--sort` and `--hide-legend` works
-    - [x] need to rethink how legend default title works; can't depend on encoding.fill.field, as it may sometimes be encoding.fill.aggregate or whatever
-        - [ ] need to test
-
-- line chart
-    - https://altair-viz.github.io/gallery/simple_line_chart.html
-    - [X] skeleton and basic tests
-    - `-s/--stroke` conflicts with `--sort/-s`; change `--sort` to `-S`?
+- area chart
+    - [x] skeleton and basic tests
+    - [x] sorting the fill
+        - [x] basic test
+        - [x] added to bar charts
+        - [ ] DRY it: should be a general function handled by Vizkit
+        - [ ] Should automatically set the legend
+        - [ ] practically speaking, `--fill-sort '-'` has the same effect as not setting anything
+        - [ ] maybe change '+/-' signage to 'asc/dsc'
 
 ## ON DECK
 
@@ -39,7 +34,9 @@ https://stackoverflow.com/questions/61840072/show-x-and-y-labels-in-each-facet-s
         ...: ))    
     ```
 
-
+- [x] fixed how `--sort` and `--hide-legend` works
+    - [x] need to rethink how legend default title works; can't depend on encoding.fill.field, as it may sometimes be encoding.fill.aggregate or whatever
+        - [ ] need to test
 - hist.py
     - https://altair-viz.github.io/gallery/simple_histogram.html
     - https://altair-viz.github.io/gallery/histogram_responsive.html
@@ -47,9 +44,8 @@ https://stackoverflow.com/questions/61840072/show-x-and-y-labels-in-each-facet-s
     - [ ] test
     - figure out how to specify bin size and intervals and counts
 
+- bar width: https://altair-viz.github.io/user_guide/customization.html#adjusting-the-width-of-bar-marks
 
-- axis-range
-    - [X] `--xlim/--ylim`: https://altair-viz.github.io/user_guide/customization.html?highlight=axis#adjusting-axis-limits
 
 
 - custom visuals
@@ -57,14 +53,6 @@ https://stackoverflow.com/questions/61840072/show-x-and-y-labels-in-each-facet-s
     - tooltips: https://altair-viz.github.io/gallery/scatter_tooltips.html
 
 
-
-
-- Figure out a way to re-use/simplify command boilerplate, as simple as it already is
-
-- `scatter`:
-    - [X] legend for `size` appears and do we want that?
-    - [X] copy `bar` template with half-finished Vizkit
-    - [X] need to actually subclass Vizkit, to do custom implementation of set_channels
 
 - csvviz.info:
     - alt.core.TIMEUNITS
@@ -77,27 +65,13 @@ https://stackoverflow.com/questions/61840072/show-x-and-y-labels-in-each-facet-s
     - height (combine into a dimensions flag)
 
 
-- Handling datetimes: https://altair-viz.github.io/user_guide/times_and_dates.html
-    ```py
-    # https://altair-viz.github.io/user_guide/times_and_dates.html#altair-and-pandas-datetimes
-    # using temporal unit
-    alt.Chart(temps).mark_line().encode(
-        x='date:T',
-        y='temp:Q'
-    )
-
-    # using ordinal time units
-
-    alt.Chart(temps).mark_rect().encode(
-        alt.X('hoursminutes(date):O', title='hour of day'),
-        alt.Y('monthdate(date):O', title='date'),
-        alt.Color('temp:Q', title='temperature (F)')
-    )
-    ```
-
 
 - opacity option, for use in scatterplots
 
+
+- csvviz inspect
+    - show number of columns by rows
+    - for every column, show: name, datatype, cardinality, most_common_val, number of nils, mean, median, min, max
 
 
 ## Not on deck
@@ -244,3 +218,45 @@ https://altair-viz.github.io/user_guide/encoding.html#ordering-marks
 
 - [X] '--json' output option
     - [X] write tests for it
+
+
+- [x] Figure out a way to re-use/simplify command boilerplate, as simple as it already is
+
+
+- axis-range
+    - [X] `--xlim/--ylim`: https://altair-viz.github.io/user_guide/customization.html?highlight=axis#adjusting-axis-limits
+
+
+- `scatter`:
+    - [X] legend for `size` appears and do we want that?
+    - [X] copy `bar` template with half-finished Vizkit
+    - [X] need to actually subclass Vizkit, to do custom implementation of set_channels
+
+
+- Handling datetimes: https://altair-viz.github.io/user_guide/times_and_dates.html
+    ```py
+    # https://altair-viz.github.io/user_guide/times_and_dates.html#altair-and-pandas-datetimes
+    # using temporal unit
+    alt.Chart(temps).mark_line().encode(
+        x='date:T',
+        y='temp:Q'
+    )
+
+    # using ordinal time units
+
+    alt.Chart(temps).mark_rect().encode(
+        alt.X('hoursminutes(date):O', title='hour of day'),
+        alt.Y('monthdate(date):O', title='date'),
+        alt.Color('temp:Q', title='temperature (F)')
+    )
+    ```
+
+
+- [X] kill Datakit
+    - [x] removed reference/usage in Vizkit; Datakit is now unused except in tests
+    - [?] move dataframe functions into Vizkit
+
+- line chart
+    - https://altair-viz.github.io/gallery/simple_line_chart.html
+    - [X] skeleton and basic tests
+    - `-s/--stroke` conflicts with `--sort/-s`; change `--sort` to `-S`?

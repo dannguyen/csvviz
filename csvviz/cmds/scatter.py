@@ -5,8 +5,6 @@ from pathlib import Path
 
 import altair as alt
 import click
-from csvviz.cli_utils import clout, clerr, clexit
-from csvviz.cli_utils import standard_options_decor
 
 from csvviz.exceptions import *
 from csvviz.vizkit import Vizkit
@@ -14,6 +12,7 @@ from csvviz.vizkit import Vizkit
 
 class Scatterkit(Vizkit):
     viz_type = "scatter"
+    viz_info = f"""A scatterplot for showing relationship between two independent variables x and y. Can vary by size and fill too. TK"""
 
     def prepare_channels(self):
         channels = self._channels_init(self.channel_kwargs)

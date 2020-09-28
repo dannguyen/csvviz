@@ -35,18 +35,8 @@ ENCODING_CHANNEL_NAMES = (
     "size",
     "stroke",
     "facet",
+    "order",
 )
-
-
-def get_channel_name(channel: typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]) -> str:
-    return next(
-        (
-            getattr(channel, a)
-            for a in ("title", "field", "aggregate")
-            if getattr(channel, a) != altUndefined
-        ),
-        altUndefined,
-    )
 
 
 def lookup_mark_method(viz_type: str) -> alt.Chart:
@@ -84,6 +74,9 @@ class Vizkit(object):
     """
 
     viz_type = "abstract"
+    viz_info = (
+        f"""A {viz_type} visualization"""  # this should be defined in every subclass
+    )
 
     def __init__(self, input_file, kwargs):
         self.kwargs = kwargs
@@ -157,10 +150,11 @@ class Vizkit(object):
         for cname in (
             "fill",
             "size",
+            "stroke",
         ):
             if channel := channels.get(cname):
                 channel.legend = self._config_legend(
-                    self.legend_kwargs, channel_name=get_channel_name(channel)
+                    self.legend_kwargs, channel_name=self.resolve_channel_name(channel)
                 )
 
         return
@@ -395,15 +389,28 @@ class Vizkit(object):
         def _foo(**kwargs):
             try:
                 vk = klass(input_file=kwargs.get("input_file"), kwargs=kwargs)
-            except InvalidDataReference as err:
+            except (InvalidDataReference, MissingDataReference) as err:
                 clexit(1, err)
             else:
                 vk.output_chart()
 
         command = _foo
-        command = click.command(name=klass.viz_type)(command)
+        command = click.command(name=klass.viz_type, help=klass.viz_info)(command)
         command = standard_options_decor(command)
         for decor in klass.COMMAND_DECORATORS:
             command = decor(command)
 
         return command
+
+    @staticmethod
+    def resolve_channel_name(
+        channel: typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]
+    ) -> str:
+        return next(
+            (
+                getattr(channel, a)
+                for a in ("title", "field", "aggregate")
+                if getattr(channel, a) != altUndefined
+            ),
+            altUndefined,
+        )
