@@ -11,27 +11,28 @@ import click
 from csvviz.cli_utils import clout, clerr, clexit
 from csvviz.cli_utils import standard_options_decor
 from csvviz.exceptions import *
-from csvviz.kits.vizkit import Vizkit, get_channel_name
-
+from csvviz.vizkit import Vizkit, get_channel_name
 
 
 class Linekit(Vizkit):
-    viz_type = 'line'
+    viz_type = "line"
 
     def prepare_channels(self):
         channels = self._channels_init(self.channel_kwargs)
         return channels
 
-    command_decorators = (
-    standard_options_decor,
-    click.option("--xvar", "-x", type=click.STRING, default="", help="the label column"),
-    click.option("--yvar", "-y", type=click.STRING, default="", help="the value column"),
-    click.option(
-        "--stroke",
-        "-s",
-        "strokevar",
-        type=click.STRING,
-        help="The column used to specify stroke color",
-    ),
-
+    COMMAND_DECORATORS = (
+        click.option(
+            "--xvar", "-x", type=click.STRING, default="", help="the label column"
+        ),
+        click.option(
+            "--yvar", "-y", type=click.STRING, default="", help="the value column"
+        ),
+        click.option(
+            "--stroke",
+            "-s",
+            "strokevar",
+            type=click.STRING,
+            help="The column used to specify stroke color",
+        ),
     )

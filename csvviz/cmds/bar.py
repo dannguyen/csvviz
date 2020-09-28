@@ -4,12 +4,11 @@ from csvviz.cli_utils import clout, clerr, clexit
 from csvviz.cli_utils import standard_options_decor
 
 from csvviz.exceptions import *
-from csvviz.kits.vizkit import Vizkit
-
+from csvviz.vizkit import Vizkit
 
 
 class Barkit(Vizkit):
-    viz_type = 'bar'
+    viz_type = "bar"
 
     def prepare_channels(self):
 
@@ -33,14 +32,13 @@ class Barkit(Vizkit):
 
         return channels
 
-
-
-    # @click.command(name="bar")
-
-    command_decorators = (
-        standard_options_decor,
-        click.option("--xvar", "-x", type=click.STRING, default="", help="the label column"),
-        click.option("--yvar", "-y", type=click.STRING, default="", help="the value column"),
+    COMMAND_DECORATORS = (
+        click.option(
+            "--xvar", "-x", type=click.STRING, default="", help="the label column"
+        ),
+        click.option(
+            "--yvar", "-y", type=click.STRING, default="", help="the value column"
+        ),
         click.option(
             "--fill",
             "-f",
@@ -48,44 +46,25 @@ class Barkit(Vizkit):
             type=click.STRING,
             help="The column used to specify fill color",
         ),
-
         ###### specific to bar charts
         click.option(
-            "--horizontal", "-H", "flipxy", is_flag=True, help="Orient the bars horizontally"
+            "--horizontal",
+            "-H",
+            "flipxy",
+            is_flag=True,
+            help="Orient the bars horizontally",
         ),
         click.option(
-            "--sort", # https://altair-viz.github.io/user_guide/encoding.html#sorting
+            "--sort",  # https://altair-viz.github.io/user_guide/encoding.html#sorting
             "sortx_var",
             type=click.STRING,
             help="Sort the x-axis by the values of the x/y/fill channel. Prefix with '-' to do reverse sort",
-        ),)
-
-
+        ),
+    )
 
 
 """
 Notes:
-
-## Stacked
-
-As long as --fill and -x are different, y is implicitly taken as a sum:
-
-    csvviz bars examples/fruits.csv -x product -y revenue -f region
-
-However, if x and fill are the same:
-
-    csvviz bars examples/fruits.csv -x product -y revenue -f region
-
-Then there is no stacked sum. It has to be set in Altair explicitly:
-
-    altview.show(alt.Chart(df).mark_bar().encode(x='product', y='sum(revenue)', fill="product"))
-
-
-## Legend and colors and fill
-
-- When fill is set, legend is automatically set
-- When color range is set explicitly,
-
 
 - bar/column charts
     - stacked
@@ -103,6 +82,5 @@ Then there is no stacked sum. It has to be set in Altair explicitly:
 
 colors:
 https://altair-viz.github.io/user_guide/customization.html?highlight=colors#color-schemes
-
 
 """

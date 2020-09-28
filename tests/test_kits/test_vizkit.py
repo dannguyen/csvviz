@@ -1,7 +1,5 @@
 import pytest
-
-#  from csvviz.kits.datakit import Datakit
-from csvviz.kits.vizkit import Vizkit, lookup_mark_method
+from csvviz.vizkit import Vizkit, lookup_mark_method
 from csvviz.cmds.scatter import Scatterkit
 
 import altair as alt
@@ -42,7 +40,6 @@ def dotvk():
 
 def test_vizkit_basic_init(tvk):
     assert isinstance(tvk, Vizkit)
-    # assert isinstance(tvk.datakit, Datakit)
     assert isinstance(tvk.chart, alt.Chart)
 
 

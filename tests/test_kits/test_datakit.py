@@ -1,6 +1,4 @@
 import pytest
-
-from csvviz.kits.datakit import Datakit
 import pandas as pd
 
 
@@ -11,11 +9,13 @@ def tdk():
     return dk
 
 
+@pytest.mark.skip(reason="Datakit deprecated and deleted")
 def test_datakit_init(tdk):
     assert isinstance(tdk, Datakit)
     assert isinstance(tdk.df, pd.DataFrame)
 
 
+@pytest.mark.skip(reason="Datakit deprecated and deleted")
 def test_datakit_properties(tdk):
     assert tdk.column_names == ["name", "amount"]
     assert isinstance(tdk.schema, dict)
@@ -27,6 +27,7 @@ def test_datakit_data_getters(tdk):
     pass
 
 
+@pytest.mark.skip(reason="Datakit deprecated and deleted")
 def test_datakit_resolve_column_basics(tdk):
     """
     TODO: resolve_column is a work in progress
@@ -37,7 +38,7 @@ def test_datakit_resolve_column_basics(tdk):
     # assert tdk.resolve_column('0')      == (0, 'name')
 
 
-@pytest.mark.skip(reason="do it later")
+@pytest.mark.skip(reason="Datakit deprecated and deleted")
 def test_datakit_resolve_column_errors(tdk):
     with pytest.raises(ValueError) as err:
         tdk.resolve_column(42)

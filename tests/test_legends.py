@@ -6,7 +6,8 @@ import json as jsonlib
 from pathlib import Path
 
 from csvviz.cmds.scatter import Scatterkit
-viz = Scatterkit.get_command()
+
+viz = Scatterkit.register_command()
 
 from csvviz.exceptions import *
 from csvviz.settings import *

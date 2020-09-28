@@ -2,6 +2,13 @@
 
 ## JUST DONE 
 
+
+- [ ] kill Datakit
+    - [x] removed reference/usage in Vizkit; Datakit is now unused except in tests
+    - [ ] move dataframe functions into Vizkit
+
+
+
 - [x] fixed how `--sort` and `--hide-legend` works
     - [x] need to rethink how legend default title works; can't depend on encoding.fill.field, as it may sometimes be encoding.fill.aggregate or whatever
         - [ ] need to test
@@ -11,10 +18,6 @@
     - [X] skeleton and basic tests
     - `-s/--stroke` conflicts with `--sort/-s`; change `--sort` to `-S`?
 
-- [ ] kill Datakit
-    - [x] removed reference/usage in Vizkit; Datakit is now unused except in tests
-    - [ ] move dataframe functions into Vizkit
-    
 ## ON DECK
 
 - add faceting
@@ -121,15 +124,13 @@ https://stackoverflow.com/questions/61840072/show-x-and-y-labels-in-each-facet-s
 
 
 - [ ] `-g/--group` for grouped bar charts
-
+    - [ ] handled by `--facet` for now
 
 
 - Overall design
     - subclass click.command
-    - Datakit class
-        - has common utils, like pandas stuff: read path/stdin, parsing options
-        - write basic tests for current properties and methods
-        - need custom errors for out of index issues?
+
+
 - Housekeeping
     - Get some data files to store locally
 

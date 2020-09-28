@@ -10,7 +10,8 @@ from csvviz.exceptions import *
 from csvviz.settings import *
 
 from csvviz.cmds.bar import Barkit
-bar = Barkit.get_command()
+
+bar = Barkit.register_command()
 
 
 OUTPUT_ARGS = [

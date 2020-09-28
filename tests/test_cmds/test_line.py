@@ -10,7 +10,8 @@ from csvviz.exceptions import *
 from csvviz.settings import *
 
 from csvviz.cmds.line import Linekit
-line = Linekit.get_command()
+
+line = Linekit.register_command()
 
 TONK_ARGS = [
     "examples/tonk.csv",

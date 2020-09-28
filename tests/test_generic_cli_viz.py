@@ -10,7 +10,8 @@ from csvviz.settings import *
 
 # for now, the bar chart seems like a good default viz
 from csvviz.cmds.bar import Barkit
-viz = Barkit.get_command()
+
+viz = Barkit.register_command()
 
 OUTPUT_ARGS = ["--json", "--no-preview", "examples/tings.csv"]
 

@@ -8,7 +8,6 @@ import click
 import pandas as pd
 from vega_datasets import data as vdata
 
-from csvviz.kits.datakit import Datakit
 
 def av(chart):
     print(chart.to_json())
@@ -17,13 +16,11 @@ def av(chart):
 def main():
     la_input_path = vdata.la_riots.filepath
     ladf = pd.read_csv(la_input_path)
-    ladk = Datakit(la_input_path)
 
-    tk = Datakit('examples/tings.csv')
-    fk = Datakit('examples/fruits.csv')
+    tkdf = pd.read_csv('examples/tings.csv')
 
 
-    ci = alt.Chart(tk.df).mark_bar()
+    ci = alt.Chart(tkdf).mark_bar()
     chart = ci.encode(
         x=alt.X('name'),
         y='amount',

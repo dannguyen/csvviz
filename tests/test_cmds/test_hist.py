@@ -10,7 +10,8 @@ from csvviz.exceptions import *
 from csvviz.settings import *
 
 from csvviz.cmds.hist import Histkit
-hist = Histkit.get_command()
+
+hist = Histkit.register_command()
 
 
 OUTPUT_ARGS = [

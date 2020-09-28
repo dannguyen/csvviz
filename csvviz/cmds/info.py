@@ -25,13 +25,11 @@ def load_schema():
     return alt.vegalite.core.load_schema()
 
 
-
-
 class Infokit(object):
-
     @click.command(
         name="info",
-        epilog="Topics:\n" + "\n".join([f"\n  {k}: {v}" for k, v in INFO_OPTIONS.items()]),
+        epilog="Topics:\n"
+        + "\n".join([f"\n  {k}: {v}" for k, v in INFO_OPTIONS.items()]),
     )
     @click.argument(
         "infotype", type=click.Choice(INFO_OPTIONS.keys(), case_sensitive=False)
@@ -43,11 +41,9 @@ class Infokit(object):
         default=False,
         help="Output to stdout the Vega JSON representation",
     )
-
     @classmethod
     def foo_command(klass):
         return command
-
 
     def command(infotype, **kwargs):
         """
@@ -79,7 +75,9 @@ class Infokit(object):
                 for s in schema["definitions"]["ColorScheme"]["anyOf"]
             ]
             values = tuple(
-                (c, val) for c in sorted(cats) for val in schema["definitions"][c]["enum"]
+                (c, val)
+                for c in sorted(cats)
+                for val in schema["definitions"][c]["enum"]
             )
 
         elif infotype == "themes":

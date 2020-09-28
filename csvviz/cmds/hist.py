@@ -10,12 +10,11 @@ import click
 from csvviz.cli_utils import clout, clerr, clexit
 from csvviz.cli_utils import standard_options_decor
 from csvviz.exceptions import *
-from csvviz.kits.vizkit import Vizkit
-
+from csvviz.vizkit import Vizkit
 
 
 class Histkit(Vizkit):
-    viz_type = 'hist'
+    viz_type = "hist"
 
     def prepare_channels(self):
         channels = self._channels_init(self.channel_kwargs)
@@ -34,10 +33,10 @@ class Histkit(Vizkit):
 
         return channels
 
-
-    command_decorators = (
-        standard_options_decor,
-        click.option("--xvar", "-x", type=click.STRING, default="", help="the thing to bin TK"),
+    COMMAND_DECORATORS = (
+        click.option(
+            "--xvar", "-x", type=click.STRING, default="", help="the thing to bin TK"
+        ),
         click.option(
             "--fill",
             "-f",
@@ -46,7 +45,10 @@ class Histkit(Vizkit):
             help="The column used to specify fill color",
         ),
         click.option(
-            "--horizontal", "-H", "flipxy", is_flag=True, help="Orient the bars horizontally"
-        ),)
-
-
+            "--horizontal",
+            "-H",
+            "flipxy",
+            is_flag=True,
+            help="Orient the bars horizontally",
+        ),
+    )

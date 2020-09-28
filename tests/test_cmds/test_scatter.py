@@ -10,7 +10,8 @@ from csvviz.exceptions import *
 from csvviz.settings import *
 
 from csvviz.cmds.scatter import Scatterkit
-scatter = Scatterkit.get_command()
+
+scatter = Scatterkit.register_command()
 
 OUTPUT_ARGS = [
     "--json",

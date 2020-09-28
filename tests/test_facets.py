@@ -10,7 +10,8 @@ from csvviz.settings import *
 
 
 from csvviz.cmds.bar import Barkit
-viz = Barkit.get_command()
+
+viz = Barkit.register_command()
 
 
 DEFAULT_ARGS = [
