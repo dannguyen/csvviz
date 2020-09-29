@@ -17,8 +17,10 @@ import click
 # from csvviz import __version__ as csvviz_version
 from csvviz.cli_utils import clout, clerr, print_version
 
+from csvviz.cmds.info import command as infocommand
 
-SUBCOMMAND_PATHS = Path("csvviz/cmds/").glob("*.py")
+
+SUBCOMMAND_PATHS = [p for p in Path("csvviz/cmds/").glob("*.py") if p.name != "info.py"]
 
 
 # def _callback_print_version(ctx, param, value) -> typeNoReturn:
@@ -40,41 +42,28 @@ SUBCOMMAND_PATHS = Path("csvviz/cmds/").glob("*.py")
     help="Print the version of csvviz",
 )
 def apex(**kwargs):
-    """Welcome to csvviz"""
+    """Welcome to csvviz, a command-line tool for producing visualizations using the Vega-lite spec"""
 
     pass
 
 
-@apex.command()
-@click.argument("foo", nargs=1)
-@click.argument("bar", nargs=-1)
-def foo(foo, bar):
-    """
-    this is just for foo!
-    """
-    clerr("foo goes to:", "stderr")
-    clerr(foo)
-
-    clout("bar goes to:", "stdout")
-    clout(bar)
-
-
 def main():
-    def _add_subcommands() -> typeNoReturn:
+    def _add_viz_subcommands() -> typeNoReturn:
         for path in SUBCOMMAND_PATHS:
             modname = re.sub(f"/", ".", str(path)).rpartition(".py")[
                 0
             ]  # e.g. "csvviz.cmds.bar" or "csvviz.cmds.info"
-            klassname = (
-                modname.split(".")[-1].capitalize() + "kit"
-            )  # e.g. "Barkit" or "Infokit"
+            klassname = modname.split(".")[-1].capitalize() + "kit"
             mod = importlib.import_module(modname)
             klass = getattr(mod, klassname)
 
             if getattr(klass, "register_command", None):  # TODO: remove after testing
                 apex.add_command(klass.register_command())
 
-    _add_subcommands()
+    _add_viz_subcommands()
+    apex.add_command(infocommand)
+    # manually add info command
+
     apex()
 
 

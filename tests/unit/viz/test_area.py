@@ -71,7 +71,7 @@ def test_area_fill_sort():
                 "--color",
                 "company",
                 "--color-sort",
-                "+",
+                "asc",
                 *STOCK_ARGS,
             ],
         )
@@ -81,11 +81,13 @@ def test_area_fill_sort():
     assert o["field"] == "company"
     assert o["sort"] == "ascending"
 
+
+def test_area_fill_sort_desc():
     cdata = json.loads(
         CliRunner()
         .invoke(
             area,
-            ["-x", "date", "-y", "price", "-c", "company", "-cs", "-", *STOCK_ARGS],
+            ["-x", "date", "-y", "price", "-c", "company", "-cs", "desc", *STOCK_ARGS],
         )
         .output
     )
@@ -94,12 +96,35 @@ def test_area_fill_sort():
     assert o["sort"] == "descending"
 
 
-def test_error_when_fill_sort_but_no_fill():
+def test_area_colors():
+    cdata = json.loads(
+        CliRunner()
+        .invoke(
+            area,
+            [
+                "-x",
+                "date",
+                "-y",
+                "price",
+                "-c",
+                "company",
+                "-C",
+                "red,yellow",
+                *STOCK_ARGS,
+            ],
+        )
+        .output
+    )
+    e = cdata["encoding"]["fill"]
+    assert e["scale"]["range"] == ["red", "yellow"]
+
+
+def test_area_error_when_fill_sort_but_no_fill():
     result = CliRunner().invoke(
-        area, ["-x", "date", "-y", "price", "-cs", "+", *STOCK_ARGS]
+        area, ["-x", "date", "-y", "price", "-cs", "asc", *STOCK_ARGS]
     )
     assert result.exit_code == 1
     assert (
-        "MissingDataReference: --color-sort '+' was specified, but no --color value"
+        "MissingDataReference: --color-sort 'asc' was specified, but no --color value"
         in result.output.strip()
     )

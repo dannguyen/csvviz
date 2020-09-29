@@ -14,7 +14,7 @@ History
 cli.bar
 ^^^^^^^
 - ``-xs/--x-sort`` for sorting arrangement of independent values
-- ``-fs/--f-sort`` for sorting arrangement of independent values
+- ``-cs/--color-sort`` for sorting arrangement of independent values
 
 
 cli.hist
@@ -33,8 +33,6 @@ cli.scatter
 General
 ^^^^^^^
 - Fixed total breakage
-
-
 
 
 0.2.0-alpha (2020-09-23)

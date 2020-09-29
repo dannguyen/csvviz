@@ -36,6 +36,14 @@ csvviz.settings module
    :undoc-members:
    :show-inheritance:
 
+csvviz.vizkit module
+--------------------
+
+.. automodule:: csvviz.vizkit
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 

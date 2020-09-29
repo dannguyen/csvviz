@@ -60,7 +60,7 @@ test: ## run all tests with the default Python
 
 unittest:
 	## run tests, open interactive debugger at first failure, and then quit
-	pytest -x --pdb tests/unit
+	pytest tests/unit
 
 test-all: ## run tests on every Python version with tox
 	tox

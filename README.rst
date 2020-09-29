@@ -20,12 +20,18 @@ Create visualizations from CSV files and the command line
 Current status
 --------------
 
-Nothing to see here, just a random idea related to another side-project library that I'm struggling to make :D
+Pretty usable::
+
+    $ csvviz bar -x name -y amount examples/tings.csv
+
+    $ csvviz line -x date -y price -c company examples/stocks.csv
 
 
+
+But undocumented so far, other than running ``$ csvviz --help``
 
 * Free software: MIT license
-* Documentation: https://csvviz.readthedocs.io.
+.. * Documentation: https://csvviz.readthedocs.io.
 
 
 Features

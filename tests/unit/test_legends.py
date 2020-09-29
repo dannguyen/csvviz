@@ -27,8 +27,8 @@ DEFAULT_ARGS = [
 # legend
 ##############################################################################################################
 def test_legend_default():
-    """when there is a fill, there is a legend"""
-    result = CliRunner().invoke(viz, ["-f", "breed", *DEFAULT_ARGS])
+    """when there is a fill --color, there is a legend"""
+    result = CliRunner().invoke(viz, ["-c", "breed", *DEFAULT_ARGS])
     cdata = json.loads(result.output)
     legend = cdata["encoding"]["fill"]["legend"]
 
@@ -40,7 +40,7 @@ def test_no_legend():
     """hiding the legend sets fill.legend to None explicitly"""
 
     result = CliRunner().invoke(
-        viz, ["--fill", "breed", "--size", "velocity", "--no-legend", *DEFAULT_ARGS]
+        viz, ["--color", "breed", "--size", "velocity", "--no-legend", *DEFAULT_ARGS]
     )
     cdata = json.loads(result.output)
 

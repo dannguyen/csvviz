@@ -8,21 +8,28 @@ from csvviz.vizkit import Vizkit
 
 class Barkit(Vizkit):
     viz_type = "bar"
-    viz_info = f"""An bar/column chart. TK"""
+    viz_info = f"""An bar/column chart"""
+    viz_epilog = """Example:\tcsvviz bar -x name -y amount data.csv"""
 
     COMMAND_DECORATORS = (
         click.option(
-            "--xvar", "-x", type=click.STRING, default="", help="the label column"
+            "--xvar",
+            "-x",
+            type=click.STRING,
+            help="The name of the column for mapping x-axis values; if empty, the first (columns[0]) column is used",
         ),
         click.option(
-            "--yvar", "-y", type=click.STRING, default="", help="the value column"
+            "--yvar",
+            "-y",
+            type=click.STRING,
+            help="The name of the column for mapping y-axis values; if empty, the second (columns[1]) column is used",
         ),
         click.option(
             "--color",
             "-c",
             "fillvar",
             type=click.STRING,
-            help="The column used to specify fill color",
+            help="The name of the column for mapping bar colors. This is required for creating a stacked chart.",
         ),
         ###### specific to bar charts
         click.option(
@@ -30,24 +37,23 @@ class Barkit(Vizkit):
             "-H",
             "flipxy",
             is_flag=True,
-            help="Orient the bars horizontally",
+            help="Make a horizontal bar chart",
         ),
-        # https://altair-viz.github.io/user_guide/encoding.html?highlight=sort%20marks#sorting
         # https://altair-viz.github.io/user_guide/encoding.html#sorting
         click.option(
             "--x-sort",
             "-xs",
             "sortx_var",
             type=click.STRING,
-            help="Sort the x-axis by the values of the x/y/fill channel. Prefix with '-' to do reverse sort",
+            help="Sort the x-axis by the values of the x/y/fill channel. Prefix with '-' to do reverse sort, e.g. 'y' vs '-y'",
         ),
         # https://altair-viz.github.io/user_guide/encoding.html?#ordering-marks
         click.option(
             "--color-sort",
             "-cs",
             "fillsort",
-            type=click.Choice(("+", "-")),
-            help="Whether to sort the fill stack in ascending (+) or descending (-) order by nominal name TKTK",
+            type=click.Choice(("asc", "desc"), case_sensitive=False),
+            help="For stacked bar charts, the sort order of the color variable: 'asc' for ascending, 'desc' for descending/reverse",
         ),
     )
 
@@ -58,8 +64,7 @@ class Barkit(Vizkit):
         if self.kwargs.get("flipxy"):  # i.e. -H/--horizontal flag
             channels["x"], channels["y"] = (channels["y"], channels["x"])
 
-        if channels.get("fill"):
-            channels["fill"].scale = alt.Scale(**self._config_colors(self.color_kwargs))
+        self._set_channel_colorscale("fill", channels)
 
         if _sortvar := self.kwargs.get("sortx_var"):
             # _sort_config := self._config_sorting(self.kwargs, self.datakit):
@@ -80,7 +85,7 @@ class Barkit(Vizkit):
                 )
             else:
                 fname = self.resolve_channel_name(channels["fill"])
-                fsort = "descending" if _fillsort == "-" else "ascending"
+                fsort = "descending" if _fillsort == "desc" else "ascending"
                 channels["order"] = alt.Order(fname, sort=fsort)
 
         return channels

@@ -3,23 +3,23 @@
 ## JUST DONE 
 
 
-## 0.3.1
-
-- [ ] `-gs/--grid-sort`
 
 
 
 ## 0.3.0
 
-- write io tests, make sure stdin works
+- [ ] better documentation
 
+- [X] test color settings for area/line/scatter
 
 - hist.py
     - https://altair-viz.github.io/gallery/simple_histogram.html
     - https://altair-viz.github.io/gallery/histogram_responsive.html
     - [x] skeleton
-    - [ ] test
-    - figure out how to specify bin size and intervals and counts
+    - [x] test
+    - [x] figure out how to specify bin size and intervals and counts
+
+- [x?] write io tests, make sure stdin works (mostly done?)
 
 - add faceting
 https://stackoverflow.com/questions/61840072/show-x-and-y-labels-in-each-facet-subplot-in-altair
@@ -28,28 +28,31 @@ https://stackoverflow.com/questions/61840072/show-x-and-y-labels-in-each-facet-s
     - [X] `-gc/--grid-columns`
     - [?] how about independent axis
 
+- [x] change `-f/--fill`, `-s/--stroke` to `-c/--color`, so handles line.stroke and bar/area/scatter.fill. 'color' is also easier for user.
 
 - area chart
     - [x] skeleton and basic tests
-    - [x] sorting the fill
+    - [x] sorting the color (fill) `-cs/--color-sort`
         - [x] basic test
         - [x] added to bar charts
+        - [x] maybe change '+/-' signage to 'asc/desc'
         - [ ] DRY it: should be a general function handled by Vizkit
         - [ ] Should automatically set the legend
-        - [ ] practically speaking, `--fill-sort '-'` has the same effect as not setting anything
-        - [ ] maybe change '+/-' signage to 'asc/dsc'
+        - [NA] practically speaking, `--fill-sort '-'` has the same effect as not setting anything
 
 
-- [x] fixed how `--sort` and `--hide-legend` works
-    - [x] need to rethink how legend default title works; can't depend on encoding.fill.field, as it may sometimes be encoding.fill.aggregate or whatever
-        - [ ] need to test
+- [x]  `--hide-legend` now hides all legends
 
+
+## 0.4.0
+
+- [ ] `-gs/--grid-sort`
+- [ ] normalized bar/area
 
 ## ON DECK
 
 - normalized bar/area stacks
 
-- change `-f/--fill` to `-c/--color`, so handles line.stroke and bar/area/scatter.fill. 'color' is also easier for user.
 
 - make a density chart? 
     - https://www.r-graph-gallery.com/density-plot.html
@@ -116,15 +119,6 @@ Check out R-guides:
     - https://altair-viz.github.io/gallery/scatter_with_labels.html
     - https://altair-viz.github.io/gallery/bar_chart_with_labels.html
 
-
-- [ ] `-g/--group` for grouped bar charts
-    - [ ] handled by `--facet` for now
-
-
-- Overall design
-    - subclass click.command
-
-
 - Housekeeping
     - Get some data files to store locally
 
@@ -143,13 +137,12 @@ Check out R-guides:
         - `reify` the Python Altair code, so that users can eval/copy-paste it for further 
 
 
-- `--sort`: for sorting marks by the x-axis:
+- `-xs/--x-sort`: for sorting marks by the x-axis:
     - https://vega.github.io/vega-lite/docs/sort.html#sort-field
     - https://altair-viz.github.io/user_guide/encoding.html?highlight=sort%20marks
     - [x] basic implementation
     - [x] make sure horizontal bar sorts as expected
     - [x] test, including robust error handling when invalid column name is passed in
-    - [x] naming/syntax: changed to `-xs/--x-sort` and `-fs/--fill-sort`
 
 
 

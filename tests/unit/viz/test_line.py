@@ -56,3 +56,26 @@ def test_line_multiseries_defaults():
     assert e["field"] == "company"
     assert e["type"] == "nominal"
     assert e["legend"]["title"] == "company"
+
+
+def test_line_colors():
+    cdata = json.loads(
+        CliRunner()
+        .invoke(
+            line,
+            [
+                "-x",
+                "date",
+                "-y",
+                "price",
+                "-c",
+                "company",
+                "-C",
+                "red,yellow",
+                *STOCK_ARGS,
+            ],
+        )
+        .output
+    )
+    e = cdata["encoding"]["stroke"]
+    assert e["scale"]["range"] == ["red", "yellow"]

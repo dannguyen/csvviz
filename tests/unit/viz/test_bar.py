@@ -83,7 +83,7 @@ def test_bar_fill():
 def test_bar_fill_sort():
     cdata = json.loads(
         CliRunner()
-        .invoke(bar, ["--color", "name", "--color-sort", "+", *OUTPUT_ARGS])
+        .invoke(bar, ["--color", "name", "--color-sort", "asc", *OUTPUT_ARGS])
         .output
     )
 
@@ -91,8 +91,10 @@ def test_bar_fill_sort():
     assert o["field"] == "name"
     assert o["sort"] == "ascending"
 
+
+def test_bar_fill_sort_desc():
     cdata = json.loads(
-        CliRunner().invoke(bar, ["-c", "name", "-cs", "-", *OUTPUT_ARGS]).output
+        CliRunner().invoke(bar, ["-c", "name", "-cs", "desc", *OUTPUT_ARGS]).output
     )
 
     o = cdata["encoding"]["order"]
@@ -100,13 +102,27 @@ def test_bar_fill_sort():
     assert o["sort"] == "descending"
 
 
-def test_error_when_fill_sort_but_no_fill():
-    result = CliRunner().invoke(bar, ["-cs", "-", *OUTPUT_ARGS])
+def test_bar_error_when_fill_sort_but_no_fill():
+    result = CliRunner().invoke(bar, ["-cs", "desc", *OUTPUT_ARGS])
     assert result.exit_code == 1
     assert (
-        "MissingDataReference: --color-sort '-' was specified, but no --color value"
+        "MissingDataReference: --color-sort 'desc' was specified, but no --color value"
         in result.output.strip()
     )
+
+
+# def test_bar_warn_if_colors_specified_but_no_fill():
+#     result = CliRunner(mix_stderr=False).invoke(bar, ["--colors", "red,blue", *OUTPUT_ARGS])
+#     assert result.exit_code == 0
+#     assert (
+#         "Warning: Specifying --colors/--color-scheme has no effect unless --fill is also specified"
+#         in result.stderr
+#     )
+
+
+def test_error_when_fill_sort_invalid():
+    result = CliRunner().invoke(bar, ["-cs", "BOOBOO", *OUTPUT_ARGS])
+    assert result.exit_code == 2
 
 
 ##############################################################################################################

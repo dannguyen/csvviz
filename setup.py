@@ -14,7 +14,6 @@ with open('HISTORY.rst') as history_file:
 import csvviz as csvviz_vals
 
 
-
 requirements = [
     'altair>=4.1',
     'altair-viewer>=0.3.0',
@@ -22,7 +21,7 @@ requirements = [
 
 ]
 setup_requirements = ['pytest-runner', ]
-test_requirements = ['pytest>=3', ]
+test_requirements = ['pytest>=3', "coverage",]
 
 setup(
     name='csvviz',
@@ -49,7 +48,7 @@ setup(
     },
     extras_require={
         "dev": ["black", "vega_datasets",],
-        "docs": ["sphinx_rtd_theme", "sphinx-autobuild"],
+        "docs": ["sphinx", "sphinx_rtd_theme", "sphinx-autobuild"],
         "test": test_requirements,
     },
     install_requires=requirements,
@@ -64,3 +63,5 @@ setup(
     url='https://github.com/dannguyen/csvviz',
     zip_safe=False,
 )
+
+

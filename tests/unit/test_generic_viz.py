@@ -183,17 +183,6 @@ def test_specify_default_theme_has_no_effect():
 # warnings
 ##############################################################################################################
 @pytest.mark.skip(reason="TODO")
-def test_warn_if_colors_specified_but_no_fill(caplog):
-    result = CliRunner().invoke(viz, ["--colors", "red,blue", *OUTPUT_ARGS])
-    assert result.exit_code == 0
-    assert "WARNING" in caplog.text
-    assert (
-        "Specifying --colors/--color-scheme has no effect unless --fill is also specified"
-        in caplog.text
-    )
-
-
-@pytest.mark.skip(reason="TODO")
 def test_warn_if_colors_scheme_specified_but_no_fill(caplog):
     result = CliRunner().invoke(viz, ["--color-scheme", "dark2", *OUTPUT_ARGS])
     assert result.exit_code == 0

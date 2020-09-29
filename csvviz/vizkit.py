@@ -62,7 +62,7 @@ def lookup_mark_method(viz_type: str) -> alt.Chart:
     return m
 
 
-def preview_chart(chart: alt.Chart) -> typeNoReturn:
+def open_chart_in_browser(chart: alt.Chart) -> typeNoReturn:
     # a helpful wrapper around altair_viewer.altview
     altview.show(chart)
 
@@ -76,9 +76,12 @@ class Vizkit(object):
     viz_info = (
         f"""A {viz_type} visualization"""  # this should be defined in every subclass
     )
+    viz_epilog = ""
 
     def __init__(self, input_file, kwargs):
         self.kwargs = kwargs
+        self.warnings = []
+
         self.input_file = input_file
         self._dataframe = pd.read_csv(self.input_file)
         # TODO: too many properties?
@@ -125,8 +128,11 @@ class Vizkit(object):
         if oargs["to_json"]:
             clout(self.chart.to_json(indent=2))
 
-        if not oargs["no_preview"]:
-            preview_chart(self.chart)
+    def preview_chart(self) -> typeUnion[typeNoReturn, bool]:
+        if not self.kwargs.get("no_preview"):
+            open_chart_in_browser(self.chart)
+        else:
+            return False
 
     def _manage_axis(self) -> typeNoReturn:
         """
@@ -175,9 +181,7 @@ class Vizkit(object):
 
         # if self.kwargs.get("flipxy"):
         #     channels["x"], channels["y"] = (channels["y"], channels["x"])
-
-        if channels.get("fill"):
-            channels["fill"].scale = alt.Scale(**self._config_colors(self.color_kwargs))
+        self._set_channel_colorscale("fill", channels)
 
         return channels
 
@@ -255,6 +259,47 @@ class Vizkit(object):
         chartfoo = getattr(alt.Chart(self.df), self.mark_type)
         return chartfoo(clip=True)
 
+    def _set_channel_colorscale(self, channelvar: str, channels: dict) -> typeNoReturn:
+        """
+        Given a channelvar, e.g. 'fill', 'stroke'
+
+        Check self.channels[channelvar] to see if it's been created
+
+        If so, modify self.channels[channelvar].range
+
+        If not, do nothing, but issue a warning that self.channels[channelvar] was expected
+
+        """
+        ## fill color stuff
+        #         channel = self.channels.get(channelvar)
+        colorargs = {
+            k: self.kwargs[k]
+            for k in (
+                "colors",
+                "color_scheme",
+            )
+            if self.kwargs.get(k)
+        }
+
+        if channel := channels.get(channelvar):
+            config = {"scheme": DEFAULT_COLOR_SCHEME}
+            if colorargs:
+                if _cs := colorargs.get("color_scheme"):
+                    config["scheme"] = _cs
+                    # TODO: if _cs does not match a valid color scheme, then raise a warning/error
+
+                if _cx := colorargs.get("colors"):
+                    # don't think this needs to be a formal parser
+                    config["range"] = _cx.strip().split(",")
+                    # for now, only colors OR color_scheme can be set, not both
+                    config.pop("scheme", None)
+            channel.scale = alt.Scale(**config)
+        else:  # optional expected channel is not present
+            if colorargs:  # but color settings were present
+                self.warnings.append(
+                    f"The {channelvar} variable was not specified, so colors/color_scheme is ignored."
+                )
+
     #####################################################################
     # properties
     @property
@@ -326,26 +371,6 @@ class Vizkit(object):
     ##### chart aspect configurations (static helper methods)
 
     @staticmethod
-    def _config_colors(kwargs: typeDict) -> typeDict:
-        """
-        returns a dict for alt.Scale()
-        """
-        ## fill color stuff
-        config = {"scheme": DEFAULT_COLOR_SCHEME}
-
-        if _cs := kwargs.get("color_scheme"):
-            config["scheme"] = _cs
-            # TODO: if _cs does not match a valid color scheme, then raise a warning/error
-
-        if _colortxt := kwargs["colors"]:
-            # don't think this needs to be a formal parser
-            config["range"] = _colortxt.strip().split(",")
-            # for now, only colors OR color_scheme can be set, not both
-            config.pop("scheme", None)
-
-        return config
-
-    @staticmethod
     def _config_legend(
         kwargs: typeDict, channel_name: str = ""
     ) -> typeUnion[typeDict, bool]:
@@ -388,6 +413,7 @@ class Vizkit(object):
 
     @classmethod
     def register_command(klass):
+        # TODO: this is bad OOP; _foo should be properly named and in some more logical place
         def _foo(**kwargs):
             try:
                 vk = klass(input_file=kwargs.get("input_file"), kwargs=kwargs)
@@ -395,11 +421,16 @@ class Vizkit(object):
                 clexit(1, err)
             else:
                 vk.output_chart()
+                for w in vk.warnings:
+                    clerr(f"Warning: {w}")
+                vk.preview_chart()
 
         command = _foo
-        command = click.command(name=klass.viz_type, help=klass.viz_info)(command)
+        command = click.command(
+            name=klass.viz_type, help=klass.viz_info, epilog=klass.viz_epilog
+        )(command)
         command = standard_options_decor(command)
-        for decor in klass.COMMAND_DECORATORS:
+        for decor in reversed(klass.COMMAND_DECORATORS):
             command = decor(command)
 
         return command

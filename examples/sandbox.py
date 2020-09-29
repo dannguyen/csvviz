@@ -19,12 +19,22 @@ def main():
 
     tkdf = pd.read_csv('examples/tings.csv')
 
-
-    ci = alt.Chart(tkdf).mark_bar()
-    chart = ci.encode(
+    tkart = alt.Chart(tkdf).mark_bar().encode(
         x=alt.X('name'),
         y='amount',
         fill=alt.Color('amount', scale=alt.Scale(range=['green', 'yellow', 'red'] )))
+
+
+
+    ## try cars stuff
+    cdf = vdata.cars()
+    c = alt.Chart(cdf).mark_bar()
+    ci = c.encode(
+        x=alt.X('Horsepower:Q', bin=True),
+        y='count()',
+    )
+
+
 
     print('Breakpoint time!')
     IBREAKPOINT()
