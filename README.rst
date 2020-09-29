@@ -30,14 +30,17 @@ Pretty usable::
 
 But undocumented so far, other than running ``$ csvviz --help``
 
-* Free software: MIT license
+
 .. * Documentation: https://csvviz.readthedocs.io.
 
 
 Features
 --------
 
-* TODO
+* Can do the standard chart types
+* Produces validated Vega-lite JSON output that can be reused
+* Free software: MIT license
+
 
 Credits
 -------
@@ -56,6 +59,7 @@ To install on your own machine for development::
 
     $ make install
 
+Note: setup.py/requirements.txt is not correctly set up yet...
 
 
 (note to self) To publish on pypi::

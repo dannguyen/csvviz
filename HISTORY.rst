@@ -2,29 +2,25 @@
 History
 =======
 
-0.3.0-alpha (ongoing)
----------------------
+0.3.0-alpha (2020-09-28)
+------------------------
 
-- area chart
-- line chart
+New chart types
+^^^^^^^^^^^^^^^
 
-- ``--xlim,--ylim``
-- ``--facet``
-
-cli.bar
-^^^^^^^
-- ``-xs/--x-sort`` for sorting arrangement of independent values
-- ``-cs/--color-sort`` for sorting arrangement of independent values
+- area
+- hist (like bar charts, but for frequency count only)
+- line
+- scatter, which can act as bubble chart if ``--size`` param is set
 
 
-cli.hist
-^^^^^^^^
+Grid (i.e. trellis/small multiples)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- like ``csvviz bar``, except simplified for histogram count binning
+For any chart type, use ``-g/--grid`` to specify variable to map chart multiples
 
-cli.scatter
-^^^^^^^^^^^
-- can specify ``--size`` to vary by column
+
+
 
 0.2.1-alpha (2020-09-23)
 ------------------------
