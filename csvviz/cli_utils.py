@@ -16,6 +16,7 @@ from typing import IO as typeIO
 import altair as alt
 import click
 from csvviz import __version__
+from csvviz.settings import *
 
 
 def clout(*args) -> typeNoReturn:
@@ -84,11 +85,31 @@ def print_version(ctx=None, param=None, value=None) -> typeNoReturn:
 #     # def full_process_value(self, ctx, value):
 #     #     return super().process_value(ctx, value or ('-', ))
 
+
+def check_piped_arg(ctx, param, value):
+    """
+    hack courtesy of: https://github.com/pallets/click/issues/1202
+    """
+    if value:
+        return value
+    else:
+        if not sys.stdin.isatty():
+            return click.get_text_stream("stdin")
+        else:
+            ctx.fail(
+                f"Missing argument: {param.human_readable_name}.\n"
+                "Pass in a file path, or explicitly pass in '-' for stdin, "
+                "or just pipe into the command."
+            )
+
+
 STANDARD_OPTS = {}
 
 """common input output/options"""
 STANDARD_OPTS["io"] = {
-    "input_file": click.argument("input_file", type=click.File("r")),
+    "input_file": click.argument(
+        "input_file", type=click.File("r"), required=False, callback=check_piped_arg
+    ),
     "is_interactive": click.option(
         "--interactive/--static",
         "is_interactive",
@@ -161,13 +182,21 @@ STANDARD_OPTS["facet"] = {
         type=click.STRING,
         help="The var to facet/grid by TKTK",
     ),
-    "facetsort": click.option(
-        "--grid-sort",
-        "-gs",
-        "facetsort",
-        type=click.STRING,
-        help="Sort the grid by something",
+    "facetcolumns": click.option(
+        "--grid-columns",
+        "-gc",
+        "facetcolumns",
+        default=0,
+        type=click.INT,
+        help="Number of columns per grid row. Default is '0' for infinite.",
     ),
+    # "facetsort": click.option(
+    #     "--grid-sort",
+    #     "-gs",
+    #     "facetsort",
+    #     type=click.STRING,
+    #     help="Sort the grid by something",
+    # ),
 }
 
 

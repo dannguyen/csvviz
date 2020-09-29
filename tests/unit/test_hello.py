@@ -3,12 +3,9 @@
 """Tests for `csvviz` package."""
 
 import pytest
-
-from click.testing import CliRunner
-
-from csvviz import cli, __version__
-
 import re
+from click.testing import CliRunner
+from csvviz import cli, __version__
 
 
 @pytest.fixture

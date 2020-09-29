@@ -55,8 +55,12 @@ black: lint
 
 
 
-test: ## run tests quickly with the default Python
+test: ## run all tests with the default Python
 	pytest
+
+unittest:
+	## run tests, open interactive debugger at first failure, and then quit
+	pytest -x --pdb tests/unit
 
 test-all: ## run tests on every Python version with tox
 	tox

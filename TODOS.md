@@ -3,10 +3,31 @@
 ## JUST DONE 
 
 
+## 0.3.1
+
+- [ ] `-gs/--grid-sort`
 
 
 
 ## 0.3.0
+
+- write io tests, make sure stdin works
+
+
+- hist.py
+    - https://altair-viz.github.io/gallery/simple_histogram.html
+    - https://altair-viz.github.io/gallery/histogram_responsive.html
+    - [x] skeleton
+    - [ ] test
+    - figure out how to specify bin size and intervals and counts
+
+- add faceting
+https://stackoverflow.com/questions/61840072/show-x-and-y-labels-in-each-facet-subplot-in-altair
+    - Maybe call it `-g/--grid`? That makes grouped bar charts easier to reason with.
+    - [X] basic skeleton and test; made `Vizkit._manage_axis()` for now
+    - [X] `-gc/--grid-columns`
+    - [?] how about independent axis
+
 
 - area chart
     - [x] skeleton and basic tests
@@ -19,25 +40,10 @@
         - [ ] maybe change '+/-' signage to 'asc/dsc'
 
 
-- add faceting
-https://stackoverflow.com/questions/61840072/show-x-and-y-labels-in-each-facet-subplot-in-altair
-    - Maybe call it `-g/--grid`? That makes grouped bar charts easier to reason with.
-    - [X] basic skeleton and test; made `Vizkit._manage_axis()` for now
-    - `-gs/--grid-sort`
-    - `-gc/--grid-columns`
-    - how about independent axis
-
-
-
 - [x] fixed how `--sort` and `--hide-legend` works
     - [x] need to rethink how legend default title works; can't depend on encoding.fill.field, as it may sometimes be encoding.fill.aggregate or whatever
         - [ ] need to test
-- hist.py
-    - https://altair-viz.github.io/gallery/simple_histogram.html
-    - https://altair-viz.github.io/gallery/histogram_responsive.html
-    - [x] skeleton
-    - [ ] test
-    - figure out how to specify bin size and intervals and counts
+
 
 ## ON DECK
 

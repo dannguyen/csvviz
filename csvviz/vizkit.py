@@ -241,8 +241,11 @@ class Vizkit(object):
                 _min, _max = [k.strip() for k in limstr.split(",")]
                 channels[i].scale.domain = [_min, _max]
 
+        #################################
+        # set facets, i.e. grid
         if channels.get("facet"):
-            channels["facet"].columns = DEFAULT_FACET_COLUMNS
+            if _fc := kwargs["facetcolumns"]:
+                channels["facet"].columns = _fc
 
         return channels
 
@@ -275,7 +278,7 @@ class Vizkit(object):
     #  TODO: refactor later
     @property
     def channel_kwargs(self) -> typeDict:
-        _ARGKEYS = [f"{n}var" for n in ENCODING_CHANNEL_NAMES]
+        _ARGKEYS = [f"{n}var" for n in ENCODING_CHANNEL_NAMES] + ["facetcolumns"]
         return {k: self.kwargs.get(k) for k in _ARGKEYS}
 
     @property
