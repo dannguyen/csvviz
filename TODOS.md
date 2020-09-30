@@ -11,7 +11,8 @@
     - [ ] extend mini-syntax: `-y 'amount|Named Amount'`
 
 - [x] normalized bar/area charts
-- [ ] fix setup.py and requirements
+- [X] fix setup.py and requirements
+    - [x] got tox working
 - [ ] `-gs/--grid-sort`
 
 
@@ -23,18 +24,20 @@
 - heatmap? https://altair-viz.github.io/gallery/simple_heatmap.html
 
 
-
 - opacity option, for use in scatterplots
 
 - custom visuals
     - conditional highlighting: https://altair-viz.github.io/gallery/bar_chart_with_highlighted_bar.html
-    - tooltips: https://altair-viz.github.io/gallery/scatter_tooltips.html
 
 
 
 - [ ] static data point labels: 
     - https://altair-viz.github.io/gallery/scatter_with_labels.html
     - https://altair-viz.github.io/gallery/bar_chart_with_labels.html
+- [ ] tooltips
+    - https://altair-viz.github.io/gallery/scatter_tooltips.html
+    - by default, show all channel values
+    - have `--no-tooltips` option
 
 
 

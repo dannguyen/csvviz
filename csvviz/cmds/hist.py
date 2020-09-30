@@ -87,10 +87,13 @@ class Histkit(Barkit):
             channels["x"].bin = True
             if bwargs:
                 bdict = {}
-                if _n := bwargs.get("bincount"):
+                _n =  bwargs.get("bincount")  # walrus
+                if _n:  # /walrus
                     bdict["maxbins"] = _n
 
-                if _s := bwargs.get("binstepsize"):
+                _s =  bwargs.get("binstepsize")  # walrus
+
+                if _s:  # /walrus
                     bdict["step"] = _s
                     bdict.pop("maxbins", None)  # override maxbins
 

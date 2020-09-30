@@ -69,7 +69,8 @@ class Areakit(Vizkit):
 
         # sort by fill/stack is not the same as sorting the x-axis:
         # https://altair-viz.github.io/user_guide/encoding.html?#ordering-marks
-        if _fillsort := self.kwargs.get("fillsort"):
+        _fillsort =  self.kwargs.get("fillsort")  # walrus
+        if _fillsort:  # /walrus
             if not channels.get("fill"):
                 raise MissingDataReference(
                     f"--color-sort '{_fillsort}' was specified, but no --colorvar value was provided"

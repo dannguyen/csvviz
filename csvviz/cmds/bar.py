@@ -82,7 +82,9 @@ class Barkit(Vizkit):
 
         self._set_channel_colorscale("fill", channels)
 
-        if _sortvar := self.kwargs.get("sortx_var"):
+        _sortvar =  self.kwargs.get("sortx_var")  # walrus
+
+        if _sortvar:  # /walrus
             # _sort_config := self._config_sorting(self.kwargs, self.datakit):
             _cname = _sortvar.lstrip("-")
             if not channels.get(_cname):
@@ -94,7 +96,8 @@ class Barkit(Vizkit):
 
         # sort by fill/stack is not the same as sorting the x-axis:
         # https://altair-viz.github.io/user_guide/encoding.html?#ordering-marks
-        if _fillsort := self.kwargs.get("fillsort"):
+        _fillsort =  self.kwargs.get("fillsort")  # walrus
+        if _fillsort:  # /walrus
             if not channels.get("fill"):
                 raise MissingDataReference(
                     f"--color-sort '{_fillsort}' was specified, but no --colorvar value was provided"

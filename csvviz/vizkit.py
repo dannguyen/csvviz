@@ -157,7 +157,8 @@ class Vizkit(object):
             "size",
             "stroke",
         ):
-            if channel := channels.get(cname):
+            channel =  channels.get(cname)  # walrus
+            if channel:  # /walrus
                 channel.legend = self._config_legend(
                     self.legend_kwargs, channel_name=self.resolve_channel_name(channel)
                 )
@@ -218,7 +219,8 @@ class Vizkit(object):
 
         for n in ENCODING_CHANNEL_NAMES:
             argname = f"{n}var"
-            if shorthand := cargs[argname]:
+            shorthand =  cargs[argname]  # walrus
+            if shorthand:  # /walrus
                 ed = parse_shorthand(shorthand, data=self.df)
 
                 if _validate_fieldname(shorthand=shorthand, fieldname=ed["field"]):
@@ -236,7 +238,8 @@ class Vizkit(object):
             "y",
         ):
             j = f"{i}lim"
-            if limstr := self.kwargs.get(j):
+            limstr =  self.kwargs.get(j)  # walrus
+            if limstr:  # /walrus
                 channels[
                     i
                 ].scale = (
@@ -248,7 +251,8 @@ class Vizkit(object):
         #################################
         # set facets, i.e. grid
         if channels.get("facet"):
-            if _fc := kwargs["facetcolumns"]:
+            _fc =  kwargs["facetcolumns"]  # walrus
+            if _fc:  # /walrus
                 channels["facet"].columns = _fc
 
         return channels
@@ -281,14 +285,19 @@ class Vizkit(object):
             if self.kwargs.get(k)
         }
 
-        if channel := channels.get(channelvar):
+        channel =  channels.get(channelvar)  # walrus
+
+        if channel:  # /walrus
             config = {"scheme": DEFAULT_COLOR_SCHEME}
             if colorargs:
-                if _cs := colorargs.get("color_scheme"):
+                _cs =  colorargs.get("color_scheme")  # walrus
+                if _cs:  # /walrus
                     config["scheme"] = _cs
                     # TODO: if _cs does not match a valid color scheme, then raise a warning/error
 
-                if _cx := colorargs.get("colors"):
+                _cx =  colorargs.get("colors")  # walrus
+
+                if _cx:  # /walrus
                     # don't think this needs to be a formal parser
                     config["range"] = _cx.strip().split(",")
                     # for now, only colors OR color_scheme can be set, not both
@@ -406,7 +415,9 @@ class Vizkit(object):
     def _config_styles(kwargs: typeDict) -> typeDict:
         config = {}
 
-        if _title := kwargs.get("title"):
+        _title =  kwargs.get("title")  # walrus
+
+        if _title:  # /walrus
             config["title"] = _title
 
         return config
