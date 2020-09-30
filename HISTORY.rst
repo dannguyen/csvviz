@@ -2,6 +2,14 @@
 History
 =======
 
+
+0.4.0-alpha (ongoing)
+---------------------
+
+Normalized area and bar charts with ``-N/--normalize``
+
+
+
 0.3.0-alpha (2020-09-28)
 ------------------------
 
@@ -11,15 +19,13 @@ New chart types
 - area
 - hist (like bar charts, but for frequency count only)
 - line
-- scatter, which can act as bubble chart if ``--size`` param is set
+- scatter, which can act as bubble chart if ``--sizevar`` param is set
 
 
 Grid (i.e. trellis/small multiples)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For any chart type, use ``-g/--grid`` to specify variable to map chart multiples
-
-
 
 
 0.2.1-alpha (2020-09-23)

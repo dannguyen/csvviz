@@ -23,6 +23,43 @@ class Histkit(Barkit):
     viz_info = f"""A bar chart that maps the frequency count of a given variable. Can be stacked."""
     viz_epilog = """Example:\t csvviz hist -x Horsepower examples/cars.csv"""
 
+    COMMAND_DECORATORS = (
+        click.option(
+            "--xvar",
+            "-x",
+            type=click.STRING,
+            help="The name of the column for mapping frequency count to the x-axis",
+        ),
+        click.option(
+            "--colorvar",
+            "-c",
+            "fillvar",
+            type=click.STRING,
+            help="The name of the column for mapping bar colors. This is required for creating a stacked chart.",
+        ),
+        click.option(
+            "--horizontal",
+            "-H",
+            "flipxy",
+            is_flag=True,
+            help="Make a horizontal bar chart",
+        ),
+        click.option(
+            "--bins",
+            "-n",
+            "bincount",
+            type=click.INT,
+            help="Specify a max number of bins (overridden by -s/--bin-size)",
+        ),
+        click.option(
+            "--bin-size",
+            "-s",
+            "binstepsize",
+            type=click.FLOAT,
+            help="Specify a size for each bin (overrides -n/--bins)",
+        ),
+    )
+
     def prepare_channels(self):
 
         channels = super().prepare_channels()
@@ -60,40 +97,3 @@ class Histkit(Barkit):
                 channels["x"].bin = alt.Bin(**bdict)
 
         return channels
-
-    COMMAND_DECORATORS = (
-        click.option(
-            "--xvar",
-            "-x",
-            type=click.STRING,
-            help="The name of the column for mapping frequency count to the x-axis",
-        ),
-        click.option(
-            "--color",
-            "-c",
-            "fillvar",
-            type=click.STRING,
-            help="The name of the column for mapping bar colors. This is required for creating a stacked chart.",
-        ),
-        click.option(
-            "--horizontal",
-            "-H",
-            "flipxy",
-            is_flag=True,
-            help="Make a horizontal bar chart",
-        ),
-        click.option(
-            "--bins",
-            "-n",
-            "bincount",
-            type=click.INT,
-            help="Specify a max number of bins (overridden by -s/--bin-size)",
-        ),
-        click.option(
-            "--bin-size",
-            "-s",
-            "binstepsize",
-            type=click.FLOAT,
-            help="Specify a size for each bin (overrides -n/--bins)",
-        ),
-    )

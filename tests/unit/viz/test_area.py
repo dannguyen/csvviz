@@ -49,7 +49,9 @@ def test_area_defaults():
 def test_area_multiseries_defaults():
     cdata = json.loads(
         CliRunner()
-        .invoke(area, ["-x", "date", "-y", "price", "--color", "company", *STOCK_ARGS])
+        .invoke(
+            area, ["-x", "date", "-y", "price", "--colorvar", "company", *STOCK_ARGS]
+        )
         .output
     )
     e = cdata["encoding"]["fill"]
@@ -68,7 +70,7 @@ def test_area_fill_sort():
                 "date",
                 "-y",
                 "price",
-                "--color",
+                "--colorvar",
                 "company",
                 "--color-sort",
                 "asc",
@@ -125,6 +127,43 @@ def test_area_error_when_fill_sort_but_no_fill():
     )
     assert result.exit_code == 1
     assert (
-        "MissingDataReference: --color-sort 'asc' was specified, but no --color value"
+        "MissingDataReference: --color-sort 'asc' was specified, but no --colorvar value"
+        in result.output.strip()
+    )
+
+
+##############################################################################################################
+# normalize
+##############################################################################################################
+NORMAL_ARGS = [
+    "--json",
+    "--no-preview",
+    "examples/fruits.csv",
+]
+
+
+@pytest.mark.curious(
+    reason="Should this modify default legend title to 'Percentage of'?"
+)
+def test_area_normalize():
+    """
+    y.stack is set to 'normalize'
+    y axis is in '%' format
+    """
+    result = CliRunner().invoke(area, ["-N", "-c", "season", *NORMAL_ARGS])
+    cdata = json.loads(result.output)
+    y = cdata["encoding"]["y"]
+    assert y["stack"] == "normalize"
+    assert y["axis"]["format"] == "%"
+
+
+def test_area_error_when_normalize_but_no_fill_color_stack():
+    """
+    User shouldn't be allowed to create normalized bars of 1 segment, even though it's technically valid
+    """
+    result = CliRunner().invoke(area, ["-N", *NORMAL_ARGS])
+    assert result.exit_code == 1
+    assert (
+        "MissingDataReference: -c/--colorvar needs to be specified when creating a normalized (i.e. stacked) chart"
         in result.output.strip()
     )

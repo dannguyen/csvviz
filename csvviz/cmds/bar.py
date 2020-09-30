@@ -25,7 +25,7 @@ class Barkit(Vizkit):
             help="The name of the column for mapping y-axis values; if empty, the second (columns[1]) column is used",
         ),
         click.option(
-            "--color",
+            "--colorvar",
             "-c",
             "fillvar",
             type=click.STRING,
@@ -55,6 +55,12 @@ class Barkit(Vizkit):
             type=click.Choice(("asc", "desc"), case_sensitive=False),
             help="For stacked bar charts, the sort order of the color variable: 'asc' for ascending, 'desc' for descending/reverse",
         ),
+        click.option(
+            "--normalized",
+            "-N",
+            is_flag=True,
+            help="For stacked bar charts, normalize the total bar heights to 100%",
+        ),
     )
 
     def prepare_channels(self):
@@ -63,6 +69,16 @@ class Barkit(Vizkit):
 
         if self.kwargs.get("flipxy"):  # i.e. -H/--horizontal flag
             channels["x"], channels["y"] = (channels["y"], channels["x"])
+
+        # https://altair-viz.github.io/gallery/normalized_stacked_bar_chart.html
+        if self.kwargs.get("normalized"):
+            if not channels.get("fill"):
+                raise MissingDataReference(
+                    "-c/--colorvar needs to be specified when creating a normalized (i.e. stacked) chart"
+                )
+            else:
+                channels["y"].stack = "normalize"
+                channels["y"].axis = alt.Axis(format="%")
 
         self._set_channel_colorscale("fill", channels)
 
@@ -81,7 +97,7 @@ class Barkit(Vizkit):
         if _fillsort := self.kwargs.get("fillsort"):
             if not channels.get("fill"):
                 raise MissingDataReference(
-                    f"--color-sort '{_fillsort}' was specified, but no --color value was provided"
+                    f"--color-sort '{_fillsort}' was specified, but no --colorvar value was provided"
                 )
             else:
                 fname = self.resolve_channel_name(channels["fill"])

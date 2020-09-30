@@ -38,7 +38,7 @@ class Linekit(Vizkit):
             help="The name of the column for mapping y-axis values; if empty, the second (columns[1]) column is used",
         ),
         click.option(
-            "--color",
+            "--colorvar",
             "-c",
             "strokevar",
             type=click.STRING,

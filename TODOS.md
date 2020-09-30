@@ -3,55 +3,17 @@
 ## JUST DONE 
 
 
-
-
-
-## 0.3.0
-
-- [ ] better documentation
-
-- [X] test color settings for area/line/scatter
-
-- hist.py
-    - https://altair-viz.github.io/gallery/simple_histogram.html
-    - https://altair-viz.github.io/gallery/histogram_responsive.html
-    - [x] skeleton
-    - [x] test
-    - [x] figure out how to specify bin size and intervals and counts
-
-- [x?] write io tests, make sure stdin works (mostly done?)
-
-- add faceting
-https://stackoverflow.com/questions/61840072/show-x-and-y-labels-in-each-facet-subplot-in-altair
-    - Maybe call it `-g/--grid`? That makes grouped bar charts easier to reason with.
-    - [X] basic skeleton and test; made `Vizkit._manage_axis()` for now
-    - [X] `-gc/--grid-columns`
-    - [?] how about independent axis
-
-- [x] change `-f/--fill`, `-s/--stroke` to `-c/--color`, so handles line.stroke and bar/area/scatter.fill. 'color' is also easier for user.
-
-- area chart
-    - [x] skeleton and basic tests
-    - [x] sorting the color (fill) `-cs/--color-sort`
-        - [x] basic test
-        - [x] added to bar charts
-        - [x] maybe change '+/-' signage to 'asc/desc'
-        - [ ] DRY it: should be a general function handled by Vizkit
-        - [ ] Should automatically set the legend
-        - [NA] practically speaking, `--fill-sort '-'` has the same effect as not setting anything
-
-
-- [x]  `--hide-legend` now hides all legends
-
-
 ## 0.4.0
 
+
+
+- Name axes and legends
+    - [ ] extend mini-syntax: `-y 'amount|Named Amount'`
+
+- [x] normalized bar/area charts
+- [ ] fix setup.py and requirements
 - [ ] `-gs/--grid-sort`
-- [ ] normalized bar/area
 
-## ON DECK
-
-- normalized bar/area stacks
 
 
 - make a density chart? 
@@ -59,6 +21,25 @@ https://stackoverflow.com/questions/61840072/show-x-and-y-labels-in-each-facet-s
     - https://altair-viz.github.io/user_guide/transform/density.html
 - make stream chart? https://altair-viz.github.io/gallery/streamgraph.html
 - heatmap? https://altair-viz.github.io/gallery/simple_heatmap.html
+
+
+
+- opacity option, for use in scatterplots
+
+- custom visuals
+    - conditional highlighting: https://altair-viz.github.io/gallery/bar_chart_with_highlighted_bar.html
+    - tooltips: https://altair-viz.github.io/gallery/scatter_tooltips.html
+
+
+
+- [ ] static data point labels: 
+    - https://altair-viz.github.io/gallery/scatter_with_labels.html
+    - https://altair-viz.github.io/gallery/bar_chart_with_labels.html
+
+
+
+## ON DECK
+
 
 Check out R-guides:
 - hist: https://www.r-graph-gallery.com/histogram.html
@@ -68,14 +49,6 @@ Check out R-guides:
 
 
 - bar width: https://altair-viz.github.io/user_guide/customization.html#adjusting-the-width-of-bar-marks
-
-
-
-- custom visuals
-    - conditional highlighting: https://altair-viz.github.io/gallery/bar_chart_with_highlighted_bar.html
-    - tooltips: https://altair-viz.github.io/gallery/scatter_tooltips.html
-
-
 
 - csvviz.info:
     - alt.core.TIMEUNITS
@@ -89,7 +62,6 @@ Check out R-guides:
 
 
 
-- opacity option, for use in scatterplots
 
 
 - csvviz inspect
@@ -115,9 +87,6 @@ Check out R-guides:
         - `Vizkit.column_to_channel('sum(amount)')`
 
 
-- [ ] static data point labels: 
-    - https://altair-viz.github.io/gallery/scatter_with_labels.html
-    - https://altair-viz.github.io/gallery/bar_chart_with_labels.html
 
 - Housekeeping
     - Get some data files to store locally
@@ -271,3 +240,43 @@ https://altair-viz.github.io/user_guide/encoding.html#ordering-marks
 
 - [NA] how to independently invoke and manage Click commands
     - https://stackoverflow.com/questions/40091347/call-another-click-command-from-a-click-command
+
+
+
+
+
+## 0.3.0
+
+- [x] better option documentation
+- [X] test color settings for area/line/scatter
+
+- hist.py
+    - https://altair-viz.github.io/gallery/simple_histogram.html
+    - https://altair-viz.github.io/gallery/histogram_responsive.html
+    - [x] skeleton
+    - [x] test
+    - [x] figure out how to specify bin size and intervals and counts
+
+- [x?] write io tests, make sure stdin works (mostly done?)
+
+- add faceting
+https://stackoverflow.com/questions/61840072/show-x-and-y-labels-in-each-facet-subplot-in-altair
+    - Maybe call it `-g/--grid`? That makes grouped bar charts easier to reason with.
+    - [X] basic skeleton and test; made `Vizkit._manage_axis()` for now
+    - [X] `-gc/--grid-columns`
+    - [?] how about independent axis
+
+- [x] change `-f/--fill`, `-s/--stroke` to `-c/--colorvar`, so handles line.stroke and bar/area/scatter.fill. 'color' is also easier for user.
+
+- area chart
+    - [x] skeleton and basic tests
+    - [x] sorting the color (fill) `-cs/--color-sort`
+        - [x] basic test
+        - [x] added to bar charts
+        - [x] maybe change '+/-' signage to 'asc/desc'
+        - [ ] DRY it: should be a general function handled by Vizkit
+        - [ ] Should automatically set the legend
+        - [NA] practically speaking, `--fill-sort '-'` has the same effect as not setting anything
+
+
+- [x]  `--hide-legend` now hides all legends

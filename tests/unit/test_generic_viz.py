@@ -81,7 +81,7 @@ def test_fill_default_color_scheme():
     """
     by default, a viz chart with fill should have scheme=DEFAULT_COLOR_SCHEME
     """
-    result = CliRunner().invoke(viz, ["--color", "amount", *OUTPUT_ARGS])
+    result = CliRunner().invoke(viz, ["--colorvar", "amount", *OUTPUT_ARGS])
     cdata = json.loads(result.output)
 
     fill = cdata["encoding"]["fill"]

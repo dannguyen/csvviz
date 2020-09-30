@@ -68,6 +68,9 @@ def test_bar_horizontal():
     assert cdata["encoding"]["y"]["type"] == "nominal"
 
 
+##############################################################################################################
+# fill
+##############################################################################################################
 def test_bar_fill():
     """
     fill can be varied by the same column as x
@@ -83,7 +86,7 @@ def test_bar_fill():
 def test_bar_fill_sort():
     cdata = json.loads(
         CliRunner()
-        .invoke(bar, ["--color", "name", "--color-sort", "asc", *OUTPUT_ARGS])
+        .invoke(bar, ["--colorvar", "name", "--color-sort", "asc", *OUTPUT_ARGS])
         .output
     )
 
@@ -106,9 +109,14 @@ def test_bar_error_when_fill_sort_but_no_fill():
     result = CliRunner().invoke(bar, ["-cs", "desc", *OUTPUT_ARGS])
     assert result.exit_code == 1
     assert (
-        "MissingDataReference: --color-sort 'desc' was specified, but no --color value"
+        "MissingDataReference: --color-sort 'desc' was specified, but no --colorvar value"
         in result.output.strip()
     )
+
+
+def test_bar_error_when_fill_sort_invalid():
+    result = CliRunner().invoke(bar, ["-cs", "BOOBOO", *OUTPUT_ARGS])
+    assert result.exit_code == 2
 
 
 # def test_bar_warn_if_colors_specified_but_no_fill():
@@ -120,15 +128,47 @@ def test_bar_error_when_fill_sort_but_no_fill():
 #     )
 
 
-def test_error_when_fill_sort_invalid():
-    result = CliRunner().invoke(bar, ["-cs", "BOOBOO", *OUTPUT_ARGS])
-    assert result.exit_code == 2
+##############################################################################################################
+# normalize
+##############################################################################################################
+NORMAL_ARGS = [
+    "--json",
+    "--no-preview",
+    "examples/fruits.csv",
+]
+
+
+@pytest.mark.curious(
+    reason="Should this modify default legend title to 'Percentage of'?"
+)
+def test_bar_normalize():
+    """
+    y.stack is set to 'normalize'
+    y axis is in '%' format
+    """
+    result = CliRunner().invoke(bar, ["-N", "-c", "season", *NORMAL_ARGS])
+    cdata = json.loads(result.output)
+    y = cdata["encoding"]["y"]
+    assert y["stack"] == "normalize"
+    assert y["axis"]["format"] == "%"
+
+
+def test_bar_error_when_normalize_but_no_fill_color_stack():
+    """
+    User shouldn't be allowed to create normalized bars of 1 segment, even though it's technically valid
+    """
+    result = CliRunner().invoke(bar, ["-N", *NORMAL_ARGS])
+    assert result.exit_code == 1
+    assert (
+        "MissingDataReference: -c/--colorvar needs to be specified when creating a normalized (i.e. stacked) chart"
+        in result.output.strip()
+    )
 
 
 ##############################################################################################################
 # sort-x
 ##############################################################################################################
-def test_sortx_var_default():
+def test_bar_sortx_var_default():
     """default sort is ascending"""
     result = CliRunner().invoke(
         bar, ["-x", "name", "-y", "amount", "-xs", "y", *OUTPUT_ARGS]
@@ -145,7 +185,7 @@ def test_sortx_var_default():
     assert dataset[-1]["name"] == "Ellie"
 
 
-def test_sortx_var_reverse():
+def test_bar_sortx_var_reverse():
     """column name prefixed with '-' indicated descending sort"""
     result = CliRunner().invoke(bar, ["--x-sort", "-x", *OUTPUT_ARGS])
     cdata = json.loads(result.output)
@@ -155,7 +195,7 @@ def test_sortx_var_reverse():
     )  # {"field": "amount", "order": "descending"}
 
 
-def test_sortx_var_error_invalid_column():
+def test_bar_sortx_var_error_invalid_column():
     """
     If a non-existent column name is passed into the sort field, Altair accepts it and
     includes it in the ['encoding']['x']['sort'] object, with no apparent effect (similar to sorting by none)
@@ -170,8 +210,8 @@ def test_sortx_var_error_invalid_column():
     )
 
 
-@pytest.mark.skip(reason="seems like a major edge case, but worth keeping in mind")
-def test_sortx_var_handle_column_name_that_starts_with_hyphen():
+@pytest.mark.skip(reason="Deprecated; --x-sort takes x/y/fill, not column name")
+def test_bar_sortx_var_handle_column_name_that_starts_with_hyphen():
     """
     TODO: need to create a fixture dataset with column name '-stuff'
     """

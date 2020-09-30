@@ -12,7 +12,7 @@ from csvviz.vizkit import Vizkit
 
 class Scatterkit(Vizkit):
     viz_type = "scatter"
-    viz_info = f"""A scatterplot for showing relationship between two independent variables x and y. Set -s/--size to create a bubble (variable dot size) chart"""
+    viz_info = f"""A scatterplot for showing relationship between two independent variables x and y. Set -s/--sizevar to create a bubble (variable dot size) chart"""
     viz_epilog = """Example:  $ csvviz scatter -x mass -y volume -s velocity data.csv"""
 
     def prepare_channels(self):
@@ -34,14 +34,14 @@ class Scatterkit(Vizkit):
             help="The name of the column for mapping y-axis values; if empty, the second (columns[1]) column is used",
         ),
         click.option(
-            "--color",
+            "--colorvar",
             "-c",
             "fillvar",
             type=click.STRING,
             help="The name of the column for mapping dot colors. This is required for creating a multi-series scatter chart.",
         ),
         click.option(
-            "--size",
+            "--sizevar",
             "-s",
             "sizevar",
             type=click.STRING,

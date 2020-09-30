@@ -36,9 +36,21 @@ def test_scatter_defaults():
     assert cdata["encoding"]["y"] == {"field": "volume", "type": "quantitative"}
 
 
+def test_scatter_bubble():
+    """
+    just a scatter with -s/--sizevar set
+    """
+    result = CliRunner().invoke(scatter, ["-s", "velocity", *OUTPUT_ARGS])
+    cdata = json.loads(result.output)
+    esize = cdata["encoding"]["size"]
+
+    assert esize["field"] == "velocity"
+    assert esize["type"] == "quantitative"
+
+
 def test_scatter_default_legends():
     """
-    by default, fill --color and --size will have legends when specified
+    by default, fill --colorvar and --sizevar will have legends when specified
     """
     result = CliRunner().invoke(
         scatter, ["-c", "breed", "-s", "velocity", *OUTPUT_ARGS]
@@ -53,7 +65,7 @@ def test_scatter_fill_size():
     setting fill and size
     """
     result = CliRunner().invoke(
-        scatter, ["--color", "breed", "--size", "velocity", *OUTPUT_ARGS]
+        scatter, ["--colorvar", "breed", "--sizevar", "velocity", *OUTPUT_ARGS]
     )
     cdata = json.loads(result.output)
 
@@ -68,7 +80,8 @@ def test_scatter_no_legend_hides_fill_color_and_size():
     """hiding the legend sets fill.legend to None explicitly"""
 
     result = CliRunner().invoke(
-        scatter, ["--no-legend", "--color", "breed", "--size", "velocity", *OUTPUT_ARGS]
+        scatter,
+        ["--no-legend", "--colorvar", "breed", "--sizevar", "velocity", *OUTPUT_ARGS],
     )
     cdata = json.loads(result.output)
 
