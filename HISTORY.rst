@@ -3,11 +3,16 @@ History
 =======
 
 
-0.4.0-alpha (ongoing)
----------------------
+.. 0.4.0-alpha (ongoing)
+.. ---------------------
+.. --
 
-Normalized area and bar charts with ``-N/--normalize``
+0.3.1 (2020-09-30)
+------------------
 
+- Removed (non-existent) Python 3.5 compat, fixed 3.6 & 3.7 compat
+- Normalized area and bar charts with ``-N/--normalize``
+- removed '-alpha' tag
 
 
 0.3.0-alpha (2020-09-28)
