@@ -19,8 +19,7 @@ class Linekit(Vizkit):
     #     f"""Example:\t $ csvviz line -x date -y price -c company examples/stocks.csv"""
     # )
 
-    def prepare_channels(self):
-        channels = self._create_channels(self.channel_kwargs)
+    def finalize_channels(self, channels):
         self._set_channel_colorscale("stroke", channels)
         return channels
 

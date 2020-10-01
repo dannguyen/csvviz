@@ -1,5 +1,8 @@
+import csv
+from io import StringIO
 from pathlib import Path
 import re
+
 
 from typing import (
     Any as typeAny,
@@ -12,7 +15,6 @@ from typing import (
     Tuple as typeTuple,
     Union as typeUnion,
 )
-
 
 import altair as alt
 from altair.utils import parse_shorthand
@@ -27,6 +29,9 @@ from csvviz.settings import *
 
 import click
 from csvviz.cli_utils import clout, clerr, clexit, standard_options_decor
+
+typeChannel = typeUnion[alt.X, alt.Y, alt.Fill, alt.Size, alt.Stroke]
+typeChannelSet = typeDict[str, typeChannel]
 
 ENCODING_CHANNEL_NAMES = (
     "x",
@@ -67,6 +72,20 @@ def open_chart_in_browser(chart: alt.Chart) -> typeNoReturn:
     altview.show(chart)
 
 
+def parse_var_str(var: str) -> typeTuple[typeUnion[str, None]]:
+    """
+    given an argument like:
+        --xvar='id|Product ID', return ('id', 'Product ID')
+        --yvar='amount', return ('amount', 'amount')
+    """
+    x = next(csv.reader(StringIO(var), delimiter="|"))
+    if len(x) == 1:
+        x.append(None)
+    elif not x[1]:
+        x[1] = None
+    return tuple(x)
+
+
 class Vizkit(object):
     """
     The interface between Click.command, Altair.Chart, and Pandas.dataframe
@@ -85,35 +104,35 @@ class Vizkit(object):
         self.input_file = input_file
         self._dataframe = pd.read_csv(self.input_file)
         # TODO: too many properties?
-        self.theme = kwargs.get("theme")
-        self.channels = self.prepare_channels()
-        self.style_properties = self.prepare_styles()
         self.interactive_mode = self.kwargs.get("is_interactive")
+        self.theme = kwargs.get("theme")
 
-        # the chart itself
-        self.chart = self.build_chart(
-            channels=self.channels,
-            style_properties=self.style_properties,
-            interactive_mode=self.interactive_mode,
-        )
+        _channels = self._create_channels()
+        _channels = self._manage_facets(_channels)
+        _channels = self._manage_legends(_channels)
+        _channels = self.finalize_channels(_channels)
+        self.channels = _channels
 
-        self._manage_legends()  # TODO: this is only here b/c no better place to put it yet
-        self._manage_axis()
+        _styles = self._create_styles()
+        self.style_properties = self.finalize_styles(_styles)
+
+        self.chart = self.build_chart()
 
     ##########################################################
     # These are boilerplate methods, unlikely to be subclassed
     ##########################################################
-    def build_chart(
-        self, channels: dict, style_properties: dict, interactive_mode: bool
-    ) -> alt.Chart:
+    # def build_chart(
+    #     self, channels: dict, style_properties: dict, interactive_mode: bool
+    # ) -> alt.Chart:
+    def build_chart(self) -> alt.Chart:
         chart = self._create_chart()
-        chart = chart.encode(**channels)
+        # TODO: _set_chart_axes is only here b/c no better place to put it yet
 
-        # import IPython; IPython.embed()
+        chart = self._set_chart_axes(chart)
+        chart = chart.encode(**self.channels)
+        chart = chart.properties(**self.style_properties)
 
-        chart = chart.properties(**style_properties)
-
-        if interactive_mode:
+        if self.interactive_mode:
             chart = chart.interactive()
 
         return chart
@@ -134,7 +153,53 @@ class Vizkit(object):
         else:
             return False
 
-    def _manage_axis(self) -> typeNoReturn:
+    def _manage_facets(self, channels: dict) -> dict:
+        #################################
+        # set facets, i.e. grid
+        if channels.get("facet"):
+            _fc = self.kwargs.get("facetcolumns")  # walrus
+            if _fc:  # /walrus
+                channels["facet"].columns = _fc
+
+            self._config_channel_sort(channels["facet"], self.kwargs["facetsort"])
+
+        return channels
+
+    def _manage_legends(self, channels: dict) -> dict:
+        """
+
+        TODO: no idea where to put this, other than to make it an internal method used by build_chart()
+        """
+        for cname in (
+            "fill",
+            "size",
+            "stroke",
+        ):
+            if channels.get(cname):
+                channels[cname].legend = self._config_legend(self.legend_kwargs)
+
+        return channels
+
+    #################### prepare
+    def finalize_channels(self, channels: typeChannelSet) -> typeChannelSet:
+        """
+        The viz-specific channel set up, i.e. the finishing step.
+
+        # TODO: this should be an abstract method in the base class, but for now, it's
+        #   an obsolete version of Barkit, for testing ease
+
+        This method does the bespoke work to combine channels with legends/colors/etc
+        and should be implemented in every subclass
+        """
+        self._set_channel_colorscale("fill", channels)  # for testing purposes
+
+        return channels
+
+    def finalize_styles(self, styles: dict) -> dict:
+        """another abstract class method, to be implemented when necessary by subclasses"""
+        return styles
+
+    def _set_chart_axes(self, chart) -> alt.Chart:
         """
         expects self.chart and self.channels to have been initialized; alters alt.chart inplace
 
@@ -142,103 +207,73 @@ class Vizkit(object):
 
         """
         if self.channels.get("facet"):
-            self.chart = self.chart.resolve_axis(x="independent")
-
-    def _manage_legends(self) -> typeNoReturn:
-        """
-        expects self.channels to already have been prepared; alters them inplace
-
-        TODO: no idea where to put this, other than to make it an internal method used by build_chart()
-        """
-        channels = self.channels
-
-        for cname in (
-            "fill",
-            "size",
-            "stroke",
-        ):
-            channel =  channels.get(cname)  # walrus
-            if channel:  # /walrus
-                channel.legend = self._config_legend(
-                    self.legend_kwargs, channel_name=self.resolve_channel_name(channel)
-                )
-
-        return
-
-    #################### prepare
-    def prepare_channels(
-        self,
-    ) -> typeDict[str, typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]]:
-        """
-        TK TODO:
-        prepare_channels is the better name
-        # TODO: this should be an abstract method in the base class, but for now, it's
-        #   an obsolete version of Barkit, for testing ease
-
-        This method does the bespoke work to combine channels with legends/colors/etc
-        and should be implemented in every subclass
-        """
-        channels = self._create_channels(self.channel_kwargs)
-
-        # if self.kwargs.get("flipxy"):
-        #     channels["x"], channels["y"] = (channels["y"], channels["x"])
-        self._set_channel_colorscale("fill", channels)
-
-        return channels
-
-    def prepare_styles(self) -> typeDict:
-        return self._config_styles(self.kwargs)
+            chart = chart.resolve_axis(x="independent")
+        return chart
 
     #####################################################################
     # internal helpers
     #####################################################################
-    def _create_channels(
-        self, kwargs: typeDict
-    ) -> typeDict[str, typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]]:
+    def _create_channels(self) -> typeChannelSet:
+        def _set_default_xyvar_args(kargs) -> dict:
+            """
+            configure x and y channels, which default to 0 and 1-indexed column
+            if names aren't specified
+            """
+            cargs = kargs.copy()
+            for i, z in enumerate(("xvar", "yvar")):
+                cargs[z] = cargs[z] if cargs.get(z) else self.column_names[i]
+            return cargs
+
         def _validate_fieldname(shorthand: str, fieldname: str) -> bool:
             if fieldname not in self.column_names:
                 return False
             else:
                 return True
 
+        cargs = _set_default_xyvar_args(self.kwargs)
         channels = {}
-        # configure x and y channels, which default to 0 and 1-indexed column
-        # if names aren't specified
-
-        cargs = kwargs.copy()
-        for i, n in enumerate(
-            (
-                "xvar",
-                "yvar",
-            )
-        ):
-            # TODO: this kind of rickety tbh
-            #   colstr can be either a column name or Altair's shorthand syntax, e.g. 'sum(amount):Q'
-            #   if kwargs['xvar/yvar'] isn't defined, then pull 0/1 index from column_names
-            cargs[n] = cargs[n] if cargs[n] else self.column_names[i]
 
         for n in ENCODING_CHANNEL_NAMES:
             argname = f"{n}var"
-            shorthand =  cargs[argname]  # walrus
-            if shorthand:  # /walrus
+            vartxt = cargs.get(argname)  # walrus
+            if vartxt:  # e.g. 'name', 'amount|Amount', 'sum(amount)|Amount'  # /walrus
+                shorthand, title = parse_var_str(vartxt)
                 ed = parse_shorthand(shorthand, data=self.df)
 
                 if _validate_fieldname(shorthand=shorthand, fieldname=ed["field"]):
                     _channel = getattr(alt, n.capitalize())  # e.g. alt.X or alt.Y
                     channels[n] = _channel(**ed)
+                    if title:
+                        channels[n].title = title
                 else:
                     raise InvalidDataReference(
                         f"""'{shorthand}' is either an invalid column name, or invalid Altair shorthand"""
                     )
 
-        ##################################################################
-        # set xlim and ylim, if they exist
+        ##################################
+        # subfunction: --color-sort, i.e. ordering of fill; only valid for area and bar charts
+        # somewhat confusingly, sort by fill does NOT alter alt.Fill, but adds an Order channel
+        # https://altair-viz.github.io/user_guide/encoding.html?#ordering-marks
+        _osort = cargs.get("fillsort")  # walrus
+        if _osort:  # /walrus
+            if not channels.get("fill"):
+                raise MissingDataReference(
+                    f"--color-sort '{_osort}' was specified, but no --colorvar value was provided"
+                )
+            else:
+                # create an 'order' channel, with sort attribute
+                fname = self.resolve_channel_name(channels["fill"])
+                channels["order"] = alt.Order(fname)
+                self._config_channel_sort(channels["order"], _osort)
+
+        ##################################
+        # subfunction: set limits of x-axis and y-axis, via --xlim and --ylim
         for i in (
             "x",
             "y",
         ):
             j = f"{i}lim"
-            limstr =  self.kwargs.get(j)  # walrus
+            limstr = cargs.get(j)  # walrus
             if limstr:  # /walrus
                 channels[
                     i
@@ -248,13 +283,6 @@ class Vizkit(object):
                 _min, _max = [k.strip() for k in limstr.split(",")]
                 channels[i].scale.domain = [_min, _max]
 
-        #################################
-        # set facets, i.e. grid
-        if channels.get("facet"):
-            _fc =  kwargs["facetcolumns"]  # walrus
-            if _fc:  # /walrus
-                channels["facet"].columns = _fc
-
         return channels
 
     def _create_chart(self) -> alt.Chart:
@@ -262,6 +290,15 @@ class Vizkit(object):
 
         chartfoo = getattr(alt.Chart(self.df), self.mark_type)
         return chartfoo(clip=True)
+
+    def _create_styles(self) -> typeDict:
+        cargs = self.kwargs.copy()
+
+        styles = {}
+        if cargs.get("title"):
+            styles["title"] = cargs["title"]
+
+        return styles
 
     def _set_channel_colorscale(self, channelvar: str, channels: dict) -> typeNoReturn:
         """
@@ -285,17 +322,17 @@ class Vizkit(object):
             if self.kwargs.get(k)
         }
 
-        channel =  channels.get(channelvar)  # walrus
+        channel = channels.get(channelvar)  # walrus
 
         if channel:  # /walrus
             config = {"scheme": DEFAULT_COLOR_SCHEME}
             if colorargs:
-                _cs =  colorargs.get("color_scheme")  # walrus
+                _cs = colorargs.get("color_scheme")  # walrus
                 if _cs:  # /walrus
                     config["scheme"] = _cs
                     # TODO: if _cs does not match a valid color scheme, then raise a warning/error
 
-                _cx =  colorargs.get("colors")  # walrus
+                _cx = colorargs.get("colors")  # walrus
 
                 if _cx:  # /walrus
                     # don't think this needs to be a formal parser
@@ -332,7 +369,8 @@ class Vizkit(object):
     #  TODO: refactor later
     @property
     def channel_kwargs(self) -> typeDict:
-        _ARGKEYS = [f"{n}var" for n in ENCODING_CHANNEL_NAMES] + ["facetcolumns"]
+        # TODO: handling facet stuff here is BAD
+        _ARGKEYS = [f"{n}var" for n in ENCODING_CHANNEL_NAMES]
         return {k: self.kwargs.get(k) for k in _ARGKEYS}
 
     @property
@@ -380,16 +418,29 @@ class Vizkit(object):
     ##### chart aspect configurations (static helper methods)
 
     @staticmethod
-    def _config_legend(
-        kwargs: typeDict, channel_name: str = ""
-    ) -> typeUnion[typeDict, bool]:
+    def _config_channel_sort(
+        channel: typeChannel, sortorder: typeUnion[str, None]
+    ) -> typeChannel:
+        """inplace modification of channel"""
+        if sortorder:  # /walrus
+            if sortorder == "asc":
+                channel.sort = "ascending"
+            elif sortorder == "desc":
+                channel.sort = "descending"
+            else:
+                raise ValueError(f"Invalid sort order term: {sortorder}")
+        return channel
+
+    @staticmethod
+    def _config_legend(kwargs: typeDict) -> typeUnion[typeDict, bool]:
 
         config = {}
         if kwargs["no_legend"]:
             config = None
         else:
             config["orient"] = DEFAULT_LEGEND_ORIENTATION
-            config["title"] = channel_name
+            # not needed; Vega already infers title from channel_name, including aggregate
+            # config["title"] = channel_name
         # else:
         #     # TODO: let users configure orientation and title...somehow
         #     config["title"] = colname if not kwargs.get("TK-column-title") else colname
@@ -410,17 +461,6 @@ class Vizkit(object):
     #         config["order"] = "descending" if _sign == "-" else "ascending"
 
     #     return config
-
-    @staticmethod
-    def _config_styles(kwargs: typeDict) -> typeDict:
-        config = {}
-
-        _title =  kwargs.get("title")  # walrus
-
-        if _title:  # /walrus
-            config["title"] = _title
-
-        return config
 
     @classmethod
     def register_command(klass):

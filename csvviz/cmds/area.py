@@ -53,10 +53,10 @@ class Areakit(Vizkit):
         ),
     )
 
-    def prepare_channels(self):
-        channels = self._create_channels(self.channel_kwargs)
+    def finalize_channels(self, channels):
         self._set_channel_colorscale("fill", channels)
 
+        # Todo: DRY to a method shared by area and b ar
         # https://altair-viz.github.io/gallery/normalized_stacked_area_chart.html
         if self.kwargs.get("normalized"):
             if not channels.get("fill"):
@@ -66,18 +66,5 @@ class Areakit(Vizkit):
             else:
                 channels["y"].stack = "normalize"
                 channels["y"].axis = alt.Axis(format="%")
-
-        # sort by fill/stack is not the same as sorting the x-axis:
-        # https://altair-viz.github.io/user_guide/encoding.html?#ordering-marks
-        _fillsort =  self.kwargs.get("fillsort")  # walrus
-        if _fillsort:  # /walrus
-            if not channels.get("fill"):
-                raise MissingDataReference(
-                    f"--color-sort '{_fillsort}' was specified, but no --colorvar value was provided"
-                )
-            else:
-                fname = self.resolve_channel_name(channels["fill"])
-                fsort = "descending" if _fillsort == "desc" else "ascending"
-                channels["order"] = alt.Order(fname, sort=fsort)
 
         return channels

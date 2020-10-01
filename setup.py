@@ -61,6 +61,8 @@ setup(
     entry_points={
         "console_scripts": [
             "csvviz=csvviz.cli:main",
+            "cvz=csvviz.cli:main",
+
         ],
     },
     extras_require={

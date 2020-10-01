@@ -3,9 +3,9 @@ History
 =======
 
 
-.. 0.4.0-alpha (ongoing)
-.. ---------------------
-.. --
+0.4.0-alpha (ongoing)
+---------------------
+- Can specify var titles with pipe-delimited syntax, e.g. ``-x 'fieldname|The field name'``
 
 0.3.1 (2020-09-30)
 ------------------

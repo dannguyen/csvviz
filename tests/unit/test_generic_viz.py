@@ -22,46 +22,9 @@ def test_defaults():
 
     # no usermeta, i.e. default theme is specified
     cdata = json.loads(result.output)
-    assert (
-        "usermeta" not in cdata
-    )  # i.e. NOT cdata['usermeta']['embedOptions']['theme'] == 'default'
-
-    # charts have no titles by default
-    assert "title" not in cdata
-
-    # default rendering is interactive mode, which means 'selection' will exist
-    assert "selection" in cdata
 
     # clip is always True, whether xlim/ylim is set
     assert cdata["mark"]["clip"] is True
-
-
-##############################################################################################################
-# chart properties
-##############################################################################################################
-def test_title():
-    result = CliRunner().invoke(viz, ["-t", "My Title", *OUTPUT_ARGS])
-    cdata = json.loads(result.output)
-    assert cdata["title"] == "My Title"
-
-
-##############################################################################################################
-# output and preview
-##############################################################################################################
-
-
-def test_interactive_chart():
-    result = CliRunner().invoke(viz, ["--static", *OUTPUT_ARGS])
-    cdata = json.loads(result.output)
-
-    assert "selection" not in cdata
-
-
-def test_static_chart():
-    result = CliRunner().invoke(viz, ["--interactive", *OUTPUT_ARGS])
-    cdata = json.loads(result.output)
-
-    assert "selection" in cdata
 
 
 ##############################################################################################################
@@ -160,23 +123,21 @@ def test_lims():
 
 
 ##############################################################################################################
-# --theme
+# specify var titles
 ##############################################################################################################
-
-
-def test_specify_theme():
-    result = CliRunner().invoke(viz, ["--theme", "latimes", *OUTPUT_ARGS])
+def test_var_title_specified():
+    result = CliRunner().invoke(
+        viz,
+        ["-x", "name|Foo", "-y", "amount|Bar", "-c", "sum(amount)|Woah", *OUTPUT_ARGS],
+    )
     cdata = json.loads(result.output)
-
-    assert "latimes" == cdata["usermeta"]["embedOptions"]["theme"]
-
-
-def test_specify_default_theme_has_no_effect():
-    result = CliRunner().invoke(viz, ["--theme", "default", *OUTPUT_ARGS])
-    cdata = json.loads(result.output)
-    assert (
-        "usermeta" not in cdata
-    )  # i.e. NOT cdata['usermeta']['embedOptions']['theme'] == 'default'
+    assert cdata["encoding"]["x"]["field"] == "name"
+    assert cdata["encoding"]["x"]["title"] == "Foo"
+    assert cdata["encoding"]["y"]["field"] == "amount"
+    assert cdata["encoding"]["y"]["title"] == "Bar"
+    assert cdata["encoding"]["fill"]["aggregate"] == "sum"
+    assert cdata["encoding"]["fill"]["field"] == "amount"
+    assert cdata["encoding"]["fill"]["title"] == "Woah"
 
 
 ##############################################################################################################

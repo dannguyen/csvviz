@@ -33,11 +33,11 @@ def test_facet_defaults():
     assert facet["field"] == "company"
     assert facet["type"] == "nominal"
     assert facet.get("columns") is None  # == DEFAULT_FACET_COLUMNS
-
+    assert facet.get("sort") is None
     assert cdata["resolve"]["axis"] == {"x": "independent"}
 
 
-def test_facet_columns():
+def test_facet_column_count():
     cdata = json.loads(
         CliRunner()
         .invoke(
@@ -52,3 +52,20 @@ def test_facet_columns():
     )
     facet = cdata["encoding"]["facet"]
     assert facet["columns"] == 5
+
+
+def test_facet_column_sort():
+    cdata = json.loads(
+        CliRunner()
+        .invoke(
+            viz,
+            [
+                "-gs",
+                "desc",
+                *DEFAULT_ARGS,
+            ],
+        )
+        .output
+    )
+    facet = cdata["encoding"]["facet"]
+    assert facet["sort"] == "descending"

@@ -63,9 +63,9 @@ class Barkit(Vizkit):
         ),
     )
 
-    def prepare_channels(self):
+    def finalize_channels(self, channels):
 
-        channels = self._create_channels(self.channel_kwargs)
+        self._set_channel_colorscale("fill", channels)
 
         if self.kwargs.get("flipxy"):  # i.e. -H/--horizontal flag
             channels["x"], channels["y"] = (channels["y"], channels["x"])
@@ -80,10 +80,9 @@ class Barkit(Vizkit):
                 channels["y"].stack = "normalize"
                 channels["y"].axis = alt.Axis(format="%")
 
-        self._set_channel_colorscale("fill", channels)
-
-        _sortvar =  self.kwargs.get("sortx_var")  # walrus
-
+        # sorting by x-axis var is unique to bar charts, and not like color/fill/facet sort,
+        # because we are sorting by channel, e.g. x/y/etc
+        _sortvar = self.kwargs.get("sortx_var")  # walrus
         if _sortvar:  # /walrus
             # _sort_config := self._config_sorting(self.kwargs, self.datakit):
             _cname = _sortvar.lstrip("-")
@@ -93,19 +92,6 @@ class Barkit(Vizkit):
                 )
             else:
                 channels["x"].sort = _sortvar
-
-        # sort by fill/stack is not the same as sorting the x-axis:
-        # https://altair-viz.github.io/user_guide/encoding.html?#ordering-marks
-        _fillsort =  self.kwargs.get("fillsort")  # walrus
-        if _fillsort:  # /walrus
-            if not channels.get("fill"):
-                raise MissingDataReference(
-                    f"--color-sort '{_fillsort}' was specified, but no --colorvar value was provided"
-                )
-            else:
-                fname = self.resolve_channel_name(channels["fill"])
-                fsort = "descending" if _fillsort == "desc" else "ascending"
-                channels["order"] = alt.Order(fname, sort=fsort)
 
         return channels
 

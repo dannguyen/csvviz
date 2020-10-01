@@ -57,7 +57,7 @@ def test_area_multiseries_defaults():
     e = cdata["encoding"]["fill"]
     assert e["field"] == "company"
     assert e["type"] == "nominal"
-    assert e["legend"]["title"] == "company"
+    assert "title" not in e["legend"]  # ["title"] == "company"
 
 
 def test_area_fill_sort():

@@ -55,7 +55,7 @@ def test_line_multiseries_defaults():
     e = cdata["encoding"]["stroke"]
     assert e["field"] == "company"
     assert e["type"] == "nominal"
-    assert e["legend"]["title"] == "company"
+    assert "title" not in e["legend"]  # ["title"] == "company"
 
 
 def test_line_colors():

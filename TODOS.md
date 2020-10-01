@@ -5,17 +5,24 @@
 
 ## 0.4.0
 
-
-
-- Name axes and legends
-    - [ ] extend mini-syntax: `-y 'amount|Named Amount'`
-
+- [X] Name channel vars, which sets axes and legend titles:
+    - [X] extend mini-syntax: `-y 'amount|Named Amount'`
 - [x] normalized bar/area charts
 - [X] fix setup.py and requirements
     - [x] got tox working
-- [ ] `-gs/--grid-sort`
+    - [x] bump2version works?
+- [x] alias csvviz to cvz
 
+- [x] facet/grid: `-gs/--grid-sort`
 
+- allow read from non CSV paths
+    - [ ] make a tocsv/read subcommand?
+    - [ ] url
+        - Vega has it built into its spec, but maybe just use pandas.read_csv()? https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html
+    - [ ] excel; infer from path https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_excel.html
+    - [ ] json: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_json.html
+
+- [ ] subclass click.Command to have type/category attribute, e.g. to specify 'shared/specific' options, and to especially format --help
 
 - make a density chart? 
     - https://www.r-graph-gallery.com/density-plot.html
@@ -24,11 +31,16 @@
 - heatmap? https://altair-viz.github.io/gallery/simple_heatmap.html
 
 
+## 0.5.0
+
+- [ ] allow sorting by array of values: https://vega.github.io/vega-lite/docs/sort.html#sort-array
+
 - opacity option, for use in scatterplots
 
 - custom visuals
-    - conditional highlighting: https://altair-viz.github.io/gallery/bar_chart_with_highlighted_bar.html
-
+    - conditional highlighting: 
+        - https://altair-viz.github.io/gallery/bar_chart_with_highlighted_bar.html
+        - bar chart negative values: https://altair-viz.github.io/gallery/bar_chart_with_negatives.html
 
 
 - [ ] static data point labels: 

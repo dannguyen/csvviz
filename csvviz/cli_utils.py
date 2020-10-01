@@ -180,7 +180,7 @@ STANDARD_OPTS["facet"] = {
         "-g",
         "facetvar",
         type=click.STRING,
-        help="The var to facet/grid by TKTK",
+        help="The name of the column to use as a facet for creating a grid of multiple charts",
     ),
     "facetcolumns": click.option(
         "--grid-columns",
@@ -190,13 +190,13 @@ STANDARD_OPTS["facet"] = {
         type=click.INT,
         help="Number of columns per grid row. Default is '0' for infinite.",
     ),
-    # "facetsort": click.option(
-    #     "--grid-sort",
-    #     "-gs",
-    #     "facetsort",
-    #     type=click.STRING,
-    #     help="Sort the grid by something",
-    # ),
+    "facetsort": click.option(
+        "--grid-sort",
+        "-gs",
+        "facetsort",
+        type=click.Choice(["asc", "desc"], case_sensitive=False),
+        help="Sort the grid of charts by its facet variable in ascending or descending order.",
+    ),
 }
 
 

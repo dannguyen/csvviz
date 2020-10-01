@@ -1,9 +1,10 @@
 import pytest
-from csvviz.vizkit import Vizkit, lookup_mark_method
-from csvviz.cmds.scatter import Scatterkit
-
+from io import StringIO
 import altair as alt
 import pandas as pd
+
+from csvviz.vizkit import Vizkit, lookup_mark_method, parse_var_str
+from csvviz.cmds.scatter import Scatterkit
 
 
 @pytest.fixture
@@ -78,8 +79,8 @@ def test_vizkit_kwarg_properties(tvk):
 @pytest.mark.skip(reason="TODO")
 def test_vizkit_declarations(tvk):
     pass
-    # assert isinstance(tvk.prepare_channels['x'], alt.X)
-    # assert isinstance(tvk.prepare_channels['fill'], alt.Fill)
+    # assert isinstance(tvk.finalize_channels['x'], alt.X)
+    # assert isinstance(tvk.finalize_channels['fill'], alt.Fill)
 
     # assert tvk.declare_legend['orient'] == DEFAULT_LEGEND_ORIENTATION
     # assert tvk.declare_legend['title'] == 'name'
@@ -115,6 +116,33 @@ def test_vizkit_output_basic(tvk, capsys):
 # get_chart_methodname
 #####################################
 def test_lookup_mark_method():
+    assert "mark_area" == lookup_mark_method("area")
     assert "mark_bar" == lookup_mark_method("bar")
+    assert "mark_bar" == lookup_mark_method("hist")
     assert "mark_line" == lookup_mark_method("line")
     assert "mark_point" == lookup_mark_method("scatter")
+
+
+##### parse_var_str
+def test_parse_var_str_default_name():
+    assert parse_var_str("id") == ("id", None)
+    assert parse_var_str("id|") == ("id", None)
+    assert parse_var_str("sum(thing)|") == ("sum(thing)", None)
+
+
+def test_parse_var_str_specified_name():
+    assert parse_var_str("id|Foo") == ("id", "Foo")
+    assert parse_var_str("sum(thing)|Bar") == ("sum(thing)", "Bar")
+
+
+def test_parse_var_str_edge_case():
+    data = StringIO("id,Hello|World\nfoo,42\n")
+    s = Vizkit(
+        input_file=data,
+        kwargs={
+            "xvar": "id",
+            "yvar": '"Hello|World"|"hey|world"',
+        },
+    )
+    assert s.channels["y"]["field"] == "Hello|World"
+    assert s.channels["y"]["title"] == "hey|world"

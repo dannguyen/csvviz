@@ -15,8 +15,7 @@ class Scatterkit(Vizkit):
     viz_info = f"""A scatterplot for showing relationship between two independent variables x and y. Set -s/--sizevar to create a bubble (variable dot size) chart"""
     viz_epilog = """Example:  $ csvviz scatter -x mass -y volume -s velocity data.csv"""
 
-    def prepare_channels(self):
-        channels = self._create_channels(self.channel_kwargs)
+    def finalize_channels(self, channels):
         self._set_channel_colorscale("fill", channels)
         return channels
 

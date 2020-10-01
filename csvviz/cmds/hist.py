@@ -60,9 +60,8 @@ class Histkit(Barkit):
         ),
     )
 
-    def prepare_channels(self):
+    def finalize_channels(self, channels):
 
-        channels = super().prepare_channels()
         bwargs = {k: self.kwargs[k] for k in BINNING_OPTS if self.kwargs.get(k)}
 
         # deal with special case in which xvar is a nominal field, which means user
@@ -87,11 +86,11 @@ class Histkit(Barkit):
             channels["x"].bin = True
             if bwargs:
                 bdict = {}
-                _n =  bwargs.get("bincount")  # walrus
+                _n = bwargs.get("bincount")  # walrus
                 if _n:  # /walrus
                     bdict["maxbins"] = _n
 
-                _s =  bwargs.get("binstepsize")  # walrus
+                _s = bwargs.get("binstepsize")  # walrus
 
                 if _s:  # /walrus
                     bdict["step"] = _s

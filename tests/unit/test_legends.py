@@ -13,10 +13,6 @@ from csvviz.exceptions import *
 from csvviz.settings import *
 
 DEFAULT_ARGS = [
-    "-x",
-    "mass",
-    "-y",
-    "volume",
     "--json",
     "--no-preview",
     "examples/vals.csv",
@@ -32,11 +28,11 @@ def test_legend_default():
     cdata = json.loads(result.output)
     legend = cdata["encoding"]["fill"]["legend"]
 
-    assert legend["title"] == "breed"
+    assert "title" not in legend  # let Vega automatically infer this
     assert legend["orient"] == DEFAULT_LEGEND_ORIENTATION
 
 
-def test_no_legend():
+def test_no_legend_flag():
     """hiding the legend sets fill.legend to None explicitly"""
 
     result = CliRunner().invoke(
@@ -47,3 +43,28 @@ def test_no_legend():
 
     assert None is cdata["encoding"]["fill"]["legend"]
     assert None is cdata["encoding"]["size"]["legend"]
+
+
+@pytest.mark.skip(
+    reason="Not needed; Vega automatically infers legend title when it is not explicitly set"
+)
+def test_legend_with_aggregate_title():
+    result = CliRunner().invoke(viz, ["-c", "sum(velocity)", *DEFAULT_ARGS])
+    cdata = json.loads(result.output)
+    legend = cdata["encoding"]["fill"]["legend"]
+
+    assert legend["title"] == "sum"
+
+
+@pytest.mark.skip(
+    reason="Not needed; Vega automatically infers legend title when it is not explicitly set"
+)
+def test_legend_with_specified_var_titles():
+    result = CliRunner().invoke(
+        viz,
+        ["--colorvar", "breed|Foo", "--sizevar", "sum(velocity)|Bar", *DEFAULT_ARGS],
+    )
+    cdata = json.loads(result.output)
+
+    assert "Foo" == cdata["encoding"]["fill"]["legend"].get("title")
+    assert "Bar" == cdata["encoding"]["size"]["legend"].get("title")

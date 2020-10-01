@@ -56,8 +56,10 @@ def test_scatter_default_legends():
         scatter, ["-c", "breed", "-s", "velocity", *OUTPUT_ARGS]
     )
     cdata = json.loads(result.output)
-    assert cdata["encoding"]["fill"]["legend"]["title"] == "breed"
-    assert cdata["encoding"]["size"]["legend"]["title"] == "velocity"
+    assert cdata["encoding"]["fill"]["legend"]["orient"] == DEFAULT_LEGEND_ORIENTATION
+
+    assert "title" not in cdata["encoding"]["fill"]["legend"]  # ["title"] == "breed"
+    assert "title" not in cdata["encoding"]["size"]["legend"]  # ["title"] == "velocity"
 
 
 def test_scatter_fill_size():
