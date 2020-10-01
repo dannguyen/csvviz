@@ -5,15 +5,19 @@
 
 ## 0.4.0
 
+
+- [x] normalized bar/area charts
 - [X] Name channel vars, which sets axes and legend titles:
     - [X] extend mini-syntax: `-y 'amount|Named Amount'`
-- [x] normalized bar/area charts
 - [X] fix setup.py and requirements
     - [x] got tox working
     - [x] bump2version works?
 - [x] alias csvviz to cvz
-
 - [x] facet/grid: `-gs/--grid-sort`
+- [x] subclass click.Command to have type/category attribute, e.g. to specify 'general/specific' options
+    - [x] subclass helpformatter to print subsections of general/specific options, as well as categories of options 
+
+
 
 - allow read from non CSV paths
     - [ ] make a tocsv/read subcommand?
@@ -22,7 +26,6 @@
     - [ ] excel; infer from path https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_excel.html
     - [ ] json: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_json.html
 
-- [ ] subclass click.Command to have type/category attribute, e.g. to specify 'shared/specific' options, and to especially format --help
 
 - make a density chart? 
     - https://www.r-graph-gallery.com/density-plot.html

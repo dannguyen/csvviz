@@ -44,6 +44,6 @@ class Scatterkit(Vizkit):
             "-s",
             "sizevar",
             type=click.STRING,
-            help="The name of the column for mapping dot size. This is required for creating a bubble chart.",
+            help="The name of the column for mapping dot size. This effectively creates a bubble chart.",
         ),
     )

@@ -22,13 +22,13 @@ from altair.utils.schemapi import Undefined as altUndefined
 import altair_viewer as altview
 import pandas as pd
 
-from csvviz.cli_utils import clout, clerr
+from csvviz.cli_utils import clout, clerr, VizCommand
 from csvviz.exceptions import *
 from csvviz.settings import *
 
 
 import click
-from csvviz.cli_utils import clout, clerr, clexit, standard_options_decor
+from csvviz.cli_utils import clout, clerr, clexit, general_options_decor
 
 typeChannel = typeUnion[alt.X, alt.Y, alt.Fill, alt.Size, alt.Stroke]
 typeChannelSet = typeDict[str, typeChannel]
@@ -450,18 +450,6 @@ class Vizkit(object):
         #         config["orient"] = DEFAULT_LEGEND_ORIENTATION
         return config
 
-    # @staticmethod
-    # def _config_sorting(kwargs: typeDict) -> typeDict:
-    #     config = {}
-    #     if _sortx := kwargs.get("sortx_var"):
-    #         _sign, _cname = re.match(r"(-?)(.+)", _sortx).groups()
-
-    #         # TODO: this needs to be changed; should handle altair shorthand: https://stackoverflow.com/questions/52877697/order-bar-chart-in-altair
-    #         config["field"] = _cname
-    #         config["order"] = "descending" if _sign == "-" else "ascending"
-
-    #     return config
-
     @classmethod
     def register_command(klass):
         # TODO: this is bad OOP; _foo should be properly named and in some more logical place
@@ -478,10 +466,13 @@ class Vizkit(object):
 
         command = _foo
         command = click.command(
-            name=klass.viz_type, help=klass.viz_info, epilog=klass.viz_epilog
+            cls=VizCommand,
+            name=klass.viz_type,
+            help=klass.viz_info,
+            epilog=klass.viz_epilog,
         )(command)
-        command = standard_options_decor(command)
-        for decor in reversed(klass.COMMAND_DECORATORS):
+        command = general_options_decor(command)
+        for decor in klass.COMMAND_DECORATORS:
             command = decor(command)
 
         return command

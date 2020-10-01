@@ -6,6 +6,7 @@ import sys
 from typing import NoReturn as typeNoReturn
 import click
 
+
 from csvviz.cli_utils import clout, clerr, print_version
 from csvviz.cmds.info import command as infocommand
 

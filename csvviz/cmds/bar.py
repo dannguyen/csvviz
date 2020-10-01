@@ -31,13 +31,13 @@ class Barkit(Vizkit):
             type=click.STRING,
             help="The name of the column for mapping bar colors. This is required for creating a stacked chart.",
         ),
-        ###### specific to bar charts
+        # https://altair-viz.github.io/user_guide/encoding.html?#ordering-marks
         click.option(
-            "--horizontal",
-            "-H",
-            "flipxy",
-            is_flag=True,
-            help="Make a horizontal bar chart",
+            "--color-sort",
+            "-cs",
+            "fillsort",
+            type=click.Choice(("asc", "desc"), case_sensitive=False),
+            help="For stacked bar charts, the sort order of the color variable: 'asc' for ascending, 'desc' for descending/reverse",
         ),
         # https://altair-viz.github.io/user_guide/encoding.html#sorting
         click.option(
@@ -47,13 +47,13 @@ class Barkit(Vizkit):
             type=click.STRING,
             help="Sort the x-axis by the values of the x/y/fill channel. Prefix with '-' to do reverse sort, e.g. 'y' vs '-y'",
         ),
-        # https://altair-viz.github.io/user_guide/encoding.html?#ordering-marks
+        ###### specific to bar charts
         click.option(
-            "--color-sort",
-            "-cs",
-            "fillsort",
-            type=click.Choice(("asc", "desc"), case_sensitive=False),
-            help="For stacked bar charts, the sort order of the color variable: 'asc' for ascending, 'desc' for descending/reverse",
+            "--horizontal",
+            "-H",
+            "flipxy",
+            is_flag=True,
+            help="Make a horizontal bar chart",
         ),
         click.option(
             "--normalized",

@@ -38,13 +38,6 @@ class Histkit(Barkit):
             help="The name of the column for mapping bar colors. This is required for creating a stacked chart.",
         ),
         click.option(
-            "--horizontal",
-            "-H",
-            "flipxy",
-            is_flag=True,
-            help="Make a horizontal bar chart",
-        ),
-        click.option(
             "--bins",
             "-n",
             "bincount",
@@ -57,6 +50,13 @@ class Histkit(Barkit):
             "binstepsize",
             type=click.FLOAT,
             help="Specify a size for each bin (overrides -n/--bins)",
+        ),
+        click.option(
+            "--horizontal",
+            "-H",
+            "flipxy",
+            is_flag=True,
+            help="Make a horizontal bar chart",
         ),
     )
 
