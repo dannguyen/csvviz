@@ -16,9 +16,26 @@
 - [x] subclass click.Command to have type/category attribute, e.g. to specify 'general/specific' options
     - [x] subclass helpformatter to print subsections of general/specific options, as well as categories of options 
 
-- chart-wide properties: https://altair-viz.github.io/user_guide/configuration.html#config-view
+- chart-wide properties: 
+    - width/height
+        - use autosize? https://vega.github.io/vega-lite/docs/size.html#autosize
+        - [x] chart-wide with `-W` and `-H`
+            - [ ] write tests
+        - [ ] handle special case of horizontal charts(?)
+        
+        - if grid chart
+            - use chart_grid_default_height/width? Or none at all?
+            - [ ] allow view width/height to be set, for grid charts
+                - https://vega.github.io/vega-lite/docs/spec.html#single
+                - `-vW` `-vH`
+
+
+    - padding:
+        https://vega.github.io/vega-lite/docs/spec.html#top-level
+
+    - https://altair-viz.github.io/user_guide/configuration.html#config-view
+    - https://altair-viz.github.io/user_guide/generated/toplevel/altair.Chart.html?highlight=configure#altair.Chart
     - chart-fill `-BGC/--background-color`
-    - width/height; `-CW/-CH`
     - --no-grid; `--no-grid`
 - axis properties
     - https://altair-viz.github.io/gallery/us_population_over_time_facet.html
@@ -78,6 +95,10 @@ Check out R-guides:
 
 - read csv:
     - option to specify typecast for columns, e.g. prevent fips from being returned as integers
+- read json:
+    - serialized pandas output
+    - can detect from stdin
+    - need flags to force json/csv? `--input-format=json/--input-json`
 
 - output bundle to dir:
     - storing data files as JSON to a specific dir: https://altair-viz.github.io/user_guide/data_transformers.html#storing-json-data-in-a-separate-directory
@@ -157,26 +178,61 @@ Check out R-guides:
 ## 0.9 – the wrangler edition
 
 - `cvz wrangle` for pre-processing data
+    - outputs JSON by default
+    - reify pandas sequence
+        - https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.pipe.html
+    
+        - https://towardsdatascience.com/using-pandas-pipe-function-to-improve-code-readability-96d66abfaf8
+        - https://towardsdatascience.com/the-unreasonable-effectiveness-of-method-chaining-in-pandas-15c2109e3c69
+            - https://tomaugspurger.github.io/method-chaining.html
     - https://pandas.pydata.org/Pandas_Cheat_Sheet.pdf
-    - select:
-        - https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html
-        - https://pandas.pydata.org/docs/getting_started/intro_tutorials/03_subset_data.html#how-do-i-select-specific-columns-from-a-dataframe
-    - sort: `sort_values('amount', ascending=False)`
-    - grep: `filter` https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.filter.html
-    - query/where: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.query.html
-    - drop-na: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.dropna.html
-    - fill-na: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.fillna.html
-    - qcut
-    - cut
-    - join/merge
-    - pivot
-    - groupby: https://pandas.pydata.org/docs/getting_started/intro_tutorials/06_calculate_statistics.html#aggregating-statistics-grouped-by-category
+
+    - edit/calculate: these functions should accept a list of columns and do in-place replacement
+        - drop-na: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.dropna.html
+        - fill-na: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.fillna.html
+        - date transforms
+        - round: https://pandas.pydata.org/pandas-docs/version/0.22.0/generated/pandas.DataFrame.round.html
+        - floor/ceil: https://stackoverflow.com/questions/27592456/floor-or-ceiling-of-a-pandas-series-in-python
+        - replace: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.replace.html
+        - astype
+
+    - transform: (creates new columns) 
+        - concat cols
+        - cut: https://towardsdatascience.com/data-handling-using-pandas-cleaning-and-processing-3aa657dc9418
+            - `--bin 'col_name_to_bin|new_col_name '[bins]0,5,10,20'`
+            - `--bin-cat 'col_name_to_bin|new_col_name' '[bins]0,5,10,20' '[cats]awful,average,good,great'`
+            - `bin-q`: qcut
+
+    - aggregates
+        - groupby: https://pandas.pydata.org/docs/getting_started/intro_tutorials/06_calculate_statistics.html#aggregating-statistics-grouped-by-category
+
+    - reshape
+        - rename columns 'org_name_1,org_name2' 'new_name_1,new_name_2'
+        - select:
+            - https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html
+            - https://pandas.pydata.org/docs/getting_started/intro_tutorials/03_subset_data.html#how-do-i-select-specific-columns-from-a-dataframe
+        - sort: `sort_values('amount', ascending=False)`
+        - join/merge ??
+        - pivot
+        - filtering
+            - grep: `filter` https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.filter.html
+            - query/where: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.query.html
+
         
 ## 0.9.5 - the documentation edition
 
 - clean up command info/options text
 - write Readthedocs
 
+## 0.99 release (usable beta)
+
+## 1.0 release
+
+- revisions to CLI api
+
+## 2.0 
+
+- add option to do seaborn viz
 
 -----------------------------------------------------------------------------
 

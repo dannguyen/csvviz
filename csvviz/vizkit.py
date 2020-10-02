@@ -165,6 +165,7 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
     def __init__(self, input_file, kwargs):
         self.kwargs = kwargs
         self.warnings = []
+        # import pdb; pdb.set_trace()
 
         self.input_file = input_file
         self._dataframe = pd.read_csv(self.input_file)
@@ -181,7 +182,7 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
         _styles = self._create_styles()
         self.style_properties = self.finalize_styles(_styles)
 
-        self.chart = self.build_chart()
+        self.chart = self._build_chart()
 
     ##########################################################
     # These are boilerplate methods, unlikely to be subclassed
@@ -189,10 +190,12 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
     # def build_chart(
     #     self, channels: dict, style_properties: dict, interactive_mode: bool
     # ) -> alt.Chart:
-    def build_chart(self) -> alt.Chart:
+    def _build_chart(self) -> alt.Chart:
+        """
+        Invoked as final step in __init__, expects self.channels and self.style_properties to be set
+        """
         chart = self._create_chart()
         # TODO: _set_chart_axes is only here b/c no better place to put it yet
-
         chart = self._set_chart_axes(chart)
         chart = chart.encode(**self.channels)
         chart = chart.properties(**self.style_properties)
@@ -335,11 +338,22 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
         return chartfoo(clip=True)
 
     def _create_styles(self) -> typeDict:
+        """assumes self.channels has been set, particularly the types of x/y channels"""
         cargs = self.kwargs.copy()
 
         styles = {}
         if cargs.get("title"):
             styles["title"] = cargs["title"]
+
+        # determine width
+        # _wvar = 'continuousWidth' if self.channels['x']['type'] in ('quantitative', 'temporal') else 'discreteWidth'
+        styles["width"] = cargs[
+            "chart_width"
+        ]  # if cargs.get('chart_width') else DEFAULT_CHART_WIDTH
+        # _hvar = 'continuousHeight' if self.channels['x']['type'] in ('quantitative', 'temporal') else 'discreteHeight'
+        styles["height"] = cargs[
+            "chart_height"
+        ]  # if cargs.get('chart_height') else DEFAULT_CHART_HEIGHT
 
         return styles
 
@@ -452,10 +466,10 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
     #     _ARGKEYS = ("sortx_var",)
     #     return {k: self.kwargs.get(k) for k in _ARGKEYS}
 
-    @property
-    def styling_kwargs(self) -> typeDict:
-        _ARGKEYS = ("title",)
-        return {k: self.kwargs.get(k) for k in _ARGKEYS}
+    # @property
+    # def styling_kwargs(self) -> typeDict:
+    #     _ARGKEYS = ("title",)
+    #     return {k: self.kwargs.get(k) for k in _ARGKEYS}
 
     #####################################################################
     ##### chart aspect configurations (static helper methods)

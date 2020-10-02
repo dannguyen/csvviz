@@ -3,39 +3,53 @@ from io import StringIO
 import altair as alt
 import pandas as pd
 
+
+from csvviz.settings import *
 from csvviz.vizkit import Vizkit, VizkitCommandMixin
 from csvviz.viz.scatter import Scatterkit
+
+# typically, these are set by Click default= args, which we don't have access to
+# when looking at Vizkit
+
+# TODO: messy hack for now, to manually update with REQUIRED_ARGS; maybe indication that
+# tests/implementation is too brittle?
+REQUIRED_ARGS = {
+    "chart_height": DEFAULT_CHART_HEIGHT,
+    "chart_width": DEFAULT_CHART_WIDTH,
+}
 
 
 @pytest.fixture
 def tvk():
     SRC_PATH = "examples/tings.csv"
-    return Vizkit(
-        input_file=SRC_PATH,
-        kwargs={
-            "xvar": "name",
-            "yvar": "amount",
-            "fillvar": "name",
-            "is_interactive": True,
-            "no_preview": True,
-            "to_json": True,
-        },
-    )
+    kwargs = {
+        "xvar": "name",
+        "yvar": "amount",
+        "fillvar": "name",
+        "is_interactive": True,
+        "no_preview": True,
+        "to_json": True,
+    }
+    kwargs.update(REQUIRED_ARGS)
+    return Vizkit(input_file=SRC_PATH, kwargs=kwargs)
 
 
 @pytest.fixture
 def dotvk():
     SRC_PATH = "examples/vals.csv"
+    kwargs = {
+        "xvar": "mass",
+        "yvar": "volume",
+        "fillvar": "breed",
+        "is_interactive": True,
+        "no_preview": True,
+        "to_json": True,
+    }
+    kwargs.update(REQUIRED_ARGS)
+
     return Scatterkit(
         input_file=SRC_PATH,
-        kwargs={
-            "xvar": "mass",
-            "yvar": "volume",
-            "fillvar": "breed",
-            "is_interactive": True,
-            "no_preview": True,
-            "to_json": True,
-        },
+        kwargs=kwargs,
     )
 
 
@@ -140,12 +154,14 @@ def test_parse_var_str_specified_name():
 
 def test_parse_var_str_edge_case():
     data = StringIO("id,Hello|World\nfoo,42\n")
+    kwargs = {
+        "xvar": "id",
+        "yvar": '"Hello|World"|"hey|world"',
+    }
+    kwargs.update(REQUIRED_ARGS)
     s = Vizkit(
         input_file=data,
-        kwargs={
-            "xvar": "id",
-            "yvar": '"Hello|World"|"hey|world"',
-        },
+        kwargs=kwargs,
     )
     assert s.channels["y"]["field"] == "Hello|World"
     assert s.channels["y"]["title"] == "hey|world"
