@@ -18,10 +18,8 @@ from csvviz import __version__
 from csvviz.settings import *
 
 
-def clout(*args) -> typeNoReturn:
-    """
-    top-level method that is used to output to stdout
-    """
+
+def _echo(*args, use_stderr) -> typeNoReturn:
     outobjects = []
     for obj in args:
         if isinstance(obj, typeMapping):
@@ -29,14 +27,13 @@ def clout(*args) -> typeNoReturn:
         else:
             obj = str(obj)
         outobjects.append(obj)
-    click.echo(" ".join(outobjects), err=False)
+    click.echo(" ".join(outobjects), err=use_stderr)
 
-
-def clexit(code: int, message: typeAny = None):
-    if message:
-        clerr(message)
-    sys.exit(code)
-
+def clout(*args) -> typeNoReturn:
+    """
+    top-level method that is used to output to stdout
+    """
+    _echo(*args, use_stderr=False)
 
 def clerr(*args) -> typeNoReturn:
     """
@@ -44,15 +41,13 @@ def clerr(*args) -> typeNoReturn:
     """
 
     # TODO: refactor/decorate this jsons stuff
-    outobjects = []
-    for obj in args:
-        if isinstance(obj, typeMapping):
-            obj = json.dumps(obj, indent=2)
-        else:
-            obj = str(obj)
-        outobjects.append(obj)
-    click.echo(" ".join(outobjects), err=True)
+    _echo(*args, use_stderr=True)
 
+
+def clexit(code: int, message: typeAny = None):
+    if message:
+        clerr(message)
+    sys.exit(code)
 
 def print_version(ctx=None, param=None, value=None) -> typeNoReturn:
     """
@@ -68,9 +63,13 @@ def print_version(ctx=None, param=None, value=None) -> typeNoReturn:
         ctx.exit()
 
 
+
+
 #########################################
 # common Click.command options decorators
 #########################################
+
+# TODO: This stuff should be located next to Vizkit stuff, not floating in general cli-utils space
 class VizHelpFormatter(click.formatting.HelpFormatter):
     def write_lined_heading(self, heading):
         """Writes a heading into the buffer, sans trailing colon"""

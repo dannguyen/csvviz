@@ -7,7 +7,7 @@ from csvviz.vizkit import Vizkit
 
 
 class Barkit(Vizkit):
-    viz_type = "bar"
+    viz_commandname = "bar"
     viz_info = f"""An bar/column chart"""
     viz_epilog = """Example:\tcsvviz bar -x name -y amount data.csv"""
 

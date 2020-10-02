@@ -19,7 +19,7 @@ BINNING_OPTS = (
 
 
 class Histkit(Barkit):
-    viz_type = "hist"
+    viz_commandname = "hist"
     viz_info = f"""A bar chart that maps the frequency count of a given variable. Can be stacked."""
     viz_epilog = """Example:\t csvviz hist -x Horsepower examples/cars.csv"""
 

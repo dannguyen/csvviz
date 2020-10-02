@@ -6,6 +6,17 @@
 ## 0.4.0
 
 
+- chart-wide properties: https://altair-viz.github.io/user_guide/configuration.html#config-view
+    - chart-fill `-BGC/--background-color`
+    - width/height; `-CW/-CH`
+    - --no-grid; `--no-grid`
+- axis properties
+    - https://altair-viz.github.io/gallery/us_population_over_time_facet.html
+    - y-axis number format `--yf/--y-format`
+    - https://vega.github.io/vega-lite/docs/config.html#format
+    - https://github.com/d3/d3-format#locale_format
+    - subcommand `info number_formats`
+
 - [x] normalized bar/area charts
 - [X] Name channel vars, which sets axes and legend titles:
     - [X] extend mini-syntax: `-y 'amount|Named Amount'`

@@ -3,7 +3,7 @@ from io import StringIO
 import altair as alt
 import pandas as pd
 
-from csvviz.vizkit import Vizkit, lookup_mark_method, parse_var_str
+from csvviz.vizkit import Vizkit, VizkitCommandMixin
 from csvviz.cmds.scatter import Scatterkit
 
 
@@ -45,7 +45,7 @@ def test_vizkit_basic_init(tvk):
 
 
 def test_vizkit_properties(tvk, dotvk):
-    assert tvk.viz_type == "abstract"
+    assert tvk.viz_commandname == "abstract"
     assert tvk.mark_type == "mark_bar"
     assert isinstance(tvk.df, pd.DataFrame)
     assert tvk.column_names == ["name", "amount"]
@@ -55,7 +55,7 @@ def test_vizkit_properties(tvk, dotvk):
 
 
 def test_vizkit_unneeded_properties_to_deprecate(tvk):
-    assert tvk.name == "abstract"  # maybe viz_type isn't needed?
+    assert tvk.name == "abstract"  # maybe viz_commandname isn't needed?
 
 
 def test_vizkit_kwarg_properties(tvk):
@@ -116,23 +116,26 @@ def test_vizkit_output_basic(tvk, capsys):
 # get_chart_methodname
 #####################################
 def test_lookup_mark_method():
-    assert "mark_area" == lookup_mark_method("area")
-    assert "mark_bar" == lookup_mark_method("bar")
-    assert "mark_bar" == lookup_mark_method("hist")
-    assert "mark_line" == lookup_mark_method("line")
-    assert "mark_point" == lookup_mark_method("scatter")
+    foo = VizkitCommandMixin.lookup_mark_method
+    assert "mark_area" == foo("area")
+    assert "mark_bar" == foo("bar")
+    assert "mark_bar" == foo("hist")
+    assert "mark_line" == foo("line")
+    assert "mark_point" == foo("scatter")
 
 
 ##### parse_var_str
 def test_parse_var_str_default_name():
-    assert parse_var_str("id") == ("id", None)
-    assert parse_var_str("id|") == ("id", None)
-    assert parse_var_str("sum(thing)|") == ("sum(thing)", None)
+    foo = VizkitCommandMixin.parse_var_str
+    assert foo("id") == ("id", None)
+    assert foo("id|") == ("id", None)
+    assert foo("sum(thing)|") == ("sum(thing)", None)
 
 
 def test_parse_var_str_specified_name():
-    assert parse_var_str("id|Foo") == ("id", "Foo")
-    assert parse_var_str("sum(thing)|Bar") == ("sum(thing)", "Bar")
+    foo = VizkitCommandMixin.parse_var_str
+    assert foo("id|Foo") == ("id", "Foo")
+    assert foo("sum(thing)|Bar") == ("sum(thing)", "Bar")
 
 
 def test_parse_var_str_edge_case():

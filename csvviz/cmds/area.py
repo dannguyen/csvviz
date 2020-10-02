@@ -13,7 +13,7 @@ from csvviz.vizkit import Vizkit
 
 
 class Areakit(Vizkit):
-    viz_type = "area"
+    viz_commandname = "area"
     viz_info = f"""An area chart. Can be stacked"""
     viz_epilog = """Example:  $ csvviz area -x date -y price -c company stocks.csv"""
 

@@ -13,7 +13,7 @@ from csvviz.vizkit import Vizkit
 
 
 class Linekit(Vizkit):
-    viz_type = "line"
+    viz_commandname = "line"
     viz_info = f"""A line chart"""
     # viz_epilog = (
     #     f"""Example:\t $ csvviz line -x date -y price -c company examples/stocks.csv"""

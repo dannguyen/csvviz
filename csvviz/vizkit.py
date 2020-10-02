@@ -43,60 +43,119 @@ ENCODING_CHANNEL_NAMES = (
 )
 
 
-def lookup_mark_method(viz_type: str) -> alt.Chart:
+class VizkitViewMixin:
     """
-    convenience method that translates our command names, e.g. bar, dot, line, to
-    the equivalent in altair
+    a namespace/mixin for functions that output the viz
     """
-    vname = viz_type.lower()
+    @staticmethod
+    def chart_to_json(chart: alt.Chart) -> str:
+        return chart.to_json(indent=2)
 
-    if vname in (
-        "area",
-        "bar",
-        "line",
-    ):
-        m = f"mark_{vname}"
-    elif vname == "hist":
-        m = "mark_bar"
-    elif vname == "scatter":
-        m = "mark_point"
-    elif vname == "abstract":
-        m = "mark_bar"  # for testing purposes
-    else:
-        raise ValueError(f"{viz_type} is not a recognized viz/chart type")
-    return m
+    @staticmethod
+    def open_chart_in_browser(chart: alt.Chart) -> typeNoReturn:
+        # a helpful wrapper around altair_viewer.altview
+        altview.show(chart)
 
 
-def open_chart_in_browser(chart: alt.Chart) -> typeNoReturn:
-    # a helpful wrapper around altair_viewer.altview
-    altview.show(chart)
+    def output_chart(self, oargs={}) -> typeNoReturn:
+        """
+        Send to stdout the desired representation of a chart
+        """
+        # --interactive/--static chart is independent of whether or not we're previewing it,
+        #  which is reflected in its JSON representation
+        # echo JSON before doing a preview
+        oargs = self.output_kwargs if not oargs else oargs
+        if oargs["to_json"]:
+            clout(self.chart_to_json(self.chart))
+
+    def preview_chart(self) -> typeUnion[typeNoReturn, bool]:
+        if not self.kwargs.get("no_preview"):
+            self.open_chart_in_browser(self.chart)
+        else:
+            return False
 
 
-def parse_var_str(var: str) -> typeTuple[typeUnion[str, None]]:
-    """
-    given an argument like:
-        --xvar='id|Product ID', return ('id', 'Product ID')
-        --yvar='amount', return ('amount', 'amount')
-    """
-    x = next(csv.reader(StringIO(var), delimiter="|"))
-    if len(x) == 1:
-        x.append(None)
-    elif not x[1]:
-        x[1] = None
-    return tuple(x)
+class VizkitCommandMixin:
+    viz_commandname = "abstract"
 
-
-class Vizkit(object):
-    """
-    The interface between Click.command, Altair.Chart, and Pandas.dataframe
-    """
-
-    viz_type = "abstract"
     viz_info = (
-        f"""A {viz_type} visualization"""  # this should be defined in every subclass
+        f"""A {viz_commandname} visualization"""  # this should be defined in every subclass
     )
     viz_epilog = ""
 
+    @staticmethod
+    def _basecommand(klass):
+        def _foo(**kwargs):
+            try:
+                vk = klass(input_file=kwargs.get("input_file"), kwargs=kwargs)
+            except VizValueError as err:
+                clexit(1, err)
+            else:
+                vk.output_chart()
+                for w in vk.warnings:
+                    clerr(f"Warning: {w}")
+                vk.preview_chart()
+        return _foo
+
+    @classmethod
+    def register_command(klass):
+        # TODO: this is bad OOP; _foo should be properly named and in some more logical place
+        command = klass._basecommand(klass)
+        command = click.command(
+            cls=VizCommand,
+            name=klass.viz_commandname,
+            help=klass.viz_info,
+            epilog=klass.viz_epilog,
+        )(command)
+        command = general_options_decor(command)
+        for decor in klass.COMMAND_DECORATORS:
+            command = decor(command)
+
+        return command
+
+    @staticmethod
+    def lookup_mark_method(viz_commandname: str) -> alt.Chart:
+        """
+        convenience method that translates our command names, e.g. bar, dot, line, to
+        the equivalent in altair
+        """
+        vname = viz_commandname.lower()
+
+        if vname in (
+            "area",
+            "bar",
+            "line",
+        ):
+            m = f"mark_{vname}"
+        elif vname == "hist":
+            m = "mark_bar"
+        elif vname == "scatter":
+            m = "mark_point"
+        elif vname == "abstract":
+            m = "mark_bar"  # for testing purposes
+        else:
+            raise ValueError(f"{viz_commandname} is not a recognized viz/chart type")
+        return m
+
+
+    @staticmethod
+    def parse_var_str(var: str) -> typeTuple[typeUnion[str, None]]:
+        """
+        given an argument like:
+            --xvar='id|Product ID', return ('id', 'Product ID')
+            --yvar='amount', return ('amount', 'amount')
+        """
+        x = next(csv.reader(StringIO(var), delimiter="|"))
+        if len(x) == 1:
+            x.append(None)
+        elif not x[1]:
+            x[1] = None
+        return tuple(x)
+
+class Vizkit(VizkitCommandMixin, VizkitViewMixin):
+    """
+    The interface between Click.command, Altair.Chart, and Pandas.dataframe
+    """
     def __init__(self, input_file, kwargs):
         self.kwargs = kwargs
         self.warnings = []
@@ -137,22 +196,6 @@ class Vizkit(object):
 
         return chart
 
-    def output_chart(self, oargs={}) -> typeNoReturn:
-        # --interactive/--static chart is independent of whether or not we're previewing it,
-        #  which is reflected in its JSON representation
-        # echo JSON before doing a preview
-
-        oargs = self.output_kwargs if not oargs else oargs
-
-        if oargs["to_json"]:
-            clout(self.chart.to_json(indent=2))
-
-    def preview_chart(self) -> typeUnion[typeNoReturn, bool]:
-        if not self.kwargs.get("no_preview"):
-            open_chart_in_browser(self.chart)
-        else:
-            return False
-
     def _manage_facets(self, channels: dict) -> dict:
         #################################
         # set facets, i.e. grid
@@ -185,14 +228,8 @@ class Vizkit(object):
         """
         The viz-specific channel set up, i.e. the finishing step.
 
-        # TODO: this should be an abstract method in the base class, but for now, it's
-        #   an obsolete version of Barkit, for testing ease
-
-        This method does the bespoke work to combine channels with legends/colors/etc
-        and should be implemented in every subclass
+        Each subclass should implement any necessary channel-changing/configuring callbacks here
         """
-        self._set_channel_colorscale("fill", channels)  # for testing purposes
-
         return channels
 
     def finalize_styles(self, styles: dict) -> dict:
@@ -237,7 +274,7 @@ class Vizkit(object):
             argname = f"{n}var"
             vartxt = cargs.get(argname)  # walrus
             if vartxt:  # e.g. 'name', 'amount|Amount', 'sum(amount)|Amount'  # /walrus
-                shorthand, title = parse_var_str(vartxt)
+                shorthand, title = self.parse_var_str(vartxt)
                 ed = parse_shorthand(shorthand, data=self.df)
 
                 if _validate_fieldname(shorthand=shorthand, fieldname=ed["field"]):
@@ -350,11 +387,11 @@ class Vizkit(object):
     # properties
     @property
     def name(self) -> str:
-        return self.viz_type
+        return self.viz_commandname
 
     @property
     def mark_type(self) -> str:
-        return lookup_mark_method(self.viz_type)
+        return self.lookup_mark_method(self.viz_commandname)
 
     @property
     def df(self) -> pd.DataFrame:
@@ -450,32 +487,6 @@ class Vizkit(object):
         #         config["orient"] = DEFAULT_LEGEND_ORIENTATION
         return config
 
-    @classmethod
-    def register_command(klass):
-        # TODO: this is bad OOP; _foo should be properly named and in some more logical place
-        def _foo(**kwargs):
-            try:
-                vk = klass(input_file=kwargs.get("input_file"), kwargs=kwargs)
-            except (InvalidDataReference, MissingDataReference) as err:
-                clexit(1, err)
-            else:
-                vk.output_chart()
-                for w in vk.warnings:
-                    clerr(f"Warning: {w}")
-                vk.preview_chart()
-
-        command = _foo
-        command = click.command(
-            cls=VizCommand,
-            name=klass.viz_type,
-            help=klass.viz_info,
-            epilog=klass.viz_epilog,
-        )(command)
-        command = general_options_decor(command)
-        for decor in klass.COMMAND_DECORATORS:
-            command = decor(command)
-
-        return command
 
     @staticmethod
     def resolve_channel_name(
@@ -489,3 +500,9 @@ class Vizkit(object):
             ),
             altUndefined,
         )
+
+
+
+
+
+
