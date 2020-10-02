@@ -9,7 +9,7 @@ from csvviz.exceptions import *
 from csvviz.settings import *
 
 
-from csvviz.cmds.bar import Barkit
+from csvviz.viz.bar import Barkit
 
 viz = Barkit.register_command()
 

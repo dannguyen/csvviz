@@ -2,7 +2,7 @@
 
 
 
-## 0.4.0
+## 0.4.0 – more fundamentals, more refactoring
 
 
 - [x] normalized bar/area charts
@@ -16,7 +16,6 @@
 - [x] subclass click.Command to have type/category attribute, e.g. to specify 'general/specific' options
     - [x] subclass helpformatter to print subsections of general/specific options, as well as categories of options 
 
-
 - chart-wide properties: https://altair-viz.github.io/user_guide/configuration.html#config-view
     - chart-fill `-BGC/--background-color`
     - width/height; `-CW/-CH`
@@ -28,16 +27,15 @@
     - https://github.com/d3/d3-format#locale_format
     - subcommand `info number_formats`
 
-- bar width: https://altair-viz.github.io/user_guide/customization.html#adjusting-the-width-of-bar-marks
 
 
+## 0.5.0 – better bespoke visuals and labels
 
-- allow read from non CSV paths
-    - [ ] make a tocsv/read subcommand?
-    - [ ] url
-        - Vega has it built into its spec, but maybe just use pandas.read_csv()? https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html
-    - [ ] excel; infer from path https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_excel.html
-    - [ ] json: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_json.html
+
+Check out R-guides:
+- hist: https://www.r-graph-gallery.com/histogram.html
+- density: https://www.r-graph-gallery.com/density-plot.html
+- heatmap https://www.r-graph-gallery.com/heatmap.html
 
 
 - make a density chart? 
@@ -45,13 +43,14 @@
     - https://altair-viz.github.io/user_guide/transform/density.html
 - make stream chart? https://altair-viz.github.io/gallery/streamgraph.html
 - heatmap? https://altair-viz.github.io/gallery/simple_heatmap.html
-
-
-## 0.5.0
-
+- 
 - [ ] allow sorting by array of values: https://vega.github.io/vega-lite/docs/sort.html#sort-array
 
-- opacity option, for use in scatterplots
+
+- More chartwide options
+    - `-op/--opacity` mark opacity option, for use in scatterplots
+    - bar width: https://altair-viz.github.io/user_guide/customization.html#adjusting-the-width-of-bar-marks
+
 
 - custom visuals
     - conditional highlighting: 
@@ -74,20 +73,33 @@
         - x-axis for all charts (except hist)
         - color/fill for choropleth and heatmaps
     
+
+## 0.6.0 – better input/output
+
+- read csv:
+    - option to specify typecast for columns, e.g. prevent fips from being returned as integers
+
 - output bundle to dir:
     - storing data files as JSON to a specific dir: https://altair-viz.github.io/user_guide/data_transformers.html#storing-json-data-in-a-separate-directory
     - https://github.com/altair-viz/altair_saver/issues/62
 - output vega or vega-lite
     - https://altair-viz.github.io/user_guide/importing.html#importing-vega-vega-lite-versions
-
 - output png
     - use altair_saver: https://github.com/altair-viz/altair_saver#usage
     - https://vega.github.io/vega-lite/usage/compile.html
     - https://stackoverflow.com/questions/42742991/how-setup-py-install-npm-module
 
+- allow read from non CSV paths
+    - [ ] make a tocsv/read subcommand?
+    - [ ] url
+        - Vega has it built into its spec, but maybe just use pandas.read_csv()? https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html
+    - [ ] excel; infer from path https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_excel.html
+    - [ ] json: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_json.html
 
-## 0.6.0
+- `csvviz view`: reads vega/vega-lite json
+- `csvviz save`: reads vega/vega-lite json, produces bundle/output
 
+## 0.7.0 – the geo edition
 
 - `csvviz geo`:
     - datawrapper gives 3 choices: choropleth, symbol map, locator map: https://app.datawrapper.de/create/map
@@ -107,7 +119,14 @@
     - show number of columns by rows
     - for every column, show: name, datatype, cardinality, most_common_val, number of nils, mean, median, min, max
 
-## 0.7.0
+
+## 0.8.0 – the utilities edition
+
+- make csvviz_datasets package
+    - congress
+    - electoral_vote
+    - stop-and-frisk
+    - babynames
 
 - make csvviz_geo package
     - sources:
@@ -135,17 +154,34 @@
             - places
 
 
+## 0.9 – the wrangler edition
 
-## ON DECK
+- `cvz wrangle` for pre-processing data
+    - https://pandas.pydata.org/Pandas_Cheat_Sheet.pdf
+    - select:
+        - https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html
+        - https://pandas.pydata.org/docs/getting_started/intro_tutorials/03_subset_data.html#how-do-i-select-specific-columns-from-a-dataframe
+    - sort: `sort_values('amount', ascending=False)`
+    - grep: `filter` https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.filter.html
+    - query/where: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.query.html
+    - drop-na: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.dropna.html
+    - fill-na: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.fillna.html
+    - qcut
+    - cut
+    - join/merge
+    - pivot
+    - groupby: https://pandas.pydata.org/docs/getting_started/intro_tutorials/06_calculate_statistics.html#aggregating-statistics-grouped-by-category
+        
+## 0.9.5 - the documentation edition
+
+- clean up command info/options text
+- write Readthedocs
 
 
-Check out R-guides:
-- hist: https://www.r-graph-gallery.com/histogram.html
-- density: https://www.r-graph-gallery.com/density-plot.html
-- heatmap https://www.r-graph-gallery.com/heatmap.html
+-----------------------------------------------------------------------------
 
 
-
+## Not on deck
 
 - csvviz.info:
     - alt.core.TIMEUNITS
@@ -155,22 +191,8 @@ Check out R-guides:
 
 
 
-
-
-
-## Not on deck
-
-
-
 - Housekeeping
     - Get some data files to store locally
-
-- Future thinking
-    - Do some charts/apps require multiple CSVs? Or should we expect data to always be wrangled to single CSV?
-        - leaning towards yes to single table only
-    - setup.extras for selenium, etc. to do PNG rendering
-
-
 
 - JSON output
     - should include a 'csvviz' object with meta info, including:
@@ -180,21 +202,12 @@ Check out R-guides:
         - `reify` the Python Altair code, so that users can eval/copy-paste it for further 
 
 
-- `-xs/--x-sort`: for sorting marks by the x-axis:
-    - https://vega.github.io/vega-lite/docs/sort.html#sort-field
-    - https://altair-viz.github.io/user_guide/encoding.html?highlight=sort%20marks
-    - [x] basic implementation
-    - [x] make sure horizontal bar sorts as expected
-    - [x] test, including robust error handling when invalid column name is passed in
+
+-----------------------------------------------------------------------------
 
 
 
-## Stuff to read
-
-- line charts
-    - multiseries: https://altair-viz.github.io/gallery/multi_series_line.html
-        - use `color=` to set series
-
+## Appendix 
 
 ### Alternate viz libs
 
@@ -215,15 +228,16 @@ chart examples
 - bar: https://seaborn.pydata.org/generated/seaborn.barplot.html
 
 
+-----------------------------------------------------------------------------
 
 
-## All done
+### All done
 
 - [X] Look in Altair source to find when column name/shorthand is validated
     - fix: found altair.utils.parse_shorthand(meta:dict, data:pd.DataFrame), and am using it in Vizkit
 
 
-- csvviz.cmds.bar: Work on bar subcommand, generalize from there
+- csvviz.viz.bar: Work on bar subcommand, generalize from there
     - `csvviz bars -x name -y things examples/tings.csv` works!
     - [x] read csv from command-line with pandas
     
@@ -354,3 +368,11 @@ https://stackoverflow.com/questions/61840072/show-x-and-y-labels-in-each-facet-s
 
 
 - [x]  `--hide-legend` now hides all legends
+
+- `-xs/--x-sort`: for sorting marks by the x-axis:
+    - https://vega.github.io/vega-lite/docs/sort.html#sort-field
+    - https://altair-viz.github.io/user_guide/encoding.html?highlight=sort%20marks
+    - [x] basic implementation
+    - [x] make sure horizontal bar sorts as expected
+    - [x] test, including robust error handling when invalid column name is passed in
+

@@ -9,7 +9,7 @@ from pathlib import Path
 from csvviz.exceptions import *
 from csvviz.settings import *
 
-from csvviz.cmds.hist import Histkit
+from csvviz.viz.hist import Histkit
 
 hist = Histkit.register_command()
 

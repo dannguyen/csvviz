@@ -4,7 +4,7 @@ import altair as alt
 import pandas as pd
 
 from csvviz.vizkit import Vizkit, VizkitCommandMixin
-from csvviz.cmds.scatter import Scatterkit
+from csvviz.viz.scatter import Scatterkit
 
 
 @pytest.fixture

@@ -9,7 +9,7 @@ from pathlib import Path
 from csvviz.exceptions import *
 from csvviz.settings import *
 
-from csvviz.cmds.area import Areakit
+from csvviz.viz.area import Areakit
 
 area = Areakit.register_command()
 

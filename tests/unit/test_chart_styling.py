@@ -9,7 +9,7 @@ from csvviz.exceptions import *
 from csvviz.settings import *
 
 # for now, the bar chart seems like a good default viz
-from csvviz.cmds.bar import Barkit
+from csvviz.viz.bar import Barkit
 
 viz = Barkit.register_command()
 

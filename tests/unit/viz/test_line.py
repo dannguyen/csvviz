@@ -9,7 +9,7 @@ from pathlib import Path
 from csvviz.exceptions import *
 from csvviz.settings import *
 
-from csvviz.cmds.line import Linekit
+from csvviz.viz.line import Linekit
 
 line = Linekit.register_command()
 

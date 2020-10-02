@@ -5,7 +5,7 @@ from subprocess import Popen, PIPE
 
 # shouldn't have to use these...
 # from click.testing import CliRunner
-# from csvviz.cmds.bar import Barkit
+# from csvviz.viz.bar import Barkit
 # viz = Barkit.register_command()
 
 

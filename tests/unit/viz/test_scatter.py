@@ -9,7 +9,7 @@ from pathlib import Path
 from csvviz.exceptions import *
 from csvviz.settings import *
 
-from csvviz.cmds.scatter import Scatterkit
+from csvviz.viz.scatter import Scatterkit
 
 scatter = Scatterkit.register_command()
 
