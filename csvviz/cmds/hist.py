@@ -10,7 +10,6 @@ import click
 
 from csvviz.exceptions import *
 from csvviz.cmds.bar import Barkit
-from csvviz.cli_utils import clerr
 
 BINNING_OPTS = (
     "bincount",

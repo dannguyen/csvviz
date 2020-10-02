@@ -12,13 +12,6 @@ csvviz.cli module
    :undoc-members:
    :show-inheritance:
 
-csvviz.cli\_utils module
-------------------------
-
-.. automodule:: csvviz.cli_utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 csvviz.exceptions module
 ------------------------

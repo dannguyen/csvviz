@@ -20,15 +20,21 @@ import altair as alt
 from altair.utils import parse_shorthand
 from altair.utils.schemapi import Undefined as altUndefined
 import altair_viewer as altview
+import click
 import pandas as pd
 
-from csvviz.cli_utils import clout, clerr, VizCommand
+
 from csvviz.exceptions import *
 from csvviz.settings import *
-
-
-import click
-from csvviz.cli_utils import clout, clerr, clexit, general_options_decor
+from csvviz.utils.cmd import (
+    MyCliCommand,
+    general_options_decor,
+)  # TODO: general_options_decor should not be knowable here
+from csvviz.utils.sysio import (
+    clout,
+    clerr,
+    clexit,
+)  # TODO: this should be refactored, vizkit should not know about these
 
 typeChannel = typeUnion[alt.X, alt.Y, alt.Fill, alt.Size, alt.Stroke]
 typeChannelSet = typeDict[str, typeChannel]
@@ -47,6 +53,7 @@ class VizkitViewMixin:
     """
     a namespace/mixin for functions that output the viz
     """
+
     @staticmethod
     def chart_to_json(chart: alt.Chart) -> str:
         return chart.to_json(indent=2)
@@ -55,7 +62,6 @@ class VizkitViewMixin:
     def open_chart_in_browser(chart: alt.Chart) -> typeNoReturn:
         # a helpful wrapper around altair_viewer.altview
         altview.show(chart)
-
 
     def output_chart(self, oargs={}) -> typeNoReturn:
         """
@@ -78,9 +84,7 @@ class VizkitViewMixin:
 class VizkitCommandMixin:
     viz_commandname = "abstract"
 
-    viz_info = (
-        f"""A {viz_commandname} visualization"""  # this should be defined in every subclass
-    )
+    viz_info = f"""A {viz_commandname} visualization"""  # this should be defined in every subclass
     viz_epilog = ""
 
     @staticmethod
@@ -95,6 +99,7 @@ class VizkitCommandMixin:
                 for w in vk.warnings:
                     clerr(f"Warning: {w}")
                 vk.preview_chart()
+
         return _foo
 
     @classmethod
@@ -102,7 +107,7 @@ class VizkitCommandMixin:
         # TODO: this is bad OOP; _foo should be properly named and in some more logical place
         command = klass._basecommand(klass)
         command = click.command(
-            cls=VizCommand,
+            cls=MyCliCommand,
             name=klass.viz_commandname,
             help=klass.viz_info,
             epilog=klass.viz_epilog,
@@ -137,7 +142,6 @@ class VizkitCommandMixin:
             raise ValueError(f"{viz_commandname} is not a recognized viz/chart type")
         return m
 
-
     @staticmethod
     def parse_var_str(var: str) -> typeTuple[typeUnion[str, None]]:
         """
@@ -152,10 +156,12 @@ class VizkitCommandMixin:
             x[1] = None
         return tuple(x)
 
+
 class Vizkit(VizkitCommandMixin, VizkitViewMixin):
     """
     The interface between Click.command, Altair.Chart, and Pandas.dataframe
     """
+
     def __init__(self, input_file, kwargs):
         self.kwargs = kwargs
         self.warnings = []
@@ -487,7 +493,6 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
         #         config["orient"] = DEFAULT_LEGEND_ORIENTATION
         return config
 
-
     @staticmethod
     def resolve_channel_name(
         channel: typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]
@@ -500,9 +505,3 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
             ),
             altUndefined,
         )
-
-
-
-
-
-

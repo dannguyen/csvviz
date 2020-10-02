@@ -1,76 +1,16 @@
+import click
 from collections import defaultdict
 from contextlib import contextmanager
-from pathlib import Path
 import sys
-from typing import Any as typeAny, Mapping as typeMapping, NoReturn as typeNoReturn
-from typing import (
-    Dict as typeDict,
-    List as typeList,
-    Tuple as typeTuple,
-    Union as typeUnion,
-)
-from typing import IO as typeIO
 
-import altair as alt
-import click
-
-from csvviz import __version__
 from csvviz.settings import *
-
-
-
-def _echo(*args, use_stderr) -> typeNoReturn:
-    outobjects = []
-    for obj in args:
-        if isinstance(obj, typeMapping):
-            obj = json.dumps(obj, indent=2)
-        else:
-            obj = str(obj)
-        outobjects.append(obj)
-    click.echo(" ".join(outobjects), err=use_stderr)
-
-def clout(*args) -> typeNoReturn:
-    """
-    top-level method that is used to output to stdout
-    """
-    _echo(*args, use_stderr=False)
-
-def clerr(*args) -> typeNoReturn:
-    """
-    top-level method that is used to output to stderr
-    """
-
-    # TODO: refactor/decorate this jsons stuff
-    _echo(*args, use_stderr=True)
-
-
-def clexit(code: int, message: typeAny = None):
-    if message:
-        clerr(message)
-    sys.exit(code)
-
-def print_version(ctx=None, param=None, value=None) -> typeNoReturn:
-    """
-    https://click.palletsprojects.com/en/3.x/options/#callbacks-and-eager-options
-    """
-    if not ctx:
-        clout(__version__)
-    else:
-        # this is being used as a callback
-        if not value or ctx.resilient_parsing:
-            return
-        clout(__version__)
-        ctx.exit()
-
-
-
 
 #########################################
 # common Click.command options decorators
 #########################################
 
-# TODO: This stuff should be located next to Vizkit stuff, not floating in general cli-utils space
-class VizHelpFormatter(click.formatting.HelpFormatter):
+# TODO: This stuff should be located next to vizkit stuff? not floating in general cli-utils space
+class MyCliHelpFormatter(click.formatting.HelpFormatter):
     def write_lined_heading(self, heading):
         """Writes a heading into the buffer, sans trailing colon"""
         top_sep = "".join("─" for i in range(self.width))
@@ -109,8 +49,8 @@ class VizHelpFormatter(click.formatting.HelpFormatter):
             self.dedent()
 
 
-class VizContext(click.Context):
-    # formatter_class = VizHelpFormatter  # this will only have an effect for Click 8.0
+class MyCliContext(click.Context):
+    # formatter_class = MyCliHelpFormatter  # this will only have an effect for Click 8.0
 
     def make_formatter(self):
         """
@@ -121,12 +61,12 @@ class VizContext(click.Context):
             width=self.terminal_width, max_width=self.max_content_width
         )
         """
-        return VizHelpFormatter(
+        return MyCliHelpFormatter(
             width=self.terminal_width, max_width=self.max_content_width
         )
 
 
-class VizCommand(click.Command):
+class MyCliCommand(click.Command):
     def format_options(self, ctx, formatter):
         """Writes all the options into the formatter if they exist."""
         common_opts = defaultdict(list)
@@ -134,7 +74,7 @@ class VizCommand(click.Command):
         for param in self.get_params(ctx):
             rv = param.get_help_record(ctx)
             if rv is not None:
-                if isinstance(param, VizGeneralOption):
+                if isinstance(param, MyCliGeneralOption):
                     cat = param.category
                     common_opts[cat].append(rv)
                 else:
@@ -150,7 +90,6 @@ class VizCommand(click.Command):
                     with formatter.category_section(category):
                         formatter.write_dl(opts)
 
-    # context_class = VizContext
     def make_context(self, info_name, args, parent=None, **extra):
         """
         On Click < 8.0, :attr`context_class` isn't yet available, so we have to
@@ -162,7 +101,7 @@ class VizCommand(click.Command):
             if key not in extra:
                 extra[key] = value
 
-        ctx = VizContext(self, info_name=info_name, parent=parent, **extra)
+        ctx = MyCliContext(self, info_name=info_name, parent=parent, **extra)
 
         with ctx.scope(cleanup=False):
             self.parse_args(ctx, args)
@@ -170,16 +109,16 @@ class VizCommand(click.Command):
 
 
 def viz_general_argument(*args, **kwargs):
-    kwargs["cls"] = VizGeneralArgument
+    kwargs["cls"] = MyCliGeneralArgument
     return click.argument(*args, **kwargs)
 
 
 def viz_general_option(*args, **kwargs):
-    kwargs["cls"] = VizGeneralOption
+    kwargs["cls"] = MyCliGeneralOption
     return click.option(*args, **kwargs)
 
 
-class VizGeneralArgument(click.Argument):
+class MyCliGeneralArgument(click.Argument):
     # TODO: figure out how to use stdin without '-':
     # https://stackoverflow.com/questions/56351195/how-to-specify-a-default-value-for-argument-list-processed-by-click
     # class FilesDefaultToStdin(click.Argument):
@@ -208,7 +147,7 @@ class VizGeneralArgument(click.Argument):
                 )
 
 
-class VizGeneralOption(click.Option):
+class MyCliGeneralOption(click.Option):
     def __init__(self, *args, **kwargs):
         self.category = kwargs.pop("category")
         super().__init__(*args, **kwargs)
@@ -269,7 +208,7 @@ GENERAL_OPTS["visual"] = {
     "theme": viz_general_option(
         "--theme",
         category="Chart visual styles and properties",
-        type=click.Choice(alt.themes.names(), case_sensitive=False),
+        type=click.Choice(AVAILABLE_THEMES, case_sensitive=False),
         default="default",
         help="choose a built-in theme for chart",
     ),  # TODO: refactor alt.themes.names() to constant
@@ -305,7 +244,7 @@ GENERAL_OPTS["io"] = {
         "input_file",
         type=click.File("r"),
         required=False,
-        callback=VizGeneralArgument.check_piped_arg,
+        callback=MyCliGeneralArgument.check_piped_arg,
     ),
     "is_interactive": viz_general_option(
         "--interactive/--static",

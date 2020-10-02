@@ -1,9 +1,20 @@
 # TODOS
 
-## JUST DONE 
 
 
 ## 0.4.0
+
+
+- [x] normalized bar/area charts
+- [X] Name channel vars, which sets axes and legend titles:
+    - [X] extend mini-syntax: `-y 'amount|Named Amount'`
+- [X] fix setup.py and requirements
+    - [x] got tox working
+    - [x] bump2version works?
+- [x] alias csvviz to cvz
+- [x] facet/grid: `-gs/--grid-sort`
+- [x] subclass click.Command to have type/category attribute, e.g. to specify 'general/specific' options
+    - [x] subclass helpformatter to print subsections of general/specific options, as well as categories of options 
 
 
 - chart-wide properties: https://altair-viz.github.io/user_guide/configuration.html#config-view
@@ -17,16 +28,7 @@
     - https://github.com/d3/d3-format#locale_format
     - subcommand `info number_formats`
 
-- [x] normalized bar/area charts
-- [X] Name channel vars, which sets axes and legend titles:
-    - [X] extend mini-syntax: `-y 'amount|Named Amount'`
-- [X] fix setup.py and requirements
-    - [x] got tox working
-    - [x] bump2version works?
-- [x] alias csvviz to cvz
-- [x] facet/grid: `-gs/--grid-sort`
-- [x] subclass click.Command to have type/category attribute, e.g. to specify 'general/specific' options
-    - [x] subclass helpformatter to print subsections of general/specific options, as well as categories of options 
+- bar width: https://altair-viz.github.io/user_guide/customization.html#adjusting-the-width-of-bar-marks
 
 
 
@@ -56,7 +58,6 @@
         - https://altair-viz.github.io/gallery/bar_chart_with_highlighted_bar.html
         - bar chart negative values: https://altair-viz.github.io/gallery/bar_chart_with_negatives.html
 
-
 - [ ] static data point labels: 
     - https://altair-viz.github.io/gallery/scatter_with_labels.html
     - https://altair-viz.github.io/gallery/bar_chart_with_labels.html
@@ -64,6 +65,74 @@
     - https://altair-viz.github.io/gallery/scatter_tooltips.html
     - by default, show all channel values
     - have `--no-tooltips` option
+
+- better bin transforms
+    - https://altair-viz.github.io/user_guide/transform/bin.html
+    - use pandas.cut and qcut: https://pbpython.com/pandas-qcut-cut.html
+    - allow manual definition of bin `steps` for fun: https://vega.github.io/vega-lite/docs/bin.html
+    - limit use of bins to:
+        - x-axis for all charts (except hist)
+        - color/fill for choropleth and heatmaps
+    
+- output bundle to dir:
+    - storing data files as JSON to a specific dir: https://altair-viz.github.io/user_guide/data_transformers.html#storing-json-data-in-a-separate-directory
+    - https://github.com/altair-viz/altair_saver/issues/62
+- output vega or vega-lite
+    - https://altair-viz.github.io/user_guide/importing.html#importing-vega-vega-lite-versions
+
+- output png
+    - use altair_saver: https://github.com/altair-viz/altair_saver#usage
+    - https://vega.github.io/vega-lite/usage/compile.html
+    - https://stackoverflow.com/questions/42742991/how-setup-py-install-npm-module
+
+
+## 0.6.0
+
+
+- `csvviz geo`:
+    - datawrapper gives 3 choices: choropleth, symbol map, locator map: https://app.datawrapper.de/create/map
+    - mark_geoshape: https://altair-viz.github.io/gallery/choropleth.html
+    - arguments:
+        - input_file is expected to be a geoshape file
+        - `-s/--shape 'counties'` or `-f/--feature 'counties'`?
+    - let user specify related data file and a join column, e.g. `--data unemployment.csv --lookup 'FIPS'`
+    - should maps have more than one kind of markup? https://altair-viz.github.io/gallery/airport_connections.html
+    - allow user to specify background layer: https://altair-viz.github.io/gallery/london_tube.html
+        - `--bg-stroke=2,color --bg-fill=color`
+    - but how to do labels??
+
+- get state-by-state electoral map over the years
+
+- csvviz inspect
+    - show number of columns by rows
+    - for every column, show: name, datatype, cardinality, most_common_val, number of nils, mean, median, min, max
+
+## 0.7.0
+
+- make csvviz_geo package
+    - sources:
+        - https://github.com/topojson/us-atlas
+        - https://www2.census.gov/geo/tiger/GENZ2017/shp/
+    - naming_scheme:   
+    - examples
+        - world
+            - countries
+                - 2020
+                - 1900
+        - usa
+            - counties
+                - 2020
+                - 2010
+            - states
+                - 2020
+                - 2000
+                - ny
+                    - census_tracts
+            - congressional_districts
+                - 116
+                - 115
+                - 114
+            - places
 
 
 
@@ -77,7 +146,6 @@ Check out R-guides:
 
 
 
-- bar width: https://altair-viz.github.io/user_guide/customization.html#adjusting-the-width-of-bar-marks
 
 - csvviz.info:
     - alt.core.TIMEUNITS
@@ -85,35 +153,12 @@ Check out R-guides:
     - AGGREGATES
     - INV_TYPECODE_MAP
 
-- chart-wide attributes:
-    - width
-    - height (combine into a dimensions flag)
 
 
 
-
-
-- csvviz inspect
-    - show number of columns by rows
-    - for every column, show: name, datatype, cardinality, most_common_val, number of nils, mean, median, min, max
 
 
 ## Not on deck
-
-- geo: mark_geoshape: https://altair-viz.github.io/gallery/choropleth.html
-    - let user specify geoshape file, separate from input_file. Or provide keyword choices, e.g. 'us:states', 'world:countries'
-    - should maps have more than one kind of markup? https://altair-viz.github.io/gallery/airport_connections.html
-    - allow user to specify background layer: https://altair-viz.github.io/gallery/london_tube.html
-        - `--bg-stroke=2,color --bg-fill=color`
-    - but how to do labels??
-
-- Adopt Altair mini-syntax: seems like using Altair's mini-syntax is the way to go?
-    - [X] maybe kill Datakit.resolve_column for validation, and just pass things straight into Altair and propogate its 'not a column errors'?
-    - [?] what are the scenarios when passing invalid column names into alt.X, alt.Y, alt.Fill, etc?
-
-    - https://altair-viz.github.io/user_guide/encoding.html#encoding-shorthands
-    - write a quick helpme for csvviz usecases
-        - `Vizkit.column_to_channel('sum(amount)')`
 
 
 

@@ -3,7 +3,8 @@ import json
 import altair as alt
 import click
 import pandas as pd
-from csvviz.cli_utils import clout, clerr, __version__ as csvviz_version
+from csvviz import __version__ as csvviz_version
+from csvviz.utils.sysio import clout, clerr
 
 # from typing import Mapping as typeMapping, NoReturn as typeNoReturn
 # from typing import List as typeList, Tuple as typeTuple, Union as typeUnion
