@@ -86,7 +86,7 @@ def test_specify_default_theme_has_no_effect():
 ##############################################################################################################
 def test_chart_dim_defaults():
     cdata = json.loads(CliRunner().invoke(viz, MI_ARGS).output)
-    assert all(d not in cdata for d in ('width', 'height'))
+    assert all(d not in cdata for d in ("width", "height"))
     # assert cdata["width"] == DEFAULT_CHART_WIDTH
     # assert cdata["height"] == DEFAULT_CHART_HEIGHT
 
@@ -94,7 +94,7 @@ def test_chart_dim_defaults():
 def test_chart_width_set():
     cdata = json.loads(CliRunner().invoke(viz, ["-W", "345", *MI_ARGS]).output)
     assert cdata["width"] == 345
-    assert 'height' not in cdata
+    assert "height" not in cdata
 
 
 # def test_width_defaults_nominal_is_discrete():

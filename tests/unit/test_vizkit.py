@@ -14,7 +14,7 @@ from csvviz.viz.scatter import Scatterkit
 # TODO: messy hack for now, to manually update with REQUIRED_ARGS; maybe indication that
 # tests/implementation is too brittle?
 REQUIRED_ARGS = {
-     # "chart_height": DEFAULT_CHART_HEIGHT,
+    # "chart_height": DEFAULT_CHART_HEIGHT,
     # "chart_width": DEFAULT_CHART_WIDTH,
 }
 

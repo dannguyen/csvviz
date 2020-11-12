@@ -11,13 +11,14 @@ import click
 from csvviz.exceptions import *
 from csvviz.vizkit import Vizkit
 
+
 class Heatmapkit(Vizkit):
 
     viz_commandname = "heatmap"
     viz_info = f"""A TKTKTK"""
-    viz_epilog = """Example:\t csvviz heatmap -x state -y item -c sold examples/hot.csv"""
-
-
+    viz_epilog = (
+        """Example:\t csvviz heatmap -x state -y item -c sold examples/hot.csv"""
+    )
 
     COMMAND_DECORATORS = (
         click.option(
@@ -39,7 +40,6 @@ class Heatmapkit(Vizkit):
             type=click.STRING,
             help="The name of the column for mapping TK colors.",
         ),
-
         # # https://altair-viz.github.io/user_guide/encoding.html#sorting
         # click.option(
         #     "--x-sort",
@@ -48,16 +48,12 @@ class Heatmapkit(Vizkit):
         #     type=click.STRING,
         #     help="Sort the x-axis by the values of the x/y/fill channel. Prefix with '-' to do reverse sort, e.g. 'y' vs '-y'",
         # ),
-
     )
-
 
     def finalize_channels(self, channels):
         self._set_channel_colorscale("fill", channels)
 
         if not channels.get("fill"):
-            raise MissingDataReference(
-                "-c/--colorvar needs to be specified"
-            )
+            raise MissingDataReference("-c/--colorvar needs to be specified")
 
         return channels

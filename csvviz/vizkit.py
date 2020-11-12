@@ -5,15 +5,15 @@ import re
 
 
 from typing import (
-    Any as typeAny,
-    Callable as typeCallable,
-    Dict as typeDict,
-    IO as typeIO,
-    List as typeList,
-    Mapping as typeMapping,
-    NoReturn as typeNoReturn,
-    Tuple as typeTuple,
-    Union as typeUnion,
+    Any as AnyType,
+    Callable as CallableType,
+    Dict as DictType,
+    IO as IOType,
+    List as ListType,
+    Mapping as MappingType,
+    NoReturn as NoReturnType,
+    Tuple as TupleType,
+    Union as UnionType,
 )
 
 import altair as alt
@@ -36,8 +36,8 @@ from csvviz.utils.sysio import (
     clexit,
 )  # TODO: this should be refactored, vizkit should not know about these
 
-typeChannel = typeUnion[alt.X, alt.Y, alt.Fill, alt.Size, alt.Stroke]
-typeChannelSet = typeDict[str, typeChannel]
+ChannelType = UnionType[alt.X, alt.Y, alt.Fill, alt.Size, alt.Stroke]
+ChannelSetType = DictType[str, ChannelType]
 
 ENCODING_CHANNEL_NAMES = (
     "x",
@@ -59,11 +59,11 @@ class VizkitViewMixin:
         return chart.to_json(indent=2)
 
     @staticmethod
-    def open_chart_in_browser(chart: alt.Chart) -> typeNoReturn:
+    def open_chart_in_browser(chart: alt.Chart) -> NoReturnType:
         # a helpful wrapper around altair_viewer.altview
         altview.show(chart)
 
-    def output_chart(self, oargs={}) -> typeNoReturn:
+    def output_chart(self, oargs={}) -> NoReturnType:
         """
         Send to stdout the desired representation of a chart
         """
@@ -74,7 +74,7 @@ class VizkitViewMixin:
         if oargs["to_json"]:
             clout(self.chart_to_json(self.chart))
 
-    def preview_chart(self) -> typeUnion[typeNoReturn, bool]:
+    def preview_chart(self) -> UnionType[NoReturnType, bool]:
         if not self.kwargs.get("no_preview"):
             self.open_chart_in_browser(self.chart)
         else:
@@ -145,7 +145,7 @@ class VizkitCommandMixin:
         return m
 
     @staticmethod
-    def parse_var_str(var: str) -> typeTuple[typeUnion[str, None]]:
+    def parse_var_str(var: str) -> TupleType[UnionType[str, None]]:
         """
         given an argument like:
             --xvar='id|Product ID', return ('id', 'Product ID')
@@ -235,7 +235,7 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
         return channels
 
     #################### prepare
-    def finalize_channels(self, channels: typeChannelSet) -> typeChannelSet:
+    def finalize_channels(self, channels: ChannelSetType) -> ChannelSetType:
         """
         The viz-specific channel set up, i.e. the finishing step.
 
@@ -261,7 +261,7 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
     #####################################################################
     # internal helpers
     #####################################################################
-    def _create_channels(self) -> typeChannelSet:
+    def _create_channels(self) -> ChannelSetType:
         def _set_default_xyvar_args(kargs) -> dict:
             """
             configure x and y channels, which default to 0 and 1-indexed column
@@ -339,14 +339,18 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
         chartfoo = getattr(alt.Chart(self.df), self.mark_type)
         return chartfoo(clip=True)
 
-    def _create_styles(self) -> typeDict:
+    def _create_styles(self) -> DictType:
         """assumes self.channels has been set, particularly the types of x/y channels"""
         cargs = self.kwargs.copy()
 
         styles = {}
 
         # these atts are only set if a value exists
-        for att in ('height', 'width', 'title',):
+        for att in (
+            "height",
+            "width",
+            "title",
+        ):
             if cargs.get(att):
                 styles[att] = cargs[att]
 
@@ -365,7 +369,7 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
 
         return styles
 
-    def _set_channel_colorscale(self, channelvar: str, channels: dict) -> typeNoReturn:
+    def _set_channel_colorscale(self, channelvar: str, channels: dict) -> NoReturnType:
         """
         Given a channelvar, e.g. 'fill', 'stroke'
 
@@ -426,20 +430,20 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
         return self._dataframe
 
     @property
-    def column_names(self) -> typeList[str]:
+    def column_names(self) -> ListType[str]:
         return list(self.df.columns)
 
     #####################################################################
     #  kwarg properties
     #  TODO: refactor later
     @property
-    def channel_kwargs(self) -> typeDict:
+    def channel_kwargs(self) -> DictType:
         # TODO: handling facet stuff here is BAD
         _ARGKEYS = [f"{n}var" for n in ENCODING_CHANNEL_NAMES]
         return {k: self.kwargs.get(k) for k in _ARGKEYS}
 
     @property
-    def color_kwargs(self) -> typeDict:
+    def color_kwargs(self) -> DictType:
         _ARGKEYS = (
             "color_scheme",
             "colors",
@@ -447,7 +451,7 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
         return {k: self.kwargs.get(k) for k in _ARGKEYS}
 
     @property
-    def legend_kwargs(self) -> typeDict:
+    def legend_kwargs(self) -> DictType:
         _ARGKEYS = (
             "no_legend",
             "TK-orient",
@@ -456,7 +460,7 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
         return {k: self.kwargs.get(k) for k in _ARGKEYS}
 
     @property
-    def output_kwargs(self) -> typeDict:
+    def output_kwargs(self) -> DictType:
         _ARGKEYS = (
             "to_json",
             "no_preview",
@@ -465,17 +469,17 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
 
     # Not needed if there are no other interactive-like attributes
     # @property
-    # def render_kwargs(self) -> typeDict:
+    # def render_kwargs(self) -> DictType:
     #     _ARGKEYS = ('is_interactive',)
     #     return {k: self.kwargs.get(k) for k in _ARGKEYS}
 
     # @property
-    # def sorting_kwargs(self) -> typeDict:
+    # def sorting_kwargs(self) -> DictType:
     #     _ARGKEYS = ("sortx_var",)
     #     return {k: self.kwargs.get(k) for k in _ARGKEYS}
 
     # @property
-    # def styling_kwargs(self) -> typeDict:
+    # def styling_kwargs(self) -> DictType:
     #     _ARGKEYS = ("title",)
     #     return {k: self.kwargs.get(k) for k in _ARGKEYS}
 
@@ -484,8 +488,8 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
 
     @staticmethod
     def _config_channel_sort(
-        channel: typeChannel, sortorder: typeUnion[str, None]
-    ) -> typeChannel:
+        channel: ChannelType, sortorder: UnionType[str, None]
+    ) -> ChannelType:
         """inplace modification of channel"""
         if sortorder:  # /walrus
             if sortorder == "asc":
@@ -497,7 +501,7 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
         return channel
 
     @staticmethod
-    def _config_legend(kwargs: typeDict) -> typeUnion[typeDict, bool]:
+    def _config_legend(kwargs: DictType) -> UnionType[DictType, bool]:
 
         config = {}
         if kwargs["no_legend"]:
@@ -517,7 +521,7 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
 
     @staticmethod
     def resolve_channel_name(
-        channel: typeUnion[alt.X, alt.Y, alt.Fill, alt.Size]
+        channel: UnionType[alt.X, alt.Y, alt.Fill, alt.Size]
     ) -> str:
         return next(
             (

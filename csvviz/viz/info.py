@@ -6,9 +6,9 @@ import pandas as pd
 from csvviz import __version__ as csvviz_version
 from csvviz.utils.sysio import clout, clerr
 
-# from typing import Mapping as typeMapping, NoReturn as typeNoReturn
-# from typing import List as typeList, Tuple as typeTuple, Union as typeUnion
-# from typing import IO as typeIO
+# from typing import Mapping as MappingType, NoReturn as NoReturnType
+# from typing import List as ListType, Tuple as TupleType, Union as UnionType
+# from typing import IO as IOType
 
 
 INFO_OPTIONS = {

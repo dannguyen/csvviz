@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 import re
 import sys
-from typing import NoReturn as typeNoReturn
+from typing import NoReturn as NoReturnType
 import click
 
 from csvviz import __version__
@@ -14,7 +14,7 @@ from csvviz.viz.info import command as infocommand
 SUBCOMMAND_PATHS = [p for p in Path("csvviz/viz/").glob("*.py") if p.name != "info.py"]
 
 
-def _print_version(ctx=None, param=None, value=None) -> typeNoReturn:
+def _print_version(ctx=None, param=None, value=None) -> NoReturnType:
     """
     https://click.palletsprojects.com/en/3.x/options/#callbacks-and-eager-options
     """
@@ -45,7 +45,7 @@ def cli(**kwargs):
 
 
 def main():
-    def _add_viz_subcommands() -> typeNoReturn:
+    def _add_viz_subcommands() -> NoReturnType:
         for path in SUBCOMMAND_PATHS:
             modname = re.sub(f"/", ".", str(path)).rpartition(".py")[
                 0

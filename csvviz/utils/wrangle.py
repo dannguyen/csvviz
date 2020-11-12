@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 import pandas as pd
-from typing import List as typeList
+from typing import List as ListType
 
 # from IPython import embed as IBREAKPOINT
+
+"""
+2020-11-12 note: this is just rando code for a rando feature that should probably be thrown away
+"""
 
 
 class Shape:
@@ -14,7 +18,7 @@ class Shape:
 
     @staticmethod
     def sort(
-        df: pd.DataFrame, cols: typeList[str], ascendings: typeList[bool] = [], **kwargs
+        df: pd.DataFrame, cols: ListType[str], ascendings: ListType[bool] = [], **kwargs
     ) -> pd.DataFrame:
         if not ascendings:
             ascendings = list(True for c in cols)

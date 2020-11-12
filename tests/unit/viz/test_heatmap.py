@@ -14,7 +14,6 @@ from csvviz.viz.heatmap import Heatmapkit
 heatmap = Heatmapkit.register_command()
 
 
-
 HOT_ARGS = [
     "examples/hot.csv",
     "--json",
@@ -23,12 +22,17 @@ HOT_ARGS = [
 
 
 def test_heatmap_defaults():
-    c = CliRunner().invoke(heatmap,
-        [   '-x', 'state',
-            '-y', 'item',
-            '-c', 'sold',
+    c = CliRunner().invoke(
+        heatmap,
+        [
+            "-x",
+            "state",
+            "-y",
+            "item",
+            "-c",
+            "sold",
             *HOT_ARGS,
-        ]
+        ],
     )
 
     cdata = json.loads(c.output)
@@ -36,13 +40,6 @@ def test_heatmap_defaults():
     assert cdata["mark"]["type"] == "rect"
 
     datavals = list(cdata["datasets"].values())[0]
-    assert datavals[0] ==       {
-        "item": "apples",
-        "sold": 80,
-        "state": "CA"
-      }
+    assert datavals[0] == {"item": "apples", "sold": 80, "state": "CA"}
 
     # TODO: test fill encoding
-
-
-
