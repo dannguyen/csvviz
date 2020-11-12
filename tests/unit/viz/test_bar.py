@@ -119,13 +119,18 @@ def test_bar_error_when_fill_sort_invalid():
     assert result.exit_code == 2
 
 
-# def test_bar_warn_if_colors_specified_but_no_fill():
-#     result = CliRunner(mix_stderr=False).invoke(bar, ["--colors", "red,blue", *OUTPUT_ARGS])
-#     assert result.exit_code == 0
-#     assert (
-#         "Warning: Specifying --colors/--color-scheme has no effect unless --fill is also specified"
-#         in result.stderr
-#     )
+@pytest.mark.skip(
+    reason="No idea why this was commented out, but we do want to test the warnings..."
+)
+def test_bar_warn_if_colors_specified_but_no_fill():
+    result = CliRunner(mix_stderr=False).invoke(
+        bar, ["--color-list", "red,blue", *OUTPUT_ARGS]
+    )
+    assert result.exit_code == 0
+    assert (
+        "TK this is outdated:: Warning: Specifying --color-list/--color-scheme has no effect unless --fill is also specified"
+        in result.stderr
+    )
 
 
 ##############################################################################################################

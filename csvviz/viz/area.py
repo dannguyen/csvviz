@@ -54,9 +54,7 @@ class Areakit(Vizkit):
     )
 
     def finalize_channels(self, channels):
-        self._set_channel_colorscale("fill", channels)
-
-        # Todo: DRY to a method shared by area and b ar
+        # Todo: DRY to a method shared by area and bar
         # https://altair-viz.github.io/gallery/normalized_stacked_area_chart.html
         if self.kwargs.get("normalized"):
             if not channels.get("fill"):

@@ -65,8 +65,6 @@ class Barkit(Vizkit):
 
     def finalize_channels(self, channels):
 
-        self._set_channel_colorscale("fill", channels)
-
         if self.kwargs.get("flipxy"):  # i.e. -H/--horizontal flag
             channels["x"], channels["y"] = (channels["y"], channels["x"])
 

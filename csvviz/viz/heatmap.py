@@ -51,7 +51,6 @@ class Heatmapkit(Vizkit):
     )
 
     def finalize_channels(self, channels):
-        self._set_channel_colorscale("fill", channels)
 
         if not channels.get("fill"):
             raise MissingDataReference("-c/--colorvar needs to be specified")

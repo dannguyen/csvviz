@@ -16,7 +16,6 @@ class Scatterkit(Vizkit):
     viz_epilog = """Example:  $ csvviz scatter -x mass -y volume -s velocity data.csv"""
 
     def finalize_channels(self, channels):
-        self._set_channel_colorscale("fill", channels)
         return channels
 
     COMMAND_DECORATORS = (

@@ -185,12 +185,12 @@ GENERAL_OPTS["facet"] = {
 }
 
 GENERAL_OPTS["visual"] = {
-    "colors": viz_general_option(
-        "--colors",
+    "color_list": viz_general_option(
+        "--color-list",
         "-C",
         category="Chart visual styles and properties",
         type=click.STRING,
-        help="A comma-delimited list of colors to use for the relevant marks",
+        help="A comma-delimited list of colors to use for the relevant marks, e.g. 'deeppink,#555'",
     ),
     "color_scheme": viz_general_option(
         "--color-scheme",

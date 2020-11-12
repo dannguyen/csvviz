@@ -7,6 +7,12 @@ Refamiliarizing myself with code:
 - in vizkit.py, fix/clean up "manage"/"create"/"configure" naming convention
 - figure out configure_legend
 - "finalize" methods need their own mixin?
+- [ ] make warnings.append be a method/property
+- [ ] --colors should be --color-list
+- fix up: _set_channel_colorscale
+    - [ ] write test for get_color warning...
+    - [ ] write test for vizkit.color_channeltype
+
 
 ## Update 2020-11-11
 

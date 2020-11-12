@@ -54,7 +54,7 @@ def test_fill_default_color_scheme():
 
 def test_basic_colors():
     """
-    -c/--colors
+    -c/--color-list
     """
     result = CliRunner().invoke(
         viz, ["-c", "name", "-C", "red,deeppink,#999 ", *OUTPUT_ARGS]
@@ -65,7 +65,7 @@ def test_basic_colors():
     scale = cdata["encoding"]["fill"]["scale"]
     assert scale["range"] == ["red", "deeppink", "#999"]
 
-    # any time -c/--colors is specified, 'scheme' is popped out
+    # any time -c/--color-list is specified, 'scheme' is popped out
     assert "scheme" not in scale
 
 
@@ -82,11 +82,19 @@ def test_basic_color_scheme():
 
 def test_colors_overrides_color_scheme():
     """
-    -c/--colors setting overrides (and deletes) anything set by -C/--color-scheme
+    -c/--color-list setting overrides (and deletes) anything set by -C/--color-scheme
     """
     result = CliRunner().invoke(
         viz,
-        ["-c", "name", "--color-scheme", "dark2", "--colors", "yellow", *OUTPUT_ARGS],
+        [
+            "-c",
+            "name",
+            "--color-scheme",
+            "dark2",
+            "--color-list",
+            "yellow",
+            *OUTPUT_ARGS,
+        ],
     )
     cdata = json.loads(result.output)
 
@@ -149,7 +157,7 @@ def test_warn_if_colors_scheme_specified_but_no_fill(caplog):
     assert result.exit_code == 0
     assert "WARNING" in caplog.text
     assert (
-        "Specifying --colors/--color-scheme has no effect unless --fill is also specified"
+        "Specifying --color-list/--color-scheme has no effect unless --fill is also specified"
         in caplog.text
     )
 
@@ -157,11 +165,11 @@ def test_warn_if_colors_scheme_specified_but_no_fill(caplog):
 @pytest.mark.skip(reason="TODO")
 def test_warn_if_colors_and_color_scheme_specified(caplog):
     result = CliRunner().invoke(
-        viz, ["--colors", "red,blue", "--color-scheme", "dark2", *OUTPUT_ARGS]
+        viz, ["--color-list", "red,blue", "--color-scheme", "dark2", *OUTPUT_ARGS]
     )
     assert result.exit_code == 0
     assert "WARNING" in caplog.text
-    assert "Specifying --colors overrides the --color-scheme specification"
+    assert "Specifying --color-list overrides the --color-scheme specification"
 
 
 ##############################################################################################################
@@ -203,6 +211,8 @@ def test_error_if_invalid_color_scheme_specified():
 @pytest.mark.skip(reason="TODO; also, pytest.raises doesn't really work here")
 def test_error_if_invalid_color_name_value_specified():
     with pytest.raises(Exception) as err:
-        CliRunner().invoke(viz, ["--colors", "red,blue,000,#999,asdf", *OUTPUT_ARGS])
+        CliRunner().invoke(
+            viz, ["--color-list", "red,blue,000,#999,asdf", *OUTPUT_ARGS]
+        )
 
     assert f"ERROR: 'asdf'" in str(err.value)

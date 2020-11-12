@@ -6,18 +6,17 @@ import re
 
 from typing import (
     Any as AnyType,
-    Callable as CallableType,
     Dict as DictType,
-    IO as IOType,
     List as ListType,
     Mapping as MappingType,
     NoReturn as NoReturnType,
+    Optional as OptionalType,
     Tuple as TupleType,
     Union as UnionType,
 )
 
 import altair as alt
-from altair.utils import parse_shorthand
+from altair.utils import parse_shorthand as alt_parse_shorthand
 from altair.utils.schemapi import Undefined as altUndefined
 import altair_viewer as altview
 import click
@@ -25,6 +24,7 @@ import pandas as pd
 
 
 from csvviz.exceptions import *
+from csvviz.helpers import parse_delimited_str
 from csvviz.settings import *
 from csvviz.utils.cmd import (
     MyCliCommand,
@@ -38,6 +38,17 @@ from csvviz.utils.sysio import (
 
 ChannelType = UnionType[alt.X, alt.Y, alt.Fill, alt.Size, alt.Stroke]
 ChannelSetType = DictType[str, ChannelType]
+
+
+MARK_METHOD_LOOKUP = {
+    "area": "area",
+    "bar": "bar",
+    "heatmap": "rect",
+    "hist": "bar",
+    "line": "line",
+    "scatter": "point",
+    "abstract": "bar",  # for testing purposes
+}
 
 ENCODING_CHANNEL_NAMES = (
     "x",
@@ -81,7 +92,6 @@ class VizkitViewMixin:
 
 class VizkitCommandMixin:
     viz_commandname = "abstract"
-
     viz_info = f"""A {viz_commandname} visualization"""  # this should be defined in every subclass
     viz_epilog = ""
 
@@ -116,45 +126,41 @@ class VizkitCommandMixin:
 
         return command
 
+
+class VizkitHelpers:
     @staticmethod
-    def lookup_mark_method(viz_commandname: str) -> alt.Chart:
+    def lookup_mark_method(viz_commandname: str) -> str:
         """
         convenience method that translates our command names, e.g. bar, dot, line, to
         the equivalent in altair
         """
-        vname = viz_commandname.lower()
-
-        if vname in (
-            "area",
-            "bar",
-            "line",
-        ):
-            m = f"mark_{vname}"
-        elif vname == "hist":
-            m = "mark_bar"
-        elif vname == "scatter":
-            m = "mark_point"
-        elif vname == "heatmap":
-            m = "mark_rect"
-        elif vname == "abstract":
-            m = "mark_bar"  # for testing purposes
-        else:
+        m = MARK_METHOD_LOOKUP.get(viz_commandname.lower())
+        if not m:
             raise ValueError(f"{viz_commandname} is not a recognized viz/chart type")
-        return m
+        else:
+            return "mark_%s" % m
 
     @staticmethod
-    def parse_var_str(var: str) -> TupleType[UnionType[str, None]]:
+    def parse_channel_arg(arg: str) -> TupleType[UnionType[str, None]]:
         """
         given an argument like:
-            --xvar='id|Product ID', return ('id', 'Product ID')
-            --yvar='amount', return ('amount', 'amount')
+            --xvar='id|Product ID'
+                return ('id', 'Product ID')
+            --yvar='amount'
+                eturn ('amount', 'amount')
         """
-        x = next(csv.reader(StringIO(var), delimiter="|"))
-        if len(x) == 1:
-            x.append(None)
-        elif not x[1]:
-            x[1] = None
-        return tuple(x)
+        shorthand, title = parse_delimited_str(arg, delimiter="|", minlength=2)
+        title = title if title else None
+        return (
+            shorthand,
+            title,
+        )
+
+    @staticmethod
+    def parse_shorthand(
+        shorthand: str, data: OptionalType[pd.DataFrame] = None, **kwargs
+    ) -> DictType[str, str]:
+        return alt_parse_shorthand(shorthand, data, **kwargs)
 
 
 class VizkitProps:
@@ -212,11 +218,21 @@ class VizkitProps:
         )
         return {k: self.kwargs.get(k) for k in _ARGKEYS}
 
+    @property
+    def color_kwargs(self) -> DictType:
+        return {k: self.kwargs.get(k) for k in ("color_list", "color_scheme")}
 
-class Vizkit(VizkitCommandMixin, VizkitViewMixin, VizkitProps):
+    @property
+    def has_custom_colors(self):  # TODO is needed?
+        return any(v for v in self.color_kwargs.values())
+
+
+class Vizkit(VizkitHelpers, VizkitCommandMixin, VizkitViewMixin, VizkitProps):
     """
     The interface between Click.command, Altair.Chart, and Pandas.dataframe
     """
+
+    color_channeltype = "fill"  # can be either 'fill' or 'stroke'
 
     def __init__(self, input_file, kwargs):
         self.kwargs = kwargs
@@ -228,6 +244,7 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin, VizkitProps):
 
     def build_channels(self) -> ChannelSetType:
         _channels = self._create_channels()
+        _channels = self._colorize_channels(_channels)
         _channels = self._manage_facets(_channels)
         _channels = self._manage_legends(_channels)
         _channels = self.finalize_channels(_channels)
@@ -322,8 +339,8 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin, VizkitProps):
             argname = f"{n}var"
             vartxt = cargs.get(argname)  # walrus
             if vartxt:  # e.g. 'name', 'amount|Amount', 'sum(amount)|Amount'  # /walrus
-                shorthand, title = self.parse_var_str(vartxt)
-                ed = parse_shorthand(shorthand, data=self.df)
+                shorthand, title = self.parse_channel_arg(vartxt)
+                ed = self.parse_shorthand(shorthand, data=self.df)
 
                 if _validate_fieldname(shorthand=shorthand, fieldname=ed["field"]):
                     _channel = getattr(alt, n.capitalize())  # e.g. alt.X or alt.Y
@@ -370,6 +387,26 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin, VizkitProps):
 
         return channels
 
+    def _colorize_channels(self, channelset: ChannelSetType) -> ChannelSetType:
+        config = {"scheme": self.color_kwargs["color_scheme"] or DEFAULT_COLOR_SCHEME}
+        color = channelset.get(self.color_channeltype)
+        if not color:
+            if self.has_custom_colors:  # but --color-list/--color-scheme was set
+                self.warnings.append(
+                    f"--colorvar was not specified, so --color-list/--color-scheme is ignored."
+                )
+        else:
+            if self.color_kwargs["color_list"]:
+                cx = self.color_kwargs["color_list"]
+                config["range"] = [s.strip() for s in cx.split(",")]
+                config.pop(
+                    "scheme"
+                )  # `color_list` kwarg overrides any color_scheme setting
+
+            color.scale = alt.Scale(**config)
+
+        return channelset
+
     def _create_styles(self) -> DictType:
         """assumes self.channels has been set, particularly the types of x/y channels"""
         cargs = self.kwargs.copy()
@@ -400,55 +437,9 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin, VizkitProps):
 
         return styles
 
-    def _set_channel_colorscale(self, channelvar: str, channels: dict) -> NoReturnType:
-        """
-        Given a channelvar, e.g. 'fill', 'stroke'
-
-        Check self.channels[channelvar] to see if it's been created
-
-        If so, modify self.channels[channelvar].range
-
-        If not, do nothing, but issue a warning that self.channels[channelvar] was expected
-
-        """
-        ## fill color stuff
-        #         channel = self.channels.get(channelvar)
-        colorargs = {
-            k: self.kwargs[k]
-            for k in (
-                "colors",
-                "color_scheme",
-            )
-            if self.kwargs.get(k)
-        }
-
-        channel = channels.get(channelvar)  # walrus
-
-        if channel:  # /walrus
-            config = {"scheme": DEFAULT_COLOR_SCHEME}
-            if colorargs:
-                _cs = colorargs.get("color_scheme")  # walrus
-                if _cs:  # /walrus
-                    config["scheme"] = _cs
-                    # TODO: if _cs does not match a valid color scheme, then raise a warning/error
-
-                _cx = colorargs.get("colors")  # walrus
-
-                if _cx:  # /walrus
-                    # don't think this needs to be a formal parser
-                    config["range"] = _cx.strip().split(",")
-                    # for now, only colors OR color_scheme can be set, not both
-                    config.pop("scheme", None)
-            channel.scale = alt.Scale(**config)
-        else:  # optional expected channel is not present
-            if colorargs:  # but color settings were present
-                self.warnings.append(
-                    f"The {channelvar} variable was not specified, so colors/color_scheme is ignored."
-                )
-
     @staticmethod
     def configure_channel_sort(
-        channel: ChannelType, sortorder: UnionType[str, None]
+        channel: ChannelType, sortorder: OptionalType[str]
     ) -> ChannelType:
         """inplace modification of channel"""
         if sortorder:  # /walrus
@@ -461,15 +452,16 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin, VizkitProps):
         return channel
 
     @staticmethod
-    def configure_legend(kwargs: DictType) -> UnionType[DictType, bool]:
-
+    def configure_legend(kwargs: DictType) -> OptionalType[DictType]:
         config = {}
         if kwargs["no_legend"]:
             config = None
         else:
             config["orient"] = DEFAULT_LEGEND_ORIENTATION
-            # not needed; Vega already infers title from channel_name, including aggregate
-            # config["title"] = channel_name
+        return config
+
+        # not needed; Vega already infers title from channel_name, including aggregate
+        # config["title"] = channel_name
         # else:
         #     # TODO: let users configure orientation and title...somehow
         #     config["title"] = colname if not kwargs.get("TK-column-title") else colname
@@ -477,12 +469,10 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin, VizkitProps):
         #         config["orient"] = _o
         #     else:
         #         config["orient"] = DEFAULT_LEGEND_ORIENTATION
-        return config
 
     @staticmethod
-    def resolve_channel_name(
-        channel: UnionType[alt.X, alt.Y, alt.Fill, alt.Size]
-    ) -> str:
+    def resolve_channel_name(channel: ChannelType) -> str:
+        """TODO: document this"""
         return next(
             (
                 getattr(channel, a)
@@ -493,55 +483,27 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin, VizkitProps):
         )
 
 
-#### TKD: kill and deprecate
+# TKD::
+# def _set_channel_colorscale(self, channelvar: str, channels: dict) -> NoReturnType:
 
-# def _set_chart_axes(self, chart) -> alt.Chart:
-#     """
-#     expects self.chart and self.channels to have been initialized; alters alt.chart inplace
+# if channel:  # /walrus
+#     config = {"scheme": DEFAULT_COLOR_SCHEME}
+#     if colorargs:
+#         _cs = colorargs.get("color_scheme")  # walrus
+#         if _cs:  # /walrus
+#             config["scheme"] = _cs
+#             # TODO: if _cs does not match a valid color scheme, then raise a warning/error
 
-#     TODO: no idea where to put this, other than to make it an internal method used by build_chart()
+#         _cx = colorargs.get("colors")  # walrus
 
-#     """
-#     if self.channels.get("facet"):
-#         chart = chart.resolve_axis(x="independent")
-#     return chart
-
-
-# @property
-# def channel_kwargs(self) -> DictType:
-#     # TODO: handling facet stuff here is BAD
-#     _ARGKEYS = [f"{n}var" for n in ENCODING_CHANNEL_NAMES]
-#     return {k: self.kwargs.get(k) for k in _ARGKEYS}
-
-
-#####################################################################
-#  kwarg properties
-#  TODO: refactor later
-
-# @property
-# def color_kwargs(self) -> DictType:
-#     _ARGKEYS = (
-#         "color_scheme",
-#         "colors",
-#     )
-#     return {k: self.kwargs.get(k) for k in _ARGKEYS}
-
-
-# Not needed if there are no other interactive-like attributes
-# @property
-# def render_kwargs(self) -> DictType:
-#     _ARGKEYS = ('is_interactive',)
-#     return {k: self.kwargs.get(k) for k in _ARGKEYS}
-
-# @property
-# def sorting_kwargs(self) -> DictType:
-#     _ARGKEYS = ("sortx_var",)
-#     return {k: self.kwargs.get(k) for k in _ARGKEYS}
-
-# @property
-# def styling_kwargs(self) -> DictType:
-#     _ARGKEYS = ("title",)
-#     return {k: self.kwargs.get(k) for k in _ARGKEYS}
-
-#####################################################################
-##### chart aspect configurations (static helper methods)
+#         if _cx:  # /walrus
+#             # don't think this needs to be a formal parser
+#             config["range"] = _cx.strip().split(",")
+#             # for now, only colors OR color_scheme can be set, not both
+#             config.pop("scheme", None)
+#     channel.scale = alt.Scale(**config)
+# else:  # optional expected channel is not present
+#     if colorargs:  # but color settings were present
+#         self.warnings.append(
+#             f"The {channelvar} variable was not specified, so colors/color_scheme is ignored."
+#         )
