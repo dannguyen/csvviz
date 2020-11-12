@@ -63,6 +63,26 @@ class Barkit(Vizkit):
         ),
     )
 
+    @classmethod
+    def validate_kwargs(klass, kwargs: dict) -> bool:
+        """
+        Raise errors/warnings based on the initial kwarg values; implement in each class
+        """
+        if kwargs.get("normalized"):
+            if not kwargs.get("fillvar"):  # TK SHOULD BE COLORVAR NOT fillvar
+                raise MissingDataReference(
+                    "-c/--colorvar needs to be specified when creating a normalized (i.e. stacked) chart"
+                )
+
+        # sorting by x-axis var is unique to bar charts, and not like color/fill/facet sort,
+        # because we are sorting by channel, e.g. x/y/etc
+        # https://altair-viz.github.io/gallery/bar_chart_sorted.html
+        s = kwargs.get("sortx_var")
+        if s and s.lstrip("-") not in ("x", "y", "color"):
+            raise InvalidDataReference(f"'{s}' is not a valid channel to sort by")
+
+        return True
+
     def finalize_channels(self, channels):
 
         if self.kwargs.get("flipxy"):  # i.e. -H/--horizontal flag
@@ -70,26 +90,11 @@ class Barkit(Vizkit):
 
         # https://altair-viz.github.io/gallery/normalized_stacked_bar_chart.html
         if self.kwargs.get("normalized"):
-            if not channels.get("fill"):
-                raise MissingDataReference(
-                    "-c/--colorvar needs to be specified when creating a normalized (i.e. stacked) chart"
-                )
-            else:
-                channels["y"].stack = "normalize"
-                channels["y"].axis = alt.Axis(format="%")
+            channels["y"].stack = "normalize"
+            channels["y"].axis = alt.Axis(format="%")
 
-        # sorting by x-axis var is unique to bar charts, and not like color/fill/facet sort,
-        # because we are sorting by channel, e.g. x/y/etc
-        _sortvar = self.kwargs.get("sortx_var")  # walrus
-        if _sortvar:  # /walrus
-            # _sort_config := self._config_sorting(self.kwargs, self.datakit):
-            _cname = _sortvar.lstrip("-")
-            if not channels.get(_cname):
-                raise InvalidDataReference(
-                    f"'{_cname}' is not a valid channel to sort by"
-                )
-            else:
-                channels["x"].sort = _sortvar
+        if self.kwargs.get("sortx_var"):
+            channels["x"].sort = self.kwargs["sortx_var"]
 
         return channels
 

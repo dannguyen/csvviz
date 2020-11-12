@@ -21,6 +21,24 @@ HOT_ARGS = [
 ]
 
 
+def test_kit():
+    kit = Heatmapkit(
+        input_file="examples/hot.csv",
+        kwargs={
+            "xvar": "state",
+            "yvar": "item",
+            "fillvar": "sold",
+            "is_interactive": True,
+            "no_preview": True,
+            "to_json": True,
+        },
+    )
+
+    assert kit.viz_commandname == "heatmap"
+    assert kit.mark_method == "mark_rect"
+    assert kit.color_channeltype == "fill"
+
+
 def test_heatmap_defaults():
     c = CliRunner().invoke(
         heatmap,

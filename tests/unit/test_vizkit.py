@@ -36,25 +36,6 @@ def tvk():
     return Vizkit(input_file=SRC_PATH, kwargs=kwargs)
 
 
-@pytest.fixture
-def dotvk():
-    SRC_PATH = "examples/vals.csv"
-    kwargs = {
-        "xvar": "mass",
-        "yvar": "volume",
-        "fillvar": "breed",
-        "is_interactive": True,
-        "no_preview": True,
-        "to_json": True,
-    }
-    kwargs.update(REQUIRED_ARGS)
-
-    return Scatterkit(
-        input_file=SRC_PATH,
-        kwargs=kwargs,
-    )
-
-
 def test_vizkit_basic_init(tvk):
     assert isinstance(tvk, Vizkit)
     assert isinstance(tvk.chart, alt.Chart)
@@ -63,13 +44,9 @@ def test_vizkit_basic_init(tvk):
 def test_vizkit_properties(tvk):
     assert tvk.viz_commandname == "abstract"
     assert tvk.mark_method == "mark_bar"
+    assert tvk.color_channeltype == "fill"
     assert isinstance(tvk.df, pd.DataFrame)
     assert tvk.column_names == ["name", "amount"]
-
-
-def test_vizkit_properties_scatter(dotvk):
-    assert dotvk.name == "scatter"
-    assert dotvk.mark_method == "mark_point"
 
 
 def test_vizkit_unneeded_properties_to_deprecate(tvk):

@@ -26,6 +26,24 @@ STOCK_ARGS = [
 ]
 
 
+def test_kit():
+    kit = Linekit(
+        input_file="examples/stocks.csv",
+        kwargs={
+            "xvar": "date",
+            "yvar": "price",
+            "strokevar": "company",
+            "is_interactive": True,
+            "no_preview": True,
+            "to_json": True,
+        },
+    )
+
+    assert kit.viz_commandname == "line"
+    assert kit.mark_method == "mark_line"
+    assert kit.color_channeltype == "stroke"
+
+
 def test_line_defaults():
     """
     MVP, where x is columns[0] and y is columns[1]

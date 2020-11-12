@@ -8,10 +8,16 @@ Refamiliarizing myself with code:
 - figure out configure_legend
 - "finalize" methods need their own mixin?
 - [ ] make warnings.append be a method/property
-- [ ] --colors should be --color-list
-- fix up: _set_channel_colorscale
-    - [ ] write test for get_color warning...
+
+- color stuff
+    - [x] vizkit.set_channel_colorscale now is vizkit.colorize_channels
+    - [x] --colors should be --color-list
     - [ ] write test for vizkit.color_channeltype
+    - [ ] for each vizkit.clicky, `--color` should just go to `colorvar`, not `fillvar`, `strokevar`
+        - [ ] in vizkit, remove fill/stroke from ENCODED list
+        - [ ] vizkit.create_channel should initiate fill/stroke based on colorvar
+
+    - [ ] write test for get_color warning...
 
 
 ## Update 2020-11-11

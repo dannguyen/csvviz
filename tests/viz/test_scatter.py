@@ -20,6 +20,24 @@ OUTPUT_ARGS = [
 ]
 
 
+def test_kit():
+    kit = Scatterkit(
+        input_file="examples/vals.csv",
+        kwargs={
+            "xvar": "mass",
+            "yvar": "volume",
+            "fillvar": "breed",
+            "is_interactive": True,
+            "no_preview": True,
+            "to_json": True,
+        },
+    )
+
+    assert kit.viz_commandname == "scatter"
+    assert kit.mark_method == "mark_point"
+    assert kit.color_channeltype == "fill"
+
+
 def test_scatter_defaults():
     """
     MVP, where x is columns[0] and y is columns[1]

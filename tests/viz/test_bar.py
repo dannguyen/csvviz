@@ -21,6 +21,24 @@ OUTPUT_ARGS = [
 ]
 
 
+def test_kit():
+    kit = Barkit(
+        input_file="examples/fruits.csv",
+        kwargs={
+            "xvar": "product",
+            "yvar": "revenue",
+            "fillvar": "season",
+            "is_interactive": True,
+            "no_preview": True,
+            "to_json": True,
+        },
+    )
+
+    assert kit.viz_commandname == "bar"
+    assert kit.mark_method == "mark_bar"
+    assert kit.color_channeltype == "fill"
+
+
 def test_bar_defaults():
     """
     MVP, where x is columns[0] and y is columns[1]
@@ -210,7 +228,7 @@ def test_bar_sortx_var_error_invalid_column():
     result = CliRunner().invoke(bar, ["--x-sort", "-name", *OUTPUT_ARGS])
     assert result.exit_code == 1
     assert (
-        "InvalidDataReference: 'name' is not a valid channel to sort by"
+        "InvalidDataReference: '-name' is not a valid channel to sort by"
         in result.output.strip()
     )
 

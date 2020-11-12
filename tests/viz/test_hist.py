@@ -21,6 +21,22 @@ OUTPUT_ARGS = [
 ]
 
 
+def test_kit():
+    kit = Histkit(
+        input_file="examples/tings.csv",
+        kwargs={
+            "xvar": "amount",
+            "is_interactive": True,
+            "no_preview": True,
+            "to_json": True,
+        },
+    )
+
+    assert kit.viz_commandname == "hist"
+    assert kit.mark_method == "mark_bar"
+    assert kit.color_channeltype == "fill"
+
+
 def test_hist_defaults():
     """
     MVP, where x is columns[0] and y is columns[1]

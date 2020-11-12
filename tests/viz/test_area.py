@@ -26,6 +26,24 @@ STOCK_ARGS = [
 ]
 
 
+def test_kit():
+    kit = Areakit(
+        input_file="examples/fruits.csv",
+        kwargs={
+            "xvar": "product",
+            "yvar": "revenue",
+            "fillvar": "season",
+            "is_interactive": True,
+            "no_preview": True,
+            "to_json": True,
+        },
+    )
+
+    assert kit.viz_commandname == "area"
+    assert kit.mark_method == "mark_area"
+    assert kit.color_channeltype == "fill"
+
+
 def test_area_defaults():
     """
     MVP, where x is columns[0] and y is columns[1]

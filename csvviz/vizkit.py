@@ -91,6 +91,8 @@ class VizkitViewMixin:
 
 
 class VizkitCommandMixin:
+    """The interface for making a click command, including meta info for generating the help"""
+
     viz_commandname = "abstract"
     viz_info = f"""A {viz_commandname} visualization"""  # this should be defined in every subclass
     viz_epilog = ""
@@ -235,12 +237,20 @@ class Vizkit(VizkitHelpers, VizkitCommandMixin, VizkitViewMixin, VizkitProps):
     color_channeltype = "fill"  # can be either 'fill' or 'stroke'
 
     def __init__(self, input_file, kwargs):
+        self.validate_kwargs(kwargs)
         self.kwargs = kwargs
         self.warnings = []
         self.input_file = input_file
         self._dataframe = pd.read_csv(self.input_file)
 
         self.channels: ChannelSetType = self.build_channels()
+
+    @classmethod
+    def validate_kwargs(klass, kwargs: dict) -> bool:
+        """
+        Raise errors/warnings based on the initial kwarg values; implement in each class
+        """
+        return True
 
     def build_channels(self) -> ChannelSetType:
         _channels = self._create_channels()
