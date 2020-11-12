@@ -58,14 +58,16 @@ def test_vizkit_basic_init(tvk):
     assert isinstance(tvk.chart, alt.Chart)
 
 
-def test_vizkit_properties(tvk, dotvk):
+def test_vizkit_properties(tvk):
     assert tvk.viz_commandname == "abstract"
-    assert tvk.mark_type == "mark_bar"
+    assert tvk.mark_method == "mark_bar"
     assert isinstance(tvk.df, pd.DataFrame)
     assert tvk.column_names == ["name", "amount"]
 
+
+def test_vizkit_properties_scatter(dotvk):
     assert dotvk.name == "scatter"
-    assert dotvk.mark_type == "mark_point"
+    assert dotvk.mark_method == "mark_point"
 
 
 def test_vizkit_unneeded_properties_to_deprecate(tvk):
@@ -78,16 +80,15 @@ def test_vizkit_kwarg_properties(tvk):
     """
 
     #    import pdb; pdb.set_trace()
-    assert tvk.channel_kwargs["xvar"] == "name"
-    assert tvk.channel_kwargs["yvar"] == "amount"
-    assert tvk.channel_kwargs["fillvar"] == "name"
-
-    assert tvk.output_kwargs["to_json"] is True
-    assert tvk.output_kwargs["no_preview"] is True
+    assert tvk.kwargs.get("xvar") == "name"
+    assert tvk.kwargs.get("yvar") == "amount"
+    assert tvk.kwargs.get("fillvar") == "name"
+    assert tvk.kwargs.get("to_json") is True
+    assert tvk.kwargs.get("no_preview") is True
 
     # duh:
-    assert tvk.color_kwargs["colors"] is None
-    assert tvk.color_kwargs["color_scheme"] is None
+    assert tvk.kwargs.get("colors") is None
+    assert tvk.kwargs.get("color_scheme") is None
 
 
 @pytest.mark.skip(reason="TODO")

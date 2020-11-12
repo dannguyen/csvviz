@@ -50,9 +50,7 @@ ENCODING_CHANNEL_NAMES = (
 
 
 class VizkitViewMixin:
-    """
-    a namespace/mixin for functions that output the viz
-    """
+    """a namespace/mixin for functions that output the viz"""
 
     @staticmethod
     def chart_to_json(chart: alt.Chart) -> str:
@@ -159,7 +157,63 @@ class VizkitCommandMixin:
         return tuple(x)
 
 
-class Vizkit(VizkitCommandMixin, VizkitViewMixin):
+class VizkitProps:
+    @property
+    def interactive_mode(self) -> bool:
+        return self.kwargs.get("is_interactive")
+
+    @property
+    def is_faceted(self) -> bool:
+        return True if self.channels.get("facet") else False
+
+    @property
+    def style_properties(self) -> dict:
+        _styles = self._create_styles()
+        return self.finalize_styles(_styles)
+
+    @property
+    def theme(self) -> str:
+        return self.kwargs.get("theme")
+
+    #####################################################################
+    # properties
+    @property
+    def name(self) -> str:
+        return self.viz_commandname
+
+    @property
+    def mark_method(self) -> str:
+        """e.g. 'mark_rect', 'mark_line'"""
+        return self.lookup_mark_method(self.viz_commandname)
+
+    @property
+    def df(self) -> pd.DataFrame:
+        return self._dataframe
+
+    @property
+    def column_names(self) -> ListType[str]:
+        return list(self.df.columns)
+
+    # TODO: deprecate these
+    @property
+    def legend_kwargs(self) -> DictType:
+        _ARGKEYS = (
+            "no_legend",
+            "TK-orient",
+            "TK-title",
+        )
+        return {k: self.kwargs.get(k) for k in _ARGKEYS}
+
+    @property
+    def output_kwargs(self) -> DictType:
+        _ARGKEYS = (
+            "to_json",
+            "no_preview",
+        )
+        return {k: self.kwargs.get(k) for k in _ARGKEYS}
+
+
+class Vizkit(VizkitCommandMixin, VizkitViewMixin, VizkitProps):
     """
     The interface between Click.command, Altair.Chart, and Pandas.dataframe
     """
@@ -167,38 +221,28 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
     def __init__(self, input_file, kwargs):
         self.kwargs = kwargs
         self.warnings = []
-        # import pdb; pdb.set_trace()
-
         self.input_file = input_file
         self._dataframe = pd.read_csv(self.input_file)
-        # TODO: too many properties?
-        self.interactive_mode = self.kwargs.get("is_interactive")
-        self.theme = kwargs.get("theme")
 
+        self.channels: ChannelSetType = self.build_channels()
+
+    def build_channels(self) -> ChannelSetType:
         _channels = self._create_channels()
         _channels = self._manage_facets(_channels)
         _channels = self._manage_legends(_channels)
         _channels = self.finalize_channels(_channels)
-        self.channels = _channels
+        return _channels
 
-        _styles = self._create_styles()
-        self.style_properties = self.finalize_styles(_styles)
+    @property
+    def chart(self) -> alt.Chart:
+        """this used to be _build_chart(), because it's a hefty method"""
+        alt.themes.enable(self.theme)
+        chart: alt.Chart = getattr(alt.Chart(self.df), self.mark_method)
+        chart = chart(clip=True)
 
-        self.chart = self._build_chart()
+        if self.is_faceted:
+            chart = chart.resolve_axis(x="independent")
 
-    ##########################################################
-    # These are boilerplate methods, unlikely to be subclassed
-    ##########################################################
-    # def build_chart(
-    #     self, channels: dict, style_properties: dict, interactive_mode: bool
-    # ) -> alt.Chart:
-    def _build_chart(self) -> alt.Chart:
-        """
-        Invoked as final step in __init__, expects self.channels and self.style_properties to be set
-        """
-        chart = self._create_chart()
-        # TODO: _set_chart_axes is only here b/c no better place to put it yet
-        chart = self._set_chart_axes(chart)
         chart = chart.encode(**self.channels)
         chart = chart.properties(**self.style_properties)
 
@@ -206,6 +250,10 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
             chart = chart.interactive()
 
         return chart
+
+    ##########################################################
+    # These are boilerplate methods, unlikely to be subclassed
+    ##########################################################
 
     def _manage_facets(self, channels: dict) -> dict:
         #################################
@@ -215,7 +263,7 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
             if _fc:  # /walrus
                 channels["facet"].columns = _fc
 
-            self._config_channel_sort(channels["facet"], self.kwargs["facetsort"])
+            self.configure_channel_sort(channels["facet"], self.kwargs["facetsort"])
 
         return channels
 
@@ -230,7 +278,7 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
             "stroke",
         ):
             if channels.get(cname):
-                channels[cname].legend = self._config_legend(self.legend_kwargs)
+                channels[cname].legend = self.configure_legend(self.legend_kwargs)
 
         return channels
 
@@ -246,17 +294,6 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
     def finalize_styles(self, styles: dict) -> dict:
         """another abstract class method, to be implemented when necessary by subclasses"""
         return styles
-
-    def _set_chart_axes(self, chart) -> alt.Chart:
-        """
-        expects self.chart and self.channels to have been initialized; alters alt.chart inplace
-
-        TODO: no idea where to put this, other than to make it an internal method used by build_chart()
-
-        """
-        if self.channels.get("facet"):
-            chart = chart.resolve_axis(x="independent")
-        return chart
 
     #####################################################################
     # internal helpers
@@ -312,7 +349,7 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
                 # create an 'order' channel, with sort attribute
                 fname = self.resolve_channel_name(channels["fill"])
                 channels["order"] = alt.Order(fname)
-                self._config_channel_sort(channels["order"], _osort)
+                self.configure_channel_sort(channels["order"], _osort)
 
         ##################################
         # subfunction: set limits of x-axis and y-axis, via --xlim and --ylim
@@ -332,12 +369,6 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
                 channels[i].scale.domain = [_min, _max]
 
         return channels
-
-    def _create_chart(self) -> alt.Chart:
-        alt.themes.enable(self.theme)
-
-        chartfoo = getattr(alt.Chart(self.df), self.mark_type)
-        return chartfoo(clip=True)
 
     def _create_styles(self) -> DictType:
         """assumes self.channels has been set, particularly the types of x/y channels"""
@@ -415,79 +446,8 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
                     f"The {channelvar} variable was not specified, so colors/color_scheme is ignored."
                 )
 
-    #####################################################################
-    # properties
-    @property
-    def name(self) -> str:
-        return self.viz_commandname
-
-    @property
-    def mark_type(self) -> str:
-        return self.lookup_mark_method(self.viz_commandname)
-
-    @property
-    def df(self) -> pd.DataFrame:
-        return self._dataframe
-
-    @property
-    def column_names(self) -> ListType[str]:
-        return list(self.df.columns)
-
-    #####################################################################
-    #  kwarg properties
-    #  TODO: refactor later
-    @property
-    def channel_kwargs(self) -> DictType:
-        # TODO: handling facet stuff here is BAD
-        _ARGKEYS = [f"{n}var" for n in ENCODING_CHANNEL_NAMES]
-        return {k: self.kwargs.get(k) for k in _ARGKEYS}
-
-    @property
-    def color_kwargs(self) -> DictType:
-        _ARGKEYS = (
-            "color_scheme",
-            "colors",
-        )
-        return {k: self.kwargs.get(k) for k in _ARGKEYS}
-
-    @property
-    def legend_kwargs(self) -> DictType:
-        _ARGKEYS = (
-            "no_legend",
-            "TK-orient",
-            "TK-title",
-        )
-        return {k: self.kwargs.get(k) for k in _ARGKEYS}
-
-    @property
-    def output_kwargs(self) -> DictType:
-        _ARGKEYS = (
-            "to_json",
-            "no_preview",
-        )
-        return {k: self.kwargs.get(k) for k in _ARGKEYS}
-
-    # Not needed if there are no other interactive-like attributes
-    # @property
-    # def render_kwargs(self) -> DictType:
-    #     _ARGKEYS = ('is_interactive',)
-    #     return {k: self.kwargs.get(k) for k in _ARGKEYS}
-
-    # @property
-    # def sorting_kwargs(self) -> DictType:
-    #     _ARGKEYS = ("sortx_var",)
-    #     return {k: self.kwargs.get(k) for k in _ARGKEYS}
-
-    # @property
-    # def styling_kwargs(self) -> DictType:
-    #     _ARGKEYS = ("title",)
-    #     return {k: self.kwargs.get(k) for k in _ARGKEYS}
-
-    #####################################################################
-    ##### chart aspect configurations (static helper methods)
-
     @staticmethod
-    def _config_channel_sort(
+    def configure_channel_sort(
         channel: ChannelType, sortorder: UnionType[str, None]
     ) -> ChannelType:
         """inplace modification of channel"""
@@ -501,7 +461,7 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
         return channel
 
     @staticmethod
-    def _config_legend(kwargs: DictType) -> UnionType[DictType, bool]:
+    def configure_legend(kwargs: DictType) -> UnionType[DictType, bool]:
 
         config = {}
         if kwargs["no_legend"]:
@@ -531,3 +491,57 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
             ),
             altUndefined,
         )
+
+
+#### TKD: kill and deprecate
+
+# def _set_chart_axes(self, chart) -> alt.Chart:
+#     """
+#     expects self.chart and self.channels to have been initialized; alters alt.chart inplace
+
+#     TODO: no idea where to put this, other than to make it an internal method used by build_chart()
+
+#     """
+#     if self.channels.get("facet"):
+#         chart = chart.resolve_axis(x="independent")
+#     return chart
+
+
+# @property
+# def channel_kwargs(self) -> DictType:
+#     # TODO: handling facet stuff here is BAD
+#     _ARGKEYS = [f"{n}var" for n in ENCODING_CHANNEL_NAMES]
+#     return {k: self.kwargs.get(k) for k in _ARGKEYS}
+
+
+#####################################################################
+#  kwarg properties
+#  TODO: refactor later
+
+# @property
+# def color_kwargs(self) -> DictType:
+#     _ARGKEYS = (
+#         "color_scheme",
+#         "colors",
+#     )
+#     return {k: self.kwargs.get(k) for k in _ARGKEYS}
+
+
+# Not needed if there are no other interactive-like attributes
+# @property
+# def render_kwargs(self) -> DictType:
+#     _ARGKEYS = ('is_interactive',)
+#     return {k: self.kwargs.get(k) for k in _ARGKEYS}
+
+# @property
+# def sorting_kwargs(self) -> DictType:
+#     _ARGKEYS = ("sortx_var",)
+#     return {k: self.kwargs.get(k) for k in _ARGKEYS}
+
+# @property
+# def styling_kwargs(self) -> DictType:
+#     _ARGKEYS = ("title",)
+#     return {k: self.kwargs.get(k) for k in _ARGKEYS}
+
+#####################################################################
+##### chart aspect configurations (static helper methods)

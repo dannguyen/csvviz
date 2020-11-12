@@ -1,6 +1,13 @@
 # TODOS
 
 
+## 2020-11-12: refactor
+
+Refamiliarizing myself with code:
+- in vizkit.py, fix/clean up "manage"/"create"/"configure" naming convention
+- figure out configure_legend
+- "finalize" methods need their own mixin?
+
 ## Update 2020-11-11
 
 Been many weeks since I looked at this code base. After some struggling, was able to come up with a reliable bar chart command:

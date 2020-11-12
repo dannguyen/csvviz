@@ -51,8 +51,7 @@ def main():
                 0
             ]  # e.g. "csvviz.viz.bar" or "csvviz.viz.info"
             klassname = modname.split(".")[-1].capitalize() + "kit"
-            mod = importlib.import_module(modname)
-            klass = getattr(mod, klassname)
+            klass = getattr(importlib.import_module(modname), klassname)
 
             if getattr(klass, "register_command", None):  # TODO: remove after testing
                 cli.add_command(klass.register_command())

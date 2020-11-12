@@ -56,7 +56,6 @@ def command(infotype, **kwargs):
         values = alt.utils.core.AGGREGATES
     elif infotype == "timeunits":
         values = alt.utils.core.TIMEUNITS
-
     elif infotype == "typecodes":
         values = alt.utils.core.INV_TYPECODE_MAP
 
