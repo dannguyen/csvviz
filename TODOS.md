@@ -7,16 +7,22 @@ Refamiliarizing myself with code:
 - in vizkit.py, fix/clean up "manage"/"create"/"configure" naming convention
 - figure out configure_legend
 - "finalize" methods need their own mixin?
-- [ ] make warnings.append be a method/property
 
+### first refactor phase
+
+- [x] Vizkit.validate_kwargs, to be implemented by each class
 - color stuff
     - [x] vizkit.set_channel_colorscale now is vizkit.colorize_channels
     - [x] --colors should be --color-list
-    - [ ] write test for vizkit.color_channeltype
-    - [ ] for each vizkit.clicky, `--color` should just go to `colorvar`, not `fillvar`, `strokevar`
-        - [ ] in vizkit, remove fill/stroke from ENCODED list
-        - [ ] vizkit.create_channel should initiate fill/stroke based on colorvar
+    - [x] write test for vizkit.color_channeltype
 
+### moar refactor
+
+- [ ] make warnings.append be a method/property
+- color stuff
+    - [ ] for each vizkit.clicky, `--color` should just go to `colorvar`, not `fillvar`, `strokeva`
+    - [ ] in vizkit, remove fill/stroke from ENCODED list
+    - [ ] vizkit.create_channel should initiate fill/stroke based on colorvar
     - [ ] write test for get_color warning...
 
 

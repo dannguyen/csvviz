@@ -59,6 +59,11 @@ class Histkit(Barkit):
         ),
     )
 
+    @classmethod
+    def validate_kwargs(klass, kwargs: dict) -> bool:
+        # should binnings warnings go here?
+        return True
+
     def finalize_channels(self, channels):
 
         bwargs = {k: self.kwargs[k] for k in BINNING_OPTS if self.kwargs.get(k)}

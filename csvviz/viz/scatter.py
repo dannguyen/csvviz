@@ -15,9 +15,6 @@ class Scatterkit(Vizkit):
     viz_info = f"""A scatterplot for showing relationship between two independent variables x and y. Set -s/--sizevar to create a bubble (variable dot size) chart"""
     viz_epilog = """Example:  $ csvviz scatter -x mass -y volume -s velocity data.csv"""
 
-    def finalize_channels(self, channels):
-        return channels
-
     COMMAND_DECORATORS = (
         click.option(
             "--xvar",
@@ -46,3 +43,6 @@ class Scatterkit(Vizkit):
             help="The name of the column for mapping dot size. This effectively creates a bubble chart.",
         ),
     )
+
+    def finalize_channels(self, channels):
+        return channels

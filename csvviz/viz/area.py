@@ -53,16 +53,24 @@ class Areakit(Vizkit):
         ),
     )
 
-    def finalize_channels(self, channels):
-        # Todo: DRY to a method shared by area and bar
-        # https://altair-viz.github.io/gallery/normalized_stacked_area_chart.html
-        if self.kwargs.get("normalized"):
-            if not channels.get("fill"):
+    @classmethod
+    def validate_kwargs(klass, kwargs: dict) -> bool:
+        if kwargs.get("normalized"):
+            if not kwargs.get("fillvar"):  # TK SHOULD BE COLORVAR NOT fillvar
                 raise MissingDataReference(
                     "-c/--colorvar needs to be specified when creating a normalized (i.e. stacked) chart"
                 )
-            else:
-                channels["y"].stack = "normalize"
-                channels["y"].axis = alt.Axis(format="%")
+        return True
+
+    @property
+    def normalized(self) -> bool:
+        return True if self.kwargs.get("normalized") else False
+
+    def finalize_channels(self, channels):
+        # TODO: this normalized behavior is shared with bar; dry up somehow?
+        # https://altair-viz.github.io/gallery/normalized_stacked_area_chart.html
+        if self.normalized:
+            channels["y"].stack = "normalize"
+            channels["y"].axis = alt.Axis(format="%")
 
         return channels

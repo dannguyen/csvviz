@@ -20,9 +20,6 @@ class Linekit(Vizkit):
     # )
     color_channeltype = "stroke"
 
-    def finalize_channels(self, channels):
-        return channels
-
     COMMAND_DECORATORS = (
         click.option(
             "--xvar",
@@ -44,3 +41,6 @@ class Linekit(Vizkit):
             help="The name of the column for mapping line colors. This is required for creating a multi-series line chart.",
         ),
     )
+
+    def finalize_channels(self, channels):
+        return channels

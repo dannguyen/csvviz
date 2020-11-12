@@ -63,11 +63,12 @@ class Barkit(Vizkit):
         ),
     )
 
+    @property
+    def normalized(self) -> bool:
+        return True if self.kwargs.get("normalized") else False
+
     @classmethod
     def validate_kwargs(klass, kwargs: dict) -> bool:
-        """
-        Raise errors/warnings based on the initial kwarg values; implement in each class
-        """
         if kwargs.get("normalized"):
             if not kwargs.get("fillvar"):  # TK SHOULD BE COLORVAR NOT fillvar
                 raise MissingDataReference(
@@ -89,7 +90,7 @@ class Barkit(Vizkit):
             channels["x"], channels["y"] = (channels["y"], channels["x"])
 
         # https://altair-viz.github.io/gallery/normalized_stacked_bar_chart.html
-        if self.kwargs.get("normalized"):
+        if self.normalized:
             channels["y"].stack = "normalize"
             channels["y"].axis = alt.Axis(format="%")
 

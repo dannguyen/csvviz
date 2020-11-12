@@ -50,9 +50,11 @@ class Heatmapkit(Vizkit):
         # ),
     )
 
-    def finalize_channels(self, channels):
-
-        if not channels.get("fill"):
+    @classmethod
+    def validate_kwargs(klass, kwargs: dict) -> bool:
+        if not kwargs.get("fillvar"):  # TK colorvar
             raise MissingDataReference("-c/--colorvar needs to be specified")
+        return True
 
+    def finalize_channels(self, channels):
         return channels
