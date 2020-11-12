@@ -74,7 +74,7 @@ def command(infotype, **kwargs):
         )
 
     elif infotype == "themes":
-        values = sorted(alt.themes.names())  # TODO refactor
+        values = sorted(AVAILABLE_THEMES)  # TODO refactor
 
     elif infotype == "versions":
         # this should be a refactored constant

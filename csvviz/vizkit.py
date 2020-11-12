@@ -136,6 +136,8 @@ class VizkitCommandMixin:
             m = "mark_bar"
         elif vname == "scatter":
             m = "mark_point"
+        elif vname == "heatmap":
+            m = "mark_rect"
         elif vname == "abstract":
             m = "mark_bar"  # for testing purposes
         else:
@@ -342,18 +344,24 @@ class Vizkit(VizkitCommandMixin, VizkitViewMixin):
         cargs = self.kwargs.copy()
 
         styles = {}
-        if cargs.get("title"):
-            styles["title"] = cargs["title"]
+
+        # these atts are only set if a value exists
+        for att in ('height', 'width', 'title',):
+            if cargs.get(att):
+                styles[att] = cargs[att]
+
+        # if cargs.get("title"):
+        #     styles["title"] = cargs["title"]
 
         # determine width
         # _wvar = 'continuousWidth' if self.channels['x']['type'] in ('quantitative', 'temporal') else 'discreteWidth'
-        styles["width"] = cargs[
-            "chart_width"
-        ]  # if cargs.get('chart_width') else DEFAULT_CHART_WIDTH
-        # _hvar = 'continuousHeight' if self.channels['x']['type'] in ('quantitative', 'temporal') else 'discreteHeight'
-        styles["height"] = cargs[
-            "chart_height"
-        ]  # if cargs.get('chart_height') else DEFAULT_CHART_HEIGHT
+        # styles["width"] = cargs[
+        #     "chart_width"
+        # ]  # if cargs.get('chart_width') else DEFAULT_CHART_WIDTH
+        # # _hvar = 'continuousHeight' if self.channels['x']['type'] in ('quantitative', 'temporal') else 'discreteHeight'
+        # styles["height"] = cargs[
+        #     "chart_height"
+        # ]  # if cargs.get('chart_height') else DEFAULT_CHART_HEIGHT
 
         return styles
 

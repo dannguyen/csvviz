@@ -1,9 +1,40 @@
 # TODOS
 
 
+## Update 2020-11-11
+
+Been many weeks since I looked at this code base. After some struggling, was able to come up with a reliable bar chart command:
+
+    $  cvz bar examples/stocks.csv -x date:N -y price:Q -c company --json
+
+Scatter chart:
+
+    $ cvz scatter -x date:T examples/tonk.csv --json
+
+
+### Jumping in
+
+- Moved a bunch of 0.4.0 stuff to 0.5.5 -- basically everything that wasn't already done, and seemed like over-customization stuff, like `--no-grid`
+- moving on to 0.5.0 with new chart types
+- working on heatmap: basic implementation so far (2020-11-11)
+- time for a code refactor? vizkit.py is just a mess to me
+    - add more type hinting
+    - use more OOP stuff like @property
+
+### Noted problems
+
+Doesn't seem to be a way to set a default color if we leave `-c` blank:
+
+    $ cvz scatter -x date:T  --colors 'green' examples/tonk.csv --json 
+    Warning: The fill variable was not specified, so colors/color_scheme is ignored.
+
+- should change warning from `fill variable` to `color variable` (vizkit.py:409)
+
+
+-------------------------------------------
+
 
 ## 0.4.0 – more fundamentals, more refactoring
-
 
 - [x] normalized bar/area charts
 - [X] Name channel vars, which sets axes and legend titles:
@@ -16,53 +47,48 @@
 - [x] subclass click.Command to have type/category attribute, e.g. to specify 'general/specific' options
     - [x] subclass helpformatter to print subsections of general/specific options, as well as categories of options 
 
-- chart-wide properties: 
-    - width/height
-        - use autosize? https://vega.github.io/vega-lite/docs/size.html#autosize
-        - [x] chart-wide with `-W` and `-H`
-            - [ ] write tests
-        - [ ] handle special case of horizontal charts(?)
-        
-        - if grid chart
-            - use chart_grid_default_height/width? Or none at all?
-            - [ ] allow view width/height to be set, for grid charts
-                - https://vega.github.io/vega-lite/docs/spec.html#single
-                - `-vW` `-vH`
-
-
-    - padding:
-        https://vega.github.io/vega-lite/docs/spec.html#top-level
-
-    - https://altair-viz.github.io/user_guide/configuration.html#config-view
-    - https://altair-viz.github.io/user_guide/generated/toplevel/altair.Chart.html?highlight=configure#altair.Chart
-    - chart-fill `-BGC/--background-color`
-    - --no-grid; `--no-grid`
-- axis properties
-    - https://altair-viz.github.io/gallery/us_population_over_time_facet.html
-    - y-axis number format `--yf/--y-format`
-    - https://vega.github.io/vega-lite/docs/config.html#format
-    - https://github.com/d3/d3-format#locale_format
-    - subcommand `info number_formats`
-
-
 
 ## 0.5.0 – better bespoke visuals and labels
 
-
 Check out R-guides:
-- hist: https://www.r-graph-gallery.com/histogram.html
-- density: https://www.r-graph-gallery.com/density-plot.html
-- heatmap https://www.r-graph-gallery.com/heatmap.html
+
+- heatmap 
+    - [x] barebones implementation
+    - default color scale is categorical and terrible
+        - this is fixed with `--color-scheme` but a sane default should be used:
+            ``` 
+            csvviz heatmap -x state -y item -c sold --color-scheme blues  examples/hot.csv --json
+            ```
+    - [ ] by default, third column should be passed into -c?
+    - [ ] enable sorting x-axis (and y-axis?)
+    - [ ] write tests
+    - [ ] use heatmap to try out sizing options, since default heatmap is tiny!
+
+    - notes:
+        - https://altair-viz.github.io/gallery/simple_heatmap.html 
+            - (note 5,000 row limit) https://altair-viz.github.io/gallery/weather_heatmap.html 
+            - pretty bespoke: https://altair-viz.github.io/gallery/layered_heatmap_text.html
+            - (broken URL) https://altair-viz.github.io/gallery/binned_heatmap.html
+        - https://www.data-to-viz.com/graph/heatmap.html
+        - https://www.r-graph-gallery.com/heatmap.html
+            - Most basic heatmap: https://www.r-graph-gallery.com/215-the-heatmap-function.html
+
+- make stream chart? 
+    - https://altair-viz.github.io/gallery/streamgraph.html
+    - https://www.r-graph-gallery.com/154-basic-interactive-streamgraph-2.html
 
 
-- make a density chart? 
-    - https://www.r-graph-gallery.com/density-plot.html
+- density
     - https://altair-viz.github.io/user_guide/transform/density.html
-- make stream chart? https://altair-viz.github.io/gallery/streamgraph.html
-- heatmap? https://altair-viz.github.io/gallery/simple_heatmap.html
-- 
+    - https://www.r-graph-gallery.com/density-plot.html
+
+
+- hist (why is this here?): https://www.r-graph-gallery.com/histogram.html
+
 - [ ] allow sorting by array of values: https://vega.github.io/vega-lite/docs/sort.html#sort-array
 
+
+## 0.5.2 -- more bespokeness 
 
 - More chartwide options
     - `-op/--opacity` mark opacity option, for use in scatterplots
@@ -90,6 +116,41 @@ Check out R-guides:
         - x-axis for all charts (except hist)
         - color/fill for choropleth and heatmaps
     
+
+
+## 0.5.5 
+
+- chart-wide properties: 
+    - width/height
+        - [x] chart-wide with `-W` and `-H`
+            - [ ] actually, maybe not explicitly define defaults?
+            - [ ] write tests
+        - use autosize? https://vega.github.io/vega-lite/docs/size.html#autosize
+        - [ ] handle special case of horizontal charts(?)
+        
+        - if grid chart
+            - use chart_grid_default_height/width? Or none at all?
+            - [ ] allow view width/height to be set, for grid charts
+                - https://vega.github.io/vega-lite/docs/spec.html#single
+                - `-vW` `-vH`
+- axis properties
+    - [ ] `--no-grid`
+    - https://altair-viz.github.io/gallery/us_population_over_time_facet.html
+    - y-axis number format `--yf/--y-format`
+    - https://vega.github.io/vega-lite/docs/config.html#format
+    - https://github.com/d3/d3-format#locale_format
+    - subcommand `info number_formats`
+
+
+    - padding:
+        https://vega.github.io/vega-lite/docs/spec.html#top-level
+
+    - https://altair-viz.github.io/user_guide/configuration.html#config-view
+    - https://altair-viz.github.io/user_guide/generated/toplevel/altair.Chart.html?highlight=configure#altair.Chart
+    - chart-fill `-BGC/--background-color`
+
+
+
 
 ## 0.6.0 – better input/output
 

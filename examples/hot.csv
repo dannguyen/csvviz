@@ -1,0 +1,17 @@
+state,item,sold
+CA,apples,80
+CA,bananas,40
+CA,cherries,60
+CA,durians,15
+IL,apples,60
+IL,bananas,30
+IL,cherries,80
+IL,durians,35
+NY,apples,70
+NY,bananas,50
+NY,cherries,60
+NY,durians,15
+TX,apples,60
+TX,bananas,40
+TX,cherries,50
+TX,durians,25

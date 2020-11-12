@@ -199,12 +199,12 @@ GENERAL_OPTS["visual"] = {
         type=click.STRING,
         help="The name of a Vega color scheme to use for fill (this is overridden by -C/--colors)",
     ),
-    "chart_height": viz_general_option(
+    "height": viz_general_option(
         "--height",
         "-H",
-        "chart_height",
+        "height",
         category="Chart visual styles and properties",
-        default=DEFAULT_CHART_HEIGHT,
+        # default=DEFAULT_CHART_HEIGHT,
         show_default=True,
         type=click.INT,
         help="The height in pixels for the chart",
@@ -221,7 +221,7 @@ GENERAL_OPTS["visual"] = {
         type=click.Choice(AVAILABLE_THEMES, case_sensitive=False),
         default="default",
         help="Choose a built-in theme for chart",
-    ),  # TODO: refactor alt.themes.names() to constant
+    ),
     "title": viz_general_option(
         "--title",
         "-t",
@@ -229,12 +229,12 @@ GENERAL_OPTS["visual"] = {
         type=click.STRING,
         help="A title for the chart",
     ),
-    "chart_width": viz_general_option(
+    "width": viz_general_option(
         "--width",
         "-W",
-        "chart_width",
+        "width",
         category="Chart visual styles and properties",
-        default=DEFAULT_CHART_WIDTH,
+        # default=DEFAULT_CHART_WIDTH,
         show_default=True,
         type=click.INT,
         help="The width in pixels for the chart",

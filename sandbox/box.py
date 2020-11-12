@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
+"""
+just a scratchpad for quickly interactively testing things out
+"""
+
 from IPython import embed as IBREAKPOINT
 
 import altair as alt
 from altair.utils import parse_shorthand as pshort
 import altair_viewer as altview
 import click
+import numpy as np
 import pandas as pd
 from vega_datasets import data as vdata
 
@@ -32,6 +37,16 @@ def main():
     ci = c.encode(
         x=alt.X('Horsepower:Q', bin=True),
         y='count()',
+    )
+
+
+    # heat map stuff
+    # this makes such a tiny chart!
+    hots = pd.read_csv('examples/hot.csv')
+    hc = alt.Chart(hots).mark_rect().encode(
+        x='state',
+        y='item',
+        color='sold',
     )
 
 
