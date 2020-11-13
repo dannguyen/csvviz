@@ -9,7 +9,7 @@ from pathlib import Path
 from csvviz.exceptions import *
 from csvviz.settings import *
 
-from csvviz.viz.heatmap import Heatmapkit
+from csvviz.vizkit.viztypes.heatmap import Heatmapkit
 
 heatmap = Heatmapkit.register_command()
 

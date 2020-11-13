@@ -26,8 +26,8 @@ import pandas as pd
 from csvviz.exceptions import *
 from csvviz.helpers import parse_delimited_str
 from csvviz.settings import *
-from csvviz.vizclick import (
-    VizClickCommand,
+from csvviz.vizkit.clicky import (
+    Clicky,
     general_options_decor,
 )  # TODO: general_options_decor should not be knowable here
 from csvviz.utils.sysio import (
@@ -37,7 +37,7 @@ from csvviz.utils.sysio import (
 )  # TODO: this should be refactored, vizkit should not know about these
 
 ChannelType = UnionType[alt.X, alt.Y, alt.Fill, alt.Size, alt.Stroke]
-ChannelSetType = DictType[str, ChannelType]
+ChannelsDictType = DictType[str, ChannelType]
 
 
 MARK_METHOD_LOOKUP = {
@@ -111,7 +111,7 @@ class ClickFace:
     def register_command(klass):
         command = klass.cmd_wrapper()
         command = click.command(
-            cls=VizClickCommand,
+            cls=Clicky,
             name=klass.viz_commandname,
             help=klass.viz_info,
             epilog=klass.viz_epilog,
@@ -159,124 +159,18 @@ class ArgHelpers:
         return alt_parse_shorthand(shorthand, data, **kwargs)
 
 
-#####################################################################
-# properties
-class Props:
-    @property
-    def column_names(self) -> ListType[str]:
-        return list(self.df.columns)
-
-    @property
-    def df(self) -> pd.DataFrame:
-        return self._dataframe
-
-    @property
-    def has_custom_colors(self):  # TODO is needed?
-        return any(v for v in self.color_kwargs.values())
-
-    @property
-    def interactive_mode(self) -> bool:
-        return self.kwargs.get("is_interactive")
-
-    @property
-    def is_faceted(self) -> bool:
-        return True if self.channels.get("facet") else False
-
-    @property
-    def mark_method(self) -> str:
-        """e.g. 'mark_rect', 'mark_line'"""
-        return self.lookup_mark_method(self.viz_commandname)
-
-    @property
-    def name(self) -> str:
-        return self.viz_commandname
-
-    @property
-    def style_properties(self) -> dict:
-        _styles = self._create_styles()
-        return self.finalize_styles(_styles)
-
-    @property
-    def theme(self) -> str:
-        return self.kwargs.get("theme")
-
-    ############################################
-    ##  TODO: deprecate these
-    @property
-    def legend_kwargs(self) -> DictType:
-        _ARGKEYS = (
-            "no_legend",
-            "TK-orient",
-            "TK-title",
-        )
-        return {k: self.kwargs.get(k) for k in _ARGKEYS}
-
-    @property
-    def output_kwargs(self) -> DictType:
-        _ARGKEYS = (
-            "to_json",
-            "no_preview",
-        )
-        return {k: self.kwargs.get(k) for k in _ARGKEYS}
-
-    @property
-    def color_kwargs(self) -> DictType:
-        return {k: self.kwargs.get(k) for k in ("color_list", "color_scheme")}
-
-
-class Vizkit(ClickFace, Props, ArgHelpers, ViewHelpers):
-    """
-    The interface between Click.command, Altair.Chart, and Pandas.dataframe
-    """
-
-    color_channeltype = "fill"  # can be either 'fill' or 'stroke'
-
-    def __init__(self, input_file, kwargs):
-        self.validate_kwargs(kwargs)
-        self.kwargs = kwargs
-        self.warnings = []
-        self.input_file = input_file
-        self._dataframe = pd.read_csv(self.input_file)
-
-        self.channels: ChannelSetType = self.build_channels()
-
-    @classmethod
-    def validate_kwargs(klass, kwargs: dict) -> bool:
-        """
-        Raise errors/warnings based on the initial kwarg values; implement in each class
-        """
-        return True
-
-    def build_channels(self) -> ChannelSetType:
-        _channels = self._create_channels()
-        _channels = self._colorize_channels(_channels)
-        _channels = self._manage_facets(_channels)
-        _channels = self._manage_legends(_channels)
-        _channels = self.finalize_channels(_channels)
-        return _channels
-
-    @property
-    def chart(self) -> alt.Chart:
-        """this used to be _build_chart(), because it's a hefty method"""
-        alt.themes.enable(self.theme)
-        chart: alt.Chart = getattr(alt.Chart(self.df), self.mark_method)
-        chart = chart(clip=True)
-
-        if self.is_faceted:
-            chart = chart.resolve_axis(x="independent")
-
-        chart = chart.encode(**self.channels)
-        chart = chart.properties(**self.style_properties)
-
-        if self.interactive_mode:
-            chart = chart.interactive()
-
-        return chart
+class Channeled:
+    def build_channels(self) -> ChannelsDictType:
+        c = self._create_channels()
+        c = self._colorize_channels(c)
+        c = self._manage_facets(c)
+        c = self._manage_legends(c)
+        c = self.finalize_channels(c)
+        return c
 
     ##########################################################
     # These are boilerplate methods, unlikely to be subclassed
     ##########################################################
-
     def _manage_facets(self, channels: dict) -> dict:
         #################################
         # set facets, i.e. grid
@@ -304,23 +198,10 @@ class Vizkit(ClickFace, Props, ArgHelpers, ViewHelpers):
 
         return channels
 
-    #################### prepare
-    def finalize_channels(self, channels: ChannelSetType) -> ChannelSetType:
-        """
-        The viz-specific channel set up, i.e. the finishing step.
-
-        Each subclass should implement any necessary channel-changing/configuring callbacks here
-        """
-        return channels
-
-    def finalize_styles(self, styles: dict) -> dict:
-        """another abstract class method, to be implemented when necessary by subclasses"""
-        return styles
-
     #####################################################################
     # internal helpers
     #####################################################################
-    def _create_channels(self) -> ChannelSetType:
+    def _create_channels(self) -> ChannelsDictType:
         def _set_default_xyvar_args(kargs) -> dict:
             """
             configure x and y channels, which default to 0 and 1-indexed column
@@ -392,7 +273,7 @@ class Vizkit(ClickFace, Props, ArgHelpers, ViewHelpers):
 
         return channels
 
-    def _colorize_channels(self, channelset: ChannelSetType) -> ChannelSetType:
+    def _colorize_channels(self, channelset: ChannelsDictType) -> ChannelsDictType:
         config = {"scheme": self.color_kwargs["color_scheme"] or DEFAULT_COLOR_SCHEME}
         color = channelset.get(self.color_channeltype)
         if not color:
@@ -411,6 +292,152 @@ class Vizkit(ClickFace, Props, ArgHelpers, ViewHelpers):
             color.scale = alt.Scale(**config)
 
         return channelset
+
+    @staticmethod
+    def configure_channel_sort(
+        channel: ChannelType, sortorder: OptionalType[str]
+    ) -> ChannelType:
+        """inplace modification of channel"""
+        if sortorder:  # /walrus
+            if sortorder == "asc":
+                channel.sort = "ascending"
+            elif sortorder == "desc":
+                channel.sort = "descending"
+            else:
+                raise ValueError(f"Invalid sort order term: {sortorder}")
+        return channel
+
+    @staticmethod
+    def resolve_channel_name(channel: ChannelType) -> str:
+        """TODO: document this"""
+        return next(
+            (
+                getattr(channel, a)
+                for a in ("title", "field", "aggregate")
+                if getattr(channel, a) != altUndefined
+            ),
+            altUndefined,
+        )
+
+
+#####################################################################
+# properties
+class Props:
+    @property
+    def column_names(self) -> ListType[str]:
+        return list(self.df.columns)
+
+    @property
+    def df(self) -> pd.DataFrame:
+        return self._dataframe
+
+    @property
+    def has_custom_colors(self):  # TODO is needed?
+        return any(v for v in self.color_kwargs.values())
+
+    @property
+    def interactive_mode(self) -> bool:
+        return self.kwargs.get("is_interactive")
+
+    @property
+    def is_faceted(self) -> bool:
+        return True if self.channels.get("facet") else False
+
+    @property
+    def mark_method(self) -> str:
+        """e.g. 'mark_rect', 'mark_line'"""
+        return self.lookup_mark_method(self.viz_commandname)
+
+    @property
+    def name(self) -> str:
+        return self.viz_commandname
+
+    @property
+    def style_properties(self) -> dict:
+        _styles = self._create_styles()
+        return self.finalize_styles(_styles)
+
+    @property
+    def theme(self) -> str:
+        return self.kwargs.get("theme")
+
+    ############################################
+    ##  TODO: deprecate these
+    @property
+    def legend_kwargs(self) -> DictType:
+        _ARGKEYS = (
+            "no_legend",
+            "TK-orient",
+            "TK-title",
+        )
+        return {k: self.kwargs.get(k) for k in _ARGKEYS}
+
+    @property
+    def output_kwargs(self) -> DictType:
+        _ARGKEYS = (
+            "to_json",
+            "no_preview",
+        )
+        return {k: self.kwargs.get(k) for k in _ARGKEYS}
+
+    @property
+    def color_kwargs(self) -> DictType:
+        return {k: self.kwargs.get(k) for k in ("color_list", "color_scheme")}
+
+
+class Vizkit(ClickFace, Props, ArgHelpers, Channeled, ViewHelpers):
+    """
+    The interface between Click.command, Altair.Chart, and Pandas.dataframe
+    """
+
+    color_channeltype = "fill"  # can be either 'fill' or 'stroke'
+
+    def __init__(self, input_file, kwargs):
+        self.validate_kwargs(kwargs)
+        self.kwargs = kwargs
+        self.warnings = []
+        self.input_file = input_file
+        self._dataframe = pd.read_csv(self.input_file)
+
+        self.channels: ChannelsDictType = self.build_channels()
+
+    @classmethod
+    def validate_kwargs(klass, kwargs: dict) -> bool:
+        """
+        Raise errors/warnings based on the initial kwarg values; implement in each class
+        """
+        return True
+
+    @property
+    def chart(self) -> alt.Chart:
+        """this used to be _build_chart(), because it's a hefty method"""
+        alt.themes.enable(self.theme)
+        chart: alt.Chart = getattr(alt.Chart(self.df), self.mark_method)
+        chart = chart(clip=True)
+
+        if self.is_faceted:
+            chart = chart.resolve_axis(x="independent")
+
+        chart = chart.encode(**self.channels)
+        chart = chart.properties(**self.style_properties)
+
+        if self.interactive_mode:
+            chart = chart.interactive()
+
+        return chart
+
+    #################### prepare
+    def finalize_channels(self, channels: ChannelsDictType) -> ChannelsDictType:
+        """
+        The viz-specific channel set up, i.e. the finishing step.
+
+        Each subclass should implement any necessary channel-changing/configuring callbacks here
+        """
+        return channels
+
+    def finalize_styles(self, styles: dict) -> dict:
+        """another abstract class method, to be implemented when necessary by subclasses"""
+        return styles
 
     def _create_styles(self) -> DictType:
         """assumes self.channels has been set, particularly the types of x/y channels"""
@@ -443,20 +470,6 @@ class Vizkit(ClickFace, Props, ArgHelpers, ViewHelpers):
         return styles
 
     @staticmethod
-    def configure_channel_sort(
-        channel: ChannelType, sortorder: OptionalType[str]
-    ) -> ChannelType:
-        """inplace modification of channel"""
-        if sortorder:  # /walrus
-            if sortorder == "asc":
-                channel.sort = "ascending"
-            elif sortorder == "desc":
-                channel.sort = "descending"
-            else:
-                raise ValueError(f"Invalid sort order term: {sortorder}")
-        return channel
-
-    @staticmethod
     def configure_legend(kwargs: DictType) -> OptionalType[DictType]:
         config = {}
         if kwargs["no_legend"]:
@@ -474,15 +487,3 @@ class Vizkit(ClickFace, Props, ArgHelpers, ViewHelpers):
         #         config["orient"] = _o
         #     else:
         #         config["orient"] = DEFAULT_LEGEND_ORIENTATION
-
-    @staticmethod
-    def resolve_channel_name(channel: ChannelType) -> str:
-        """TODO: document this"""
-        return next(
-            (
-                getattr(channel, a)
-                for a in ("title", "field", "aggregate")
-                if getattr(channel, a) != altUndefined
-            ),
-            altUndefined,
-        )

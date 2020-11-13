@@ -8,10 +8,12 @@ from typing import NoReturn as NoReturnType
 
 from csvviz import __version__
 from csvviz.utils.sysio import clout, clerr
-from csvviz.viz.info import command as infocommand
+from csvviz.info import command as infocommand
 
 
-SUBCOMMAND_PATHS = [p for p in Path("csvviz/viz/").glob("*.py") if p.name != "info.py"]
+SUBCOMMAND_PATHS = [
+    p for p in Path("csvviz/vizkit/viztypes").glob("*.py") if p.name != "info.py"
+]
 
 
 def _print_version(ctx=None, param=None, value=None) -> NoReturnType:

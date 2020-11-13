@@ -10,7 +10,7 @@ from csvviz.settings import *
 #########################################
 
 
-class VizClickCommand(click.Command):
+class Clicky(click.Command):
     def format_options(self, ctx, formatter):
         """Writes all the options into the formatter if they exist."""
         common_opts = defaultdict(list)
