@@ -1,10 +1,10 @@
+import click
 import importlib
 import json
 from pathlib import Path
 import re
 import sys
 from typing import NoReturn as NoReturnType
-import click
 
 from csvviz import __version__
 from csvviz.utils.sysio import clout, clerr
@@ -37,10 +37,7 @@ def _print_version(ctx=None, param=None, value=None) -> NoReturnType:
     help="Print the version of csvviz",
 )
 def cli(**kwargs):
-    """
-    Welcome to csvviz (cvz), a command-line tool for producing visualizations using the Vega-lite spec
-    """
-
+    """csvviz (cvz) is a command-line tool for producing visualizations using the Vega-lite spec"""
     pass
 
 

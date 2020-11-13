@@ -8,6 +8,21 @@ Refamiliarizing myself with code:
 - figure out configure_legend
 - "finalize" methods need their own mixin?
 
+
+### moar refactor
+
+- color stuff
+    - [ ] for each vizkit.clicky, `--color` should just go to `colorvar`, not `fillvar`, `strokevar`
+    - [ ] in vizkit, remove fill/stroke from ENCODED list
+    - [ ] vizkit.create_channel should initiate fill/stroke based on colorvar
+    - [ ] write test for get_color warning...
+- [ ] make warnings.append be a method/property
+- vizkit
+    - channels-related methods not meant to be subclassed should in own mixin
+        - break up create_channels into more submethods
+    - clean up channels code, it's too big
+    - organize properties
+    
 ### first refactor phase
 
 - [x] Vizkit.validate_kwargs, to be implemented by each class
@@ -16,14 +31,6 @@ Refamiliarizing myself with code:
     - [x] --colors should be --color-list
     - [x] write test for vizkit.color_channeltype
 
-### moar refactor
-
-- [ ] make warnings.append be a method/property
-- color stuff
-    - [ ] for each vizkit.clicky, `--color` should just go to `colorvar`, not `fillvar`, `strokeva`
-    - [ ] in vizkit, remove fill/stroke from ENCODED list
-    - [ ] vizkit.create_channel should initiate fill/stroke based on colorvar
-    - [ ] write test for get_color warning...
 
 
 ## Update 2020-11-11

@@ -165,7 +165,22 @@ class VizkitHelpers:
         return alt_parse_shorthand(shorthand, data, **kwargs)
 
 
+#####################################################################
+# properties
 class VizkitProps:
+
+    @property
+    def column_names(self) -> ListType[str]:
+        return list(self.df.columns)
+
+    @property
+    def df(self) -> pd.DataFrame:
+        return self._dataframe
+
+    @property
+    def has_custom_colors(self):  # TODO is needed?
+        return any(v for v in self.color_kwargs.values())
+
     @property
     def interactive_mode(self) -> bool:
         return self.kwargs.get("is_interactive")
@@ -173,6 +188,15 @@ class VizkitProps:
     @property
     def is_faceted(self) -> bool:
         return True if self.channels.get("facet") else False
+
+    @property
+    def mark_method(self) -> str:
+        """e.g. 'mark_rect', 'mark_line'"""
+        return self.lookup_mark_method(self.viz_commandname)
+
+    @property
+    def name(self) -> str:
+        return self.viz_commandname
 
     @property
     def style_properties(self) -> dict:
@@ -183,26 +207,9 @@ class VizkitProps:
     def theme(self) -> str:
         return self.kwargs.get("theme")
 
-    #####################################################################
-    # properties
-    @property
-    def name(self) -> str:
-        return self.viz_commandname
 
-    @property
-    def mark_method(self) -> str:
-        """e.g. 'mark_rect', 'mark_line'"""
-        return self.lookup_mark_method(self.viz_commandname)
-
-    @property
-    def df(self) -> pd.DataFrame:
-        return self._dataframe
-
-    @property
-    def column_names(self) -> ListType[str]:
-        return list(self.df.columns)
-
-    # TODO: deprecate these
+############################################
+##  TODO: deprecate these
     @property
     def legend_kwargs(self) -> DictType:
         _ARGKEYS = (
@@ -224,9 +231,7 @@ class VizkitProps:
     def color_kwargs(self) -> DictType:
         return {k: self.kwargs.get(k) for k in ("color_list", "color_scheme")}
 
-    @property
-    def has_custom_colors(self):  # TODO is needed?
-        return any(v for v in self.color_kwargs.values())
+
 
 
 class Vizkit(VizkitHelpers, VizkitCommandMixin, VizkitViewMixin, VizkitProps):
@@ -491,29 +496,3 @@ class Vizkit(VizkitHelpers, VizkitCommandMixin, VizkitViewMixin, VizkitProps):
             ),
             altUndefined,
         )
-
-
-# TKD::
-# def _set_channel_colorscale(self, channelvar: str, channels: dict) -> NoReturnType:
-
-# if channel:  # /walrus
-#     config = {"scheme": DEFAULT_COLOR_SCHEME}
-#     if colorargs:
-#         _cs = colorargs.get("color_scheme")  # walrus
-#         if _cs:  # /walrus
-#             config["scheme"] = _cs
-#             # TODO: if _cs does not match a valid color scheme, then raise a warning/error
-
-#         _cx = colorargs.get("colors")  # walrus
-
-#         if _cx:  # /walrus
-#             # don't think this needs to be a formal parser
-#             config["range"] = _cx.strip().split(",")
-#             # for now, only colors OR color_scheme can be set, not both
-#             config.pop("scheme", None)
-#     channel.scale = alt.Scale(**config)
-# else:  # optional expected channel is not present
-#     if colorargs:  # but color settings were present
-#         self.warnings.append(
-#             f"The {channelvar} variable was not specified, so colors/color_scheme is ignored."
-#         )

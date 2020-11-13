@@ -31,7 +31,7 @@ def test_top_cli():
     """Just the overall CLI interface"""
     result = CliRunner().invoke(cli)
     assert result.exit_code == 0
-    assert "Welcome to csvviz" in result.output
+    assert "csvviz (cvz) is a command-line tool" in result.output
 
     # test help invocation
     helpr = CliRunner().invoke(cli, ["--help"])
