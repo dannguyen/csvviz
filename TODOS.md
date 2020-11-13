@@ -1,6 +1,13 @@
 # TODOS
 
 
+
+## 2020-11-13: refactor
+
+- [ ] make vizkit.channel_group class 
+- [x] vizkit.py  is now vizkit/init
+- [x] vizkit channel stuff is now in vizkit/channeled, as a temp refactor
+
 ## 2020-11-12: refactor
 
 Refamiliarizing myself with code:
@@ -8,20 +15,19 @@ Refamiliarizing myself with code:
 - figure out configure_legend
 - "finalize" methods need their own mixin?
 
-
 ### moar refactor
 
+- [ ] make warnings.append be a method/property
 - color stuff
     - [ ] for each vizkit.clicky, `--color` should just go to `colorvar`, not `fillvar`, `strokevar`
-    - [ ] in vizkit, remove fill/stroke from ENCODED list
-    - [ ] vizkit.create_channel should initiate fill/stroke based on colorvar
+    - [?] in vizkit, remove fill/stroke from ENCODED list
+    - [?] vizkit.create_channel should initiate fill/stroke based on colorvar
     - [ ] write test for get_color warning...
-- [ ] make warnings.append be a method/property
 - vizkit
-    - channels-related methods not meant to be subclassed should in own mixin
+    - [x] channels-related methods not meant to be subclassed should in own mixin
         - break up create_channels into more submethods
-    - clean up channels code, it's too big
-    - organize properties
+    - [?] clean up channels code, it's too big
+    - [x] organize properties
     
 ### first refactor phase
 
