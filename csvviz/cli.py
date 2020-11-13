@@ -12,7 +12,7 @@ from csvviz.info import command as infocommand
 
 
 SUBCOMMAND_PATHS = [
-    p for p in Path("csvviz/vizkit/viztypes").glob("*.py") if p.name != "info.py"
+    p for p in Path("csvviz/vizzes").glob("*.py") if p.name != "info.py"
 ]
 
 

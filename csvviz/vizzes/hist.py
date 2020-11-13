@@ -9,7 +9,7 @@ import altair as alt
 import click
 
 from csvviz.exceptions import *
-from csvviz.vizkit.viztypes.bar import Barkit
+from csvviz.vizzes.bar import Barkit
 
 BINNING_OPTS = (
     "bincount",

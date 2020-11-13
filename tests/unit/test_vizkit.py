@@ -6,7 +6,7 @@ import pandas as pd
 
 from csvviz.settings import *
 from csvviz.vizkit import Vizkit, ArgHelpers
-from csvviz.vizkit.viztypes.scatter import Scatterkit
+from csvviz.vizzes.scatter import Scatterkit
 
 from csvviz.helpers import parse_delimited_str
 

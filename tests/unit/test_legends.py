@@ -5,7 +5,7 @@ import click
 import json
 from pathlib import Path
 
-from csvviz.vizkit.viztypes.scatter import Scatterkit
+from csvviz.vizzes.scatter import Scatterkit
 
 viz = Scatterkit.register_command()
 
