@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 import pytest
 import re
@@ -20,7 +21,18 @@ DEFAULT_OPTS = [
 PATH_CSV = Path("examples/fruits.csv")
 
 
-def _process_proc(pipe: PIPE):
+def assert_valid_json(output: str):
+    """whatever, good enough for now"""
+    assert output[0:2] == "{\n"
+    assert output[-2:] == "\n}"
+    data = json.loads(output)
+    assert re.match(
+        r"https://vega.github.io/schema/vega-lite/v\d.+?json", data["$schema"]
+    )
+    assert all(k in data for k in ("config", "data", "mark", "encoding"))
+
+
+def process_program(pipe: PIPE):
     """returns (stdout, exitcode, stderr) as str"""
     out, err = [o.decode("utf-8").strip() if o else "" for o in pipe.communicate()]
     exitcode = pipe.returncode
@@ -31,20 +43,14 @@ def _process_proc(pipe: PIPE):
     )
 
 
-def _assert_valid_json(output: str):
-    assert output[0] == "{"
-    assert output[-1] == "}"
-    assert """"encoding": {""" in output
-    assert """"$schema": "https://vega.github.io/schema""" in output
-
-
 def test_io_basic():
     pviz = Popen([*DEFAULT_ARGS, *DEFAULT_OPTS, PATH_CSV], stdout=PIPE)
-    output, exitcode, err = _process_proc(pviz)
+    output, exitcode, err = process_program(pviz)
     assert exitcode == 0
-    _assert_valid_json(output)
+    assert_valid_json(output)
 
 
+@pytest.mark.curious(reason="""Repurpose csvmedkit's cmd running code""")
 def test_io_piped_stdin():
     """accepts '-' as stdin argument"""
     pcat = Popen(
@@ -63,15 +69,15 @@ def test_io_piped_stdin():
         stdout=PIPE,
     )
     pcat.stdout.close()
-    output, exitcode, err = _process_proc(pviz)
+    output, exitcode, err = process_program(pviz)
     assert exitcode == 0
-    _assert_valid_json(output)
+    assert_valid_json(output)
 
 
 def test_io_filepath_invalid():
     badpath = "/tmp/zzz/123.txt"
     pviz = Popen(["csvviz", "bar", badpath], stderr=PIPE, stdout=PIPE, stdin=None)
-    output, exitcode, err = _process_proc(pviz)
+    output, exitcode, err = process_program(pviz)
     assert exitcode == 2
     assert """Invalid value for '[INPUT_FILE]'""" in err
     assert f"""Could not open file: {badpath}""" in err
@@ -80,7 +86,7 @@ def test_io_filepath_invalid():
 @pytest.mark.curious(
     reason="""No idea why this doesn't work, and why it keeps returning exitcode == 2"""
 )
-@pytest.mark.skip
+@pytest.mark.skip(reason="fix later...")
 def test_io_error_when_missing_input_file():
     pviz = Popen(
         [
@@ -92,7 +98,7 @@ def test_io_error_when_missing_input_file():
         stdin=None,
     )
     # why?    pviz.poll()
-    output, exitcode, err = _process_proc(pviz)
+    output, exitcode, err = process_program(pviz)
     assert exitcode == 2
     assert "Error: Missing argument: INPUT_FILE" in err
 

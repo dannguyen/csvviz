@@ -5,7 +5,7 @@ import pandas as pd
 
 
 from csvviz.settings import *
-from csvviz.vizkit import Vizkit, VizkitHelpers
+from csvviz.vizkit import Vizkit, ArgHelpers
 from csvviz.viz.scatter import Scatterkit
 
 from csvviz.helpers import parse_delimited_str
@@ -110,7 +110,7 @@ def test_vizkit_output_basic(tvk, capsys):
 # get_chart_methodname
 #####################################
 def test_lookup_mark_method():
-    foo = VizkitHelpers.lookup_mark_method
+    foo = ArgHelpers.lookup_mark_method
     assert "mark_area" == foo("area")
     assert "mark_bar" == foo("bar")
     assert "mark_bar" == foo("hist")
@@ -120,19 +120,20 @@ def test_lookup_mark_method():
 
 ##### parse_var_str
 def test_parse_channel_arg_default_name():
-    foo = VizkitHelpers.parse_channel_arg
+    foo = ArgHelpers.parse_channel_arg
     assert foo("id") == ("id", None)
     assert foo("id|") == ("id", None)
     assert foo("sum(thing)|") == ("sum(thing)", None)
 
 
 def test_parse_channel_arg_specified_name():
-    foo = VizkitHelpers.parse_channel_arg
+    foo = ArgHelpers.parse_channel_arg
     assert foo("id|Foo") == ("id", "Foo")
     assert foo("sum(thing)|Bar") == ("sum(thing)", "Bar")
 
 
 def test_parse_channel_arg_edge_case_vizkit_channels():
+    """more of an integrated test than a unit one"""
     data = StringIO("id,Hello|World\nfoo,42\n")
     kwargs = {
         "xvar": "id",

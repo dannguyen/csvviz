@@ -26,8 +26,8 @@ import pandas as pd
 from csvviz.exceptions import *
 from csvviz.helpers import parse_delimited_str
 from csvviz.settings import *
-from csvviz.utils.cmd import (
-    MyCliCommand,
+from csvviz.vizclick import (
+    VizClickCommand,
     general_options_decor,
 )  # TODO: general_options_decor should not be knowable here
 from csvviz.utils.sysio import (
@@ -60,7 +60,7 @@ ENCODING_CHANNEL_NAMES = (
 )
 
 
-class VizkitViewMixin:
+class ViewHelpers:
     """a namespace/mixin for functions that output the viz"""
 
     @staticmethod
@@ -72,15 +72,9 @@ class VizkitViewMixin:
         # a helpful wrapper around altair_viewer.altview
         altview.show(chart)
 
-    def output_chart(self, oargs={}) -> NoReturnType:
-        """
-        Send to stdout the desired representation of a chart
-        """
-        # --interactive/--static chart is independent of whether or not we're previewing it,
-        #  which is reflected in its JSON representation
-        # echo JSON before doing a preview
-        oargs = self.output_kwargs if not oargs else oargs
-        if oargs["to_json"]:
+    def output_chart(self) -> NoReturnType:
+        """Send to stdout the desired representation of a chart"""
+        if self.output_kwargs["to_json"]:
             clout(self.chart_to_json(self.chart))
 
     def preview_chart(self) -> UnionType[NoReturnType, bool]:
@@ -90,34 +84,34 @@ class VizkitViewMixin:
             return False
 
 
-class VizkitCommandMixin:
+class ClickFace:
     """The interface for making a click command, including meta info for generating the help"""
 
     viz_commandname = "abstract"
     viz_info = f"""A {viz_commandname} visualization"""  # this should be defined in every subclass
     viz_epilog = ""
 
-    @staticmethod
-    def _basecommand(klass):
-        def _foo(**kwargs):
+    @classmethod
+    def cmd_wrapper(klass):
+        # TODO: this is bad OOP; func should be properly named and in some more logical place
+        def func(**kwargs):
             try:
                 vk = klass(input_file=kwargs.get("input_file"), kwargs=kwargs)
             except VizValueError as err:
+                # TODO: dude what?
                 clexit(1, err)
             else:
                 vk.output_chart()
-                for w in vk.warnings:
-                    clerr(f"Warning: {w}")
+                [clerr(f"Warning: {w}") for w in vk.warnings]
                 vk.preview_chart()
 
-        return _foo
+        return func
 
     @classmethod
     def register_command(klass):
-        # TODO: this is bad OOP; _foo should be properly named and in some more logical place
-        command = klass._basecommand(klass)
+        command = klass.cmd_wrapper()
         command = click.command(
-            cls=MyCliCommand,
+            cls=VizClickCommand,
             name=klass.viz_commandname,
             help=klass.viz_info,
             epilog=klass.viz_epilog,
@@ -129,7 +123,7 @@ class VizkitCommandMixin:
         return command
 
 
-class VizkitHelpers:
+class ArgHelpers:
     @staticmethod
     def lookup_mark_method(viz_commandname: str) -> str:
         """
@@ -167,8 +161,7 @@ class VizkitHelpers:
 
 #####################################################################
 # properties
-class VizkitProps:
-
+class Props:
     @property
     def column_names(self) -> ListType[str]:
         return list(self.df.columns)
@@ -207,9 +200,8 @@ class VizkitProps:
     def theme(self) -> str:
         return self.kwargs.get("theme")
 
-
-############################################
-##  TODO: deprecate these
+    ############################################
+    ##  TODO: deprecate these
     @property
     def legend_kwargs(self) -> DictType:
         _ARGKEYS = (
@@ -232,9 +224,7 @@ class VizkitProps:
         return {k: self.kwargs.get(k) for k in ("color_list", "color_scheme")}
 
 
-
-
-class Vizkit(VizkitHelpers, VizkitCommandMixin, VizkitViewMixin, VizkitProps):
+class Vizkit(ClickFace, Props, ArgHelpers, ViewHelpers):
     """
     The interface between Click.command, Altair.Chart, and Pandas.dataframe
     """
