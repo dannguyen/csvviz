@@ -3,7 +3,6 @@ from io import StringIO
 from pathlib import Path
 import re
 
-
 from typing import (
     Any as AnyType,
     Dict as DictType,
@@ -15,29 +14,29 @@ from typing import (
     Union as UnionType,
 )
 
+TKTYPE = AnyType
+
 import altair as alt
 from altair.utils import parse_shorthand as alt_parse_shorthand
-from altair.utils.schemapi import Undefined as altUndefined
 import altair_viewer as altview
 import click
 import pandas as pd
 
 
-from csvviz.exceptions import *
+from csvviz.exceptions import VizValueError
 from csvviz.helpers import parse_delimited_str
 from csvviz.settings import *
 from csvviz.vizkit.clicky import (
     Clicky,
     general_options_decor,
 )  # TODO: general_options_decor should not be knowable here
+from csvviz.vizkit.channeled import Channeled
+
 from csvviz.utils.sysio import (
     clout,
     clerr,
     clexit,
 )  # TODO: this should be refactored, vizkit should not know about these
-
-ChannelType = UnionType[alt.X, alt.Y, alt.Fill, alt.Size, alt.Stroke]
-ChannelsDictType = DictType[str, ChannelType]
 
 
 MARK_METHOD_LOOKUP = {
@@ -49,15 +48,6 @@ MARK_METHOD_LOOKUP = {
     "scatter": "point",
     "abstract": "bar",  # for testing purposes
 }
-
-ENCODING_CHANNEL_NAMES = (
-    "x",
-    "y",
-    "fill",
-    "size",
-    "stroke",
-    "facet",
-)
 
 
 class ViewHelpers:
@@ -159,167 +149,6 @@ class ArgHelpers:
         return alt_parse_shorthand(shorthand, data, **kwargs)
 
 
-class Channeled:
-    def build_channels(self) -> ChannelsDictType:
-        c = self._create_channels()
-        c = self._colorize_channels(c)
-        c = self._manage_facets(c)
-        c = self._manage_legends(c)
-        c = self.finalize_channels(c)
-        return c
-
-    ##########################################################
-    # These are boilerplate methods, unlikely to be subclassed
-    ##########################################################
-    def _manage_facets(self, channels: dict) -> dict:
-        #################################
-        # set facets, i.e. grid
-        if channels.get("facet"):
-            _fc = self.kwargs.get("facetcolumns")  # walrus
-            if _fc:  # /walrus
-                channels["facet"].columns = _fc
-
-            self.configure_channel_sort(channels["facet"], self.kwargs["facetsort"])
-
-        return channels
-
-    def _manage_legends(self, channels: dict) -> dict:
-        """
-
-        TODO: no idea where to put this, other than to make it an internal method used by build_chart()
-        """
-        for cname in (
-            "fill",
-            "size",
-            "stroke",
-        ):
-            if channels.get(cname):
-                channels[cname].legend = self.configure_legend(self.legend_kwargs)
-
-        return channels
-
-    #####################################################################
-    # internal helpers
-    #####################################################################
-    def _create_channels(self) -> ChannelsDictType:
-        def _set_default_xyvar_args(kargs) -> dict:
-            """
-            configure x and y channels, which default to 0 and 1-indexed column
-            if names aren't specified
-            """
-            cargs = kargs.copy()
-            for i, z in enumerate(("xvar", "yvar")):
-                cargs[z] = cargs[z] if cargs.get(z) else self.column_names[i]
-            return cargs
-
-        def _validate_fieldname(shorthand: str, fieldname: str) -> bool:
-            if fieldname not in self.column_names:
-                return False
-            else:
-                return True
-
-        cargs = _set_default_xyvar_args(self.kwargs)
-        channels = {}
-
-        for n in ENCODING_CHANNEL_NAMES:
-            argname = f"{n}var"
-            vartxt = cargs.get(argname)  # walrus
-            if vartxt:  # e.g. 'name', 'amount|Amount', 'sum(amount)|Amount'  # /walrus
-                shorthand, title = self.parse_channel_arg(vartxt)
-                ed = self.parse_shorthand(shorthand, data=self.df)
-
-                if _validate_fieldname(shorthand=shorthand, fieldname=ed["field"]):
-                    _channel = getattr(alt, n.capitalize())  # e.g. alt.X or alt.Y
-                    channels[n] = _channel(**ed)
-                    if title:
-                        channels[n].title = title
-                else:
-                    raise InvalidDataReference(
-                        f"""'{shorthand}' is either an invalid column name, or invalid Altair shorthand"""
-                    )
-
-        ##################################
-        # subfunction: --color-sort, i.e. ordering of fill; only valid for area and bar charts
-        # somewhat confusingly, sort by fill does NOT alter alt.Fill, but adds an Order channel
-        # https://altair-viz.github.io/user_guide/encoding.html?#ordering-marks
-        _osort = cargs.get("fillsort")  # walrus
-        if _osort:  # /walrus
-            if not channels.get("fill"):
-                raise MissingDataReference(
-                    f"--color-sort '{_osort}' was specified, but no --colorvar value was provided"
-                )
-            else:
-                # create an 'order' channel, with sort attribute
-                fname = self.resolve_channel_name(channels["fill"])
-                channels["order"] = alt.Order(fname)
-                self.configure_channel_sort(channels["order"], _osort)
-
-        ##################################
-        # subfunction: set limits of x-axis and y-axis, via --xlim and --ylim
-        for i in (
-            "x",
-            "y",
-        ):
-            j = f"{i}lim"
-            limstr = cargs.get(j)  # walrus
-            if limstr:  # /walrus
-                channels[
-                    i
-                ].scale = (
-                    alt.Scale()
-                )  # if channels[i].scale == alt.Undefined else channels[i].scale
-                _min, _max = [k.strip() for k in limstr.split(",")]
-                channels[i].scale.domain = [_min, _max]
-
-        return channels
-
-    def _colorize_channels(self, channelset: ChannelsDictType) -> ChannelsDictType:
-        config = {"scheme": self.color_kwargs["color_scheme"] or DEFAULT_COLOR_SCHEME}
-        color = channelset.get(self.color_channeltype)
-        if not color:
-            if self.has_custom_colors:  # but --color-list/--color-scheme was set
-                self.warnings.append(
-                    f"--colorvar was not specified, so --color-list/--color-scheme is ignored."
-                )
-        else:
-            if self.color_kwargs["color_list"]:
-                cx = self.color_kwargs["color_list"]
-                config["range"] = [s.strip() for s in cx.split(",")]
-                config.pop(
-                    "scheme"
-                )  # `color_list` kwarg overrides any color_scheme setting
-
-            color.scale = alt.Scale(**config)
-
-        return channelset
-
-    @staticmethod
-    def configure_channel_sort(
-        channel: ChannelType, sortorder: OptionalType[str]
-    ) -> ChannelType:
-        """inplace modification of channel"""
-        if sortorder:  # /walrus
-            if sortorder == "asc":
-                channel.sort = "ascending"
-            elif sortorder == "desc":
-                channel.sort = "descending"
-            else:
-                raise ValueError(f"Invalid sort order term: {sortorder}")
-        return channel
-
-    @staticmethod
-    def resolve_channel_name(channel: ChannelType) -> str:
-        """TODO: document this"""
-        return next(
-            (
-                getattr(channel, a)
-                for a in ("title", "field", "aggregate")
-                if getattr(channel, a) != altUndefined
-            ),
-            altUndefined,
-        )
-
-
 #####################################################################
 # properties
 class Props:
@@ -399,7 +228,7 @@ class Vizkit(ClickFace, Props, ArgHelpers, Channeled, ViewHelpers):
         self.input_file = input_file
         self._dataframe = pd.read_csv(self.input_file)
 
-        self.channels: ChannelsDictType = self.build_channels()
+        self.channels = self.build_channels()
 
     @classmethod
     def validate_kwargs(klass, kwargs: dict) -> bool:
@@ -427,7 +256,7 @@ class Vizkit(ClickFace, Props, ArgHelpers, Channeled, ViewHelpers):
         return chart
 
     #################### prepare
-    def finalize_channels(self, channels: ChannelsDictType) -> ChannelsDictType:
+    def finalize_channels(self, channels: TKTYPE) -> TKTYPE:
         """
         The viz-specific channel set up, i.e. the finishing step.
 
