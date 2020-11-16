@@ -2,13 +2,21 @@
 
 
 
-## 2020-11-13: refactor
+## Refactoring
+
+### 2020-11-16: refactor
 
 - [ ] make vizkit.channel_group class 
+- [ ] refactor create_channels._set_default_xyvar_args
+- [x] ancillary mixins have been moved to interfaces.py for now
+
+
+### 2020-11-13: refactor
+
 - [x] vizkit.py  is now vizkit/init
 - [x] vizkit channel stuff is now in vizkit/channeled, as a temp refactor
 
-## 2020-11-12: refactor
+### 2020-11-12: refactor
 
 Refamiliarizing myself with code:
 - in vizkit.py, fix/clean up "manage"/"create"/"configure" naming convention
