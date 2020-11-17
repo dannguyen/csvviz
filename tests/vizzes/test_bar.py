@@ -115,7 +115,7 @@ def test_bar_fill_sort():
 
 def test_bar_fill_sort_desc():
     cdata = json.loads(
-        CliRunner().invoke(bar, ["-c", "name", "-cs", "desc", *OUTPUT_ARGS]).output
+        CliRunner().invoke(bar, ["-c", "name", "--cs", "desc", *OUTPUT_ARGS]).output
     )
 
     o = cdata["encoding"]["order"]
@@ -124,7 +124,7 @@ def test_bar_fill_sort_desc():
 
 
 def test_bar_error_when_fill_sort_but_no_fill():
-    result = CliRunner().invoke(bar, ["-cs", "desc", *OUTPUT_ARGS])
+    result = CliRunner().invoke(bar, ["--cs", "desc", *OUTPUT_ARGS])
     assert result.exit_code == 1
     assert (
         "ConflictingArgs: --color-sort 'desc' was specified, but no --colorvar value"
@@ -133,7 +133,7 @@ def test_bar_error_when_fill_sort_but_no_fill():
 
 
 def test_bar_error_when_fill_sort_invalid():
-    result = CliRunner().invoke(bar, ["-cs", "BOOBOO", *OUTPUT_ARGS])
+    result = CliRunner().invoke(bar, ["--cs", "BOOBOO", *OUTPUT_ARGS])
     assert result.exit_code == 2
 
 

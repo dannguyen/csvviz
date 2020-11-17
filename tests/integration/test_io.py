@@ -50,7 +50,25 @@ def test_io_basic():
     assert_valid_json(output)
 
 
-@pytest.mark.curious(reason="""Repurpose csvmedkit's cmd running code""")
+def test_args_and_opts_intermixed():
+    """just making sure that required args and opts can go wherever"""
+    args = ["csvviz", "bar", *DEFAULT_OPTS, "-x", "product", PATH_CSV, "-c", "season"]
+    pviz = Popen(args, stdout=PIPE)
+    output, exitcode, err = process_program(pviz)
+    assert exitcode == 0
+    assert_valid_json(output)
+
+
+@pytest.mark.curious(reason="why am i so bad at popen")
+def test_input_not_found():
+    args = ["csvviz", "bar", *DEFAULT_OPTS, "/tmp/sakdfjaskldfj/asdfasdf.11902/po23"]
+    pviz = Popen(args, stdout=PIPE, stderr=PIPE)
+    output, exitcode, err = process_program(pviz)
+    assert exitcode == 2
+    assert "Invalid value for '[INPUT_FILE]': Could not open file" in err
+
+
+@pytest.mark.curious(reason="""TODO: Repurpose csvmedkit's cmd running code""")
 def test_io_piped_stdin():
     """accepts '-' as stdin argument"""
     pcat = Popen(

@@ -133,10 +133,20 @@ def test_titled_vars(mydata):
     }
 
 
-def test_colorize_default_color_scheme(mydata):
+def test_colorize_default_color_schemes(mydata):
+    # when fill is categorical (i.e. nominal) variable
     opts = {"xvar": "name", "yvar": "amount", "fillvar": "category"}
     cg = ChannelGroup(opts, mydata, color_channel_name="fill")
-    assert cg["fill"].scale == alt.Scale(scheme=csvviz.settings.DEFAULT_COLOR_SCHEME)
+    assert cg["fill"].scale == alt.Scale(
+        scheme=csvviz.settings.DEFAULT_COLOR_SCHEMES["categorical"]
+    )
+
+    # when fill is quantitative variable
+    opts = {"xvar": "name", "yvar": "amount", "fillvar": "amount:Q"}
+    cg = ChannelGroup(opts, mydata, color_channel_name="fill")
+    assert cg["fill"].scale == alt.Scale(
+        scheme=csvviz.settings.DEFAULT_COLOR_SCHEMES["quantitative"]
+    )
 
 
 def test_only_specified_color_channel_gets_scale(mydata):

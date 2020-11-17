@@ -12,6 +12,7 @@ from typing import (
 )
 
 
+from csvviz.exceptions import ConflictingArgs
 from csvviz.helpers import parse_delimited_str
 from csvviz.settings import *
 from csvviz.vizkit.channel_group import ChannelGroup
@@ -47,15 +48,31 @@ class Vizkit(*FACES):
         self.chart = self.stylize_chart(c)
         # TK: init_styles/finalize_styles is buried in style_chart
 
-    def validate_options(self, options: dict) -> bool:
+    def validate_options(self, raw_options: dict) -> bool:
         """
+        At this point, raw_options is basically taken directly from the Command kwargs
+
+        raw_options *can* be modified in place
+
         Raise errors/warnings based on the initial kwarg values; implement in each class
         """
-        if options.get("color_list") or options.get("color_scheme"):
-            if not options.get("colorvar"):
+        if raw_options.get("color_list") and raw_options.get("color_scheme"):
+            raise ConflictingArgs(
+                "--color-list and --color-scheme cannot both be specified."
+            )
+
+        if raw_options.get("color_list") or raw_options.get("color_scheme"):
+            if not raw_options.get("colorvar"):
                 self.warnings.append(
                     f"--colorvar was not specified, so --color-list and --color-scheme is ignored."
                 )
+            elif raw_options.get("color_scheme"):
+                cs = raw_options.get("color_scheme")
+                if not self.validate_color_scheme(cs):
+                    self.warnings.append(
+                        f"Using default color scheme because --color-scheme argument '{cs}' does not seem to be a valid color scheme. Run `csvviz info colorschemes` to get a list of valid color schemes."
+                    )
+                    raw_options.pop("color_scheme")
 
         return True
 
@@ -187,3 +204,17 @@ class Vizkit(*FACES):
     @property
     def theme(self) -> str:
         return self.options.get("theme")
+
+    @staticmethod
+    def validate_color_scheme(scheme: str) -> str:
+        # TK: DRY this schema loading with info.py's use
+        # also should be lazy loading, etc.
+        core = alt.vegalite.core.load_schema()
+        defs = core["definitions"]
+        cats = [s["$ref"].split("/")[-1] for s in defs["ColorScheme"]["anyOf"]]
+        # e.g. ['Categorical', 'SequentialSingleHue', 'SequentialMultiHue', 'Diverging', 'Cyclical']
+        all_schemes = []
+        for c in cats:
+            all_schemes.extend(defs[c]["enum"])
+
+        return scheme in all_schemes

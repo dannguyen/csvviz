@@ -14,7 +14,7 @@ from typing import (
 from csvviz import altUndefined
 from csvviz.exceptions import InvalidDataReference
 from csvviz.helpers import parse_delimited_str
-from csvviz.settings import DEFAULT_COLOR_SCHEME, DEFAULT_LEGEND_ORIENTATION
+from csvviz.settings import DEFAULT_COLOR_SCHEMES, DEFAULT_LEGEND_ORIENTATION
 
 
 CHANNELS = {
@@ -74,6 +74,19 @@ class Helpers:
         shorthand: str, data: OptionalType[pd.DataFrame] = None, **kwargs
     ) -> DictType[str, str]:
         return alt_parse_shorthand(shorthand, data, **kwargs)
+
+    @staticmethod
+    def get_default_color_scheme(datatype: str) -> str:
+        if datatype in (
+            "quantitative",
+            "temporal",
+        ):
+            ds = DEFAULT_COLOR_SCHEMES["quantitative"]
+        elif datatype == "ordinal":
+            ds = DEFAULT_COLOR_SCHEMES["ordinal"]
+        else:
+            ds = DEFAULT_COLOR_SCHEMES["categorical"]
+        return ds
 
 
 class ChannelGroup(dict, Helpers):
@@ -151,7 +164,13 @@ class ChannelGroup(dict, Helpers):
         if not self.color_channel:
             return self
 
-        config = {"scheme": self.options.get("color_scheme") or DEFAULT_COLOR_SCHEME}
+        config = {}
+        if self.options.get("color_scheme"):
+            config["scheme"] = self.options["color_scheme"]
+        else:
+            config["scheme"] = self.get_default_color_scheme(self.color_channel.type)
+            # TODO: move to its own method
+
         if self.options.get("color_list"):
             config["range"] = [s.strip() for s in self.options["color_list"].split(",")]
             # color_list` kwarg overrides any color_scheme setting

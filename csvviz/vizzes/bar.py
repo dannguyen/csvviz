@@ -36,7 +36,7 @@ class Barkit(Vizkit):
         # https://altair-viz.github.io/user_guide/encoding.html?#ordering-marks
         click.option(
             "--color-sort",
-            "-cs",
+            "--cs",
             "color_sort",
             type=click.Choice(("asc", "desc"), case_sensitive=False),
             help="For stacked bar charts, the sort order of the color variable: 'asc' for ascending, 'desc' for descending/reverse",

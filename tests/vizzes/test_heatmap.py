@@ -53,11 +53,14 @@ def test_heatmap_defaults():
         ],
     )
 
-    cdata = json.loads(c.output)
+    jdata = json.loads(c.output)
 
-    assert cdata["mark"]["type"] == "rect"
+    assert jdata["mark"]["type"] == "rect"
 
-    datavals = list(cdata["datasets"].values())[0]
+    datavals = list(jdata["datasets"].values())[0]
     assert datavals[0] == {"item": "apples", "sold": 80, "state": "CA"}
 
-    # TODO: test fill encoding
+    fill = jdata["encoding"]["fill"]
+    assert fill["field"] == "sold"
+    assert fill["type"] == "quantitative"
+    assert fill["scale"]["scheme"] == DEFAULT_COLOR_SCHEMES["quantitative"]

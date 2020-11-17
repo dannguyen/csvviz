@@ -32,27 +32,7 @@ def test_defaults():
 ##############################################################################################################
 
 
-@pytest.mark.curious(
-    reason="""
-    This may not be a good idea, if the user specifies continuous fill variable, which looks like ****
-     when the scale is categorical like category10.
-
-    However, for now, I can't see a reason the user would knowingly specify a non-categorical variable for
-    a bar chart fill variable. Thus, this is an opinionated default..."""
-)
-def test_fill_default_color_scheme():
-    """
-    by default, a viz chart with fill should have scheme=DEFAULT_COLOR_SCHEME
-    """
-    result = CliRunner().invoke(viz, ["--colorvar", "amount", *OUTPUT_ARGS])
-    cdata = json.loads(result.output)
-
-    fill = cdata["encoding"]["fill"]
-    assert fill["type"] == "quantitative"
-    assert fill["scale"]["scheme"] == DEFAULT_COLOR_SCHEME
-
-
-def test_basic_colors():
+def test_basic_color_list():
     """
     -c/--color-list
     """
@@ -79,30 +59,27 @@ def test_basic_color_scheme():
     assert scale["scheme"] == "dark2"
 
 
-def test_colors_overrides_color_scheme():
+@pytest.mark.curious(
+    reason="""
+    This may not be a good idea, if the user specifies continuous fill variable, which looks like ****
+     when the scale is categorical like category10.
+
+    However, for now, I can't see a reason the user would knowingly specify a non-categorical variable for
+    a bar chart fill variable. Thus, this is an opinionated default..."""
+)
+def test_fill_default_quant_color_scheme():
     """
-    -c/--color-list setting overrides (and deletes) anything set by -C/--color-scheme
+    by default, a viz chart with fill should have scheme=DEFAULT_COLOR_SCHEMES
     """
-    result = CliRunner().invoke(
-        viz,
-        [
-            "-c",
-            "name",
-            "--color-scheme",
-            "dark2",
-            "--color-list",
-            "yellow",
-            *OUTPUT_ARGS,
-        ],
-    )
+    result = CliRunner().invoke(viz, ["--colorvar", "amount", *OUTPUT_ARGS])
     cdata = json.loads(result.output)
 
-    scale = cdata["encoding"]["fill"]["scale"]
-    assert "scheme" not in scale
-    assert scale["range"] == ["yellow"]
+    fill = cdata["encoding"]["fill"]
+    assert fill["type"] == "quantitative"
+    assert fill["scale"]["scheme"] == DEFAULT_COLOR_SCHEMES["quantitative"]
 
 
-@pytest.mark.skip(reason="TODO: figure out mini-syntax")
+@pytest.mark.skip(reason="Not worrying about extra legend functionality until later")
 def test_legend_settings():
     """when there is a fill, there is a legend"""
     result = CliRunner().invoke(
@@ -150,30 +127,57 @@ def test_var_title_specified():
 ##############################################################################################################
 # warnings
 ##############################################################################################################
-@pytest.mark.skip(reason="TODO")
-def test_warn_if_colors_scheme_specified_but_no_fill(caplog):
-    result = CliRunner().invoke(viz, ["--color-scheme", "dark2", *OUTPUT_ARGS])
-    assert result.exit_code == 0
-    assert "WARNING" in caplog.text
+@pytest.mark.curious(reason="This test is repeated somewhere else, oh well")
+def test_warn_if_colors_scheme_specified_but_no_colorvar():
+    r = CliRunner().invoke(viz, ["--color-scheme", "dark2", *OUTPUT_ARGS])
+    assert r.exit_code == 0
     assert (
-        "Specifying --color-list/--color-scheme has no effect unless --fill is also specified"
-        in caplog.text
+        "Warning: --colorvar was not specified, so --color-list and --color-scheme is ignored"
+        in r.output
     )
 
 
-@pytest.mark.skip(reason="TODO")
-def test_warn_if_colors_and_color_scheme_specified(caplog):
-    result = CliRunner().invoke(
-        viz, ["--color-list", "red,blue", "--color-scheme", "dark2", *OUTPUT_ARGS]
+def test_warn_if_invalid_colorscheme_used():
+    r = CliRunner().invoke(
+        viz, ["--colorvar", "name", "--color-scheme", "booyah", *OUTPUT_ARGS]
     )
-    assert result.exit_code == 0
-    assert "WARNING" in caplog.text
-    assert "Specifying --color-list overrides the --color-scheme specification"
+    assert r.exit_code == 0
+    assert "Warning: Using default color scheme" in r.output
+    assert (
+        "--color-scheme argument 'booyah' does not seem to be a valid color scheme"
+        in r.output
+    )
+
+
+def test_warning_for_missing_colorvar_supercedes_invalid_color_scheme():
+    r = CliRunner().invoke(viz, ["--color-scheme", "booyah", *OUTPUT_ARGS])
+    assert r.exit_code == 0
+    assert "Warning: --colorvar was not specified" in r.output
+    assert "Warning: Using default color scheme" not in r.output
 
 
 ##############################################################################################################
 # errors
 ##############################################################################################################
+
+
+def test_error_when_both_color_list_and_color_scheme_are_set():
+    args = [
+        "-c",
+        "name",
+        "-C",
+        "red,blue",
+        "--CS",
+        "tableau10",
+    ]
+
+    c = CliRunner().invoke(viz, [*args, *OUTPUT_ARGS])
+    assert c.exit_code == 1
+    assert (
+        "--color-list and --color-scheme cannot both be specified." in c.output.strip()
+    )
+
+
 def test_error_if_user_specifies_columns_as_integers():
     # with pytest.raises(click.UsageError) as err:
     result = CliRunner().invoke(viz, ["-y", "0", *OUTPUT_ARGS])

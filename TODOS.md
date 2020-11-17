@@ -2,13 +2,12 @@
 
 
 
-## Refactoring
-
+## Refactoring 2020-11-17
 
 ChannelGroup addition color stuff:
-- [ ] should validate colorscheme name
-- [ ] for default color scheme, should depend on `color_channel` being quantitative vs nominal
-- [ ] kill `-C` `-CS` and other dumb arg shortcuts
+- [x] should validate colorscheme name
+- [x] for default color scheme, should depend on `color_channel` being quantitative vs nominal
+- [x] kill `-C` `-CS` and other dumb arg shortcuts [just made them more consistent]
 
 (2020-11-16 and prior has been moved to Old section)
 

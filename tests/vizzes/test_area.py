@@ -107,7 +107,7 @@ def test_area_fill_sort_desc():
         CliRunner()
         .invoke(
             area,
-            ["-x", "date", "-y", "price", "-c", "company", "-cs", "desc", *STOCK_ARGS],
+            ["-x", "date", "-y", "price", "-c", "company", "--cs", "desc", *STOCK_ARGS],
         )
         .output
     )
@@ -141,7 +141,7 @@ def test_area_colors():
 
 def test_area_error_when_fill_sort_but_no_fill():
     result = CliRunner().invoke(
-        area, ["-x", "date", "-y", "price", "-cs", "asc", *STOCK_ARGS]
+        area, ["-x", "date", "-y", "price", "--cs", "asc", *STOCK_ARGS]
     )
     assert result.exit_code == 1
     assert (
