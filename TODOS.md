@@ -6,10 +6,19 @@
 
 ### 2020-11-16: refactor
 
-- [ ] make vizkit.channel_group class 
 - [ ] refactor create_channels._set_default_xyvar_args
 - [x] ancillary mixins have been moved to interfaces.py for now
 
+ChannelGroup:
+- implementation
+    - [x] Channeled's basic implementation
+    - [ ] for default color scheme, should depend on `color_channel` being quantitative vs nominal
+- [x] basic tests
+- [ ] integration/replaced Channeled
+- [ ] parse_channel_arg/parse_shorthand can be removed from interfaces.ArgFace
+- [ ] what to do with Channeled.configure_channel_sort?
+- [ ] what to do with Channeled.resolve_channel_name? 
+- [ ] should validate colorscheme name
 
 ### 2020-11-13: refactor
 
