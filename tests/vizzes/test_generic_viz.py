@@ -56,16 +56,15 @@ def test_basic_colors():
     """
     -c/--color-list
     """
-    result = CliRunner().invoke(
-        viz, ["-c", "name", "-C", "red,deeppink,#999 ", *OUTPUT_ARGS]
-    )
-    assert result.exit_code == 0
-    cdata = json.loads(result.output)
+    colors = "red,deeppink,#999 "
+    x = CliRunner().invoke(viz, ["-c", "name", "-C", colors, *OUTPUT_ARGS])
+    assert x.exit_code == 0
 
-    scale = cdata["encoding"]["fill"]["scale"]
+    jdata = json.loads(x.output)
+    scale = jdata["encoding"]["fill"]["scale"]
     assert scale["range"] == ["red", "deeppink", "#999"]
 
-    # any time -c/--color-list is specified, 'scheme' is popped out
+    # any time -C/--color-list is specified, 'scheme' is popped out
     assert "scheme" not in scale
 
 
@@ -73,10 +72,10 @@ def test_basic_color_scheme():
     """
     -C/--color-scheme
     """
-    result = CliRunner().invoke(viz, ["-c", "name", "-CS", "dark2", *OUTPUT_ARGS])
-    cdata = json.loads(result.output)
+    x = CliRunner().invoke(viz, ["-c", "name", "--CS", "dark2", *OUTPUT_ARGS])
+    jdata = json.loads(x.output)
 
-    scale = cdata["encoding"]["fill"]["scale"]
+    scale = jdata["encoding"]["fill"]["scale"]
     assert scale["scheme"] == "dark2"
 
 

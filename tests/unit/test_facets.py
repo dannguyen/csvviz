@@ -38,34 +38,20 @@ def test_facet_defaults():
 
 
 def test_facet_column_count():
-    cdata = json.loads(
-        CliRunner()
-        .invoke(
-            viz,
-            [
-                "-gc",
-                "5",
-                *DEFAULT_ARGS,
-            ],
-        )
-        .output
-    )
-    facet = cdata["encoding"]["facet"]
-    assert facet["columns"] == 5
+    x = CliRunner().invoke(viz, ["--gc", "5", *DEFAULT_ARGS])
+    jdata = json.loads(x.output)
+    assert jdata["encoding"]["facet"]["columns"] == 5
+
+    x = CliRunner().invoke(viz, ["--grid-columns", "1", *DEFAULT_ARGS])
+    jdata = json.loads(x.output)
+    assert jdata["encoding"]["facet"]["columns"] == 1
 
 
 def test_facet_column_sort():
-    cdata = json.loads(
-        CliRunner()
-        .invoke(
-            viz,
-            [
-                "-gs",
-                "desc",
-                *DEFAULT_ARGS,
-            ],
-        )
-        .output
-    )
-    facet = cdata["encoding"]["facet"]
-    assert facet["sort"] == "descending"
+    x = CliRunner().invoke(viz, ["--gs", "desc", *DEFAULT_ARGS])
+    jdata = json.loads(x.output)
+    assert jdata["encoding"]["facet"]["sort"] == "descending"
+
+    x = CliRunner().invoke(viz, ["--grid-sort", "asc", *DEFAULT_ARGS])
+    jdata = json.loads(x.output)
+    assert jdata["encoding"]["facet"]["sort"] == "ascending"

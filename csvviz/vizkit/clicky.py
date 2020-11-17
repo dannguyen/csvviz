@@ -112,7 +112,7 @@ GENERAL_OPTS["facet"] = {
     ),
     "facetcolumns": GenOption.foo(
         "--grid-columns",
-        "-gc",
+        "--gc",
         "facetcolumns",
         category="Grid (i.e. faceted/trellis)",
         default=0,
@@ -121,7 +121,7 @@ GENERAL_OPTS["facet"] = {
     ),
     "facetsort": GenOption.foo(
         "--grid-sort",
-        "-gs",
+        "--gs",
         "facetsort",
         category="Grid (i.e. faceted/trellis)",
         type=click.Choice(["asc", "desc"], case_sensitive=False),
@@ -139,10 +139,10 @@ GENERAL_OPTS["visual"] = {
     ),
     "color_scheme": GenOption.foo(
         "--color-scheme",
-        "-CS",
+        "--CS",
         category="Chart visual styles and properties",
         type=click.STRING,
-        help="The name of a Vega color scheme to use for fill (this is overridden by -C/--colors)",
+        help="The name of a Vega color scheme to use for fill (this is overridden by -C/--color-list)",
     ),
     "height": GenOption.foo(
         "--height",
@@ -228,7 +228,7 @@ GENERAL_OPTS["io"] = {
     ),
     "no_preview": GenOption.foo(
         "--no-preview",
-        "--np",
+        "--NP",
         category="Output and presentation",
         is_flag=True,
         help="By default, csvviz opens a web browser to show the chart",
