@@ -6,20 +6,31 @@
 
 ### 2020-11-16: refactor
 
-- [ ] refactor create_channels._set_default_xyvar_args
+ChannelGroup addition color stuff:
+- [ ] should validate colorscheme name
+- [ ] for default color scheme, should depend on `color_channel` being quantitative vs nominal
+
+
+
+More general vizkit stuff:
+- [x] refactor create_channels._set_default_xyvar_args
 - [x] ancillary mixins have been moved to interfaces.py for now
-- Vizkit.kwargs should be Vizkit.options
+- [ ] Vizkit.kwargs should be renamed to Vizkit.options
+- [ ] kill `-C` `-CS` and other dumb arg shortcuts
+
 
 ChannelGroup:
 - implementation
     - [x] Channeled's basic implementation
-    - [ ] for default color scheme, should depend on `color_channel` being quantitative vs nominal
+- [x] for every vizzes' click option, '--colorvar' should go to 'colorvar', not 'fillvar/strokevar'. Because channelgroup should use its channel_color_name to resolve what color should be.
+- [x] same for `--colorsort`
 - [x] basic tests
-- [ ] integration/replaced Channeled
-- [ ] parse_channel_arg/parse_shorthand can be removed from interfaces.ArgFace
-- [ ] what to do with Channeled.configure_channel_sort?
-- [ ] what to do with Channeled.resolve_channel_name? 
-- [ ] should validate colorscheme name
+- [x] integration/replaced Channeled
+- [x] parse_channel_arg/parse_shorthand can be removed from interfaces.ArgFace
+- [x] what to do with Channeled.configure_channel_sort?
+    - was un-DRYed for now
+- [x] what to do with Channeled.resolve_channel_name? 
+    - moved to ChannelGroup.get_data_field
 
 ### 2020-11-13: refactor
 
@@ -53,7 +64,7 @@ Refamiliarizing myself with code:
 - color stuff
     - [x] vizkit.set_channel_colorscale now is vizkit.colorize_channels
     - [x] --colors should be --color-list
-    - [x] write test for vizkit.color_channeltype
+    - [x] write test for vizkit.color_channel_name
 
 
 

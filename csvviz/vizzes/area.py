@@ -17,7 +17,7 @@ class Areakit(Vizkit):
     viz_commandname = "area"
     viz_info = f"""An area chart. Can be stacked"""
     viz_epilog = """Example:  $ csvviz area -x date -y price -c company stocks.csv"""
-    color_channeltype = "fill"
+    color_channel_name = "fill"
 
     COMMAND_DECORATORS = (
         click.option(
@@ -35,7 +35,7 @@ class Areakit(Vizkit):
         click.option(
             "--colorvar",
             "-c",
-            "fillvar",
+            "colorvar",
             type=click.STRING,
             help="The name of the column for mapping bar colors. This is required for creating a stacked chart.",
         ),
@@ -43,7 +43,7 @@ class Areakit(Vizkit):
         click.option(
             "--color-sort",
             "-cs",
-            "fillsort",
+            "color_sort",
             type=click.Choice(("asc", "desc"), case_sensitive=False),
             help="For stacked charts, the sort order of the color variable: 'asc' for ascending, 'desc' for descending/reverse",
         ),
@@ -59,19 +59,20 @@ class Areakit(Vizkit):
         super().validate_kwargs(kwargs)
 
         # TODO: DRY this with bar's implementation
-        if kwargs.get("normalized"):
-            if not kwargs.get("fillvar"):  # TK SHOULD BE COLORVAR NOT fillvar
+        if not kwargs.get("colorvar"):
+            if kwargs.get("normalized"):
                 raise ConflictingArgs(
                     "-c/--colorvar needs to be specified when creating a normalized (i.e. stacked) chart"
                 )
-        # TODO: DRY this with bar's imp
-        s = kwargs.get("fillsort")
-        if s:
-            if not kwargs.get("fillvar"):
+            if kwargs.get("color_sort"):
                 raise ConflictingArgs(
-                    f"--color-sort '{s}' was specified, but no --colorvar value was provided"
+                    "--color-sort '{}' was specified, but no --colorvar value was provided".format(
+                        kwargs["color_sort"]
+                    )
                 )
 
+        s = kwargs.get("color_sort")
+        if s:
             if s not in (
                 "asc",
                 "desc",
@@ -90,14 +91,16 @@ class Areakit(Vizkit):
             channels["y"].stack = "normalize"
             channels["y"].axis = alt.Axis(format="%")
 
-        # fillsort functionality shared by bar and area charts
+        # color_sort functionality shared by bar and area charts
         ##################################
         # subfunction: --color-sort, i.e. ordering of fill; only valid for area and bar charts
         # somewhat confusingly, sort by fill does NOT alter alt.Fill, but adds an Order channel
         # https://altair-viz.github.io/user_guide/encoding.html?#ordering-marks
-        fsort = self.kwargs.get("fillsort")
+        cs = self.kwargs.get("color_sort")
         # validation has already been done by this point
-        if fsort:
-            channels["order"] = alt.Order(channels.get_data_field("fill"))
-            channels["order"].sort = "descending" if fsort == "desc" else "ascending"
+        if cs:
+            fname = channels.get_data_field(self.color_channel_name)
+            channels["order"] = alt.Order(fname)
+            # TK: dry this
+            channels["order"].sort = "descending" if cs == "desc" else "ascending"
         return channels

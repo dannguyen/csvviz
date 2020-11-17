@@ -21,7 +21,7 @@ class Histkit(Barkit):
     viz_commandname = "hist"
     viz_info = f"""A bar chart that maps the frequency count of a given variable. Can be stacked."""
     viz_epilog = """Example:\t csvviz hist -x Horsepower examples/cars.csv"""
-    color_channeltype = "fill"
+    color_channel_name = "fill"
 
     COMMAND_DECORATORS = (
         click.option(
@@ -60,19 +60,16 @@ class Histkit(Barkit):
         ),
     )
 
-    @classmethod
-    def validate_kwargs(klass, kwargs: dict) -> bool:
-        # should binnings warnings go here?
+    def validate_kwargs(self, kwargs: dict) -> bool:
+        super().validate_kwargs(kwargs)
         return True
 
     def finalize_channels(self, channels):
-
         bwargs = {k: self.kwargs[k] for k in BINNING_OPTS if self.kwargs.get(k)}
-
         # deal with special case in which xvar is a nominal field, which means user
         # is trying to do a standard frequency count
         if channels["x"].type == "nominal":
-            xname = self.resolve_channel_name(channels["x"])
+            xname = channels.get_data_field("x")
             channels["y"] = {"aggregate": "count", "field": xname, "type": "nominal"}
 
             # issue warning if any binning options were set:

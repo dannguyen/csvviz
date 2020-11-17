@@ -36,7 +36,7 @@ def test_kit():
 
     assert kit.viz_commandname == "heatmap"
     assert kit.mark_method == "mark_rect"
-    assert kit.color_channeltype == "fill"
+    assert kit.color_channel_name == "fill"
 
 
 def test_heatmap_defaults():

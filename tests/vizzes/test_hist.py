@@ -34,7 +34,7 @@ def test_kit():
 
     assert kit.viz_commandname == "hist"
     assert kit.mark_method == "mark_bar"
-    assert kit.color_channeltype == "fill"
+    assert kit.color_channel_name == "fill"
 
 
 def test_hist_defaults():

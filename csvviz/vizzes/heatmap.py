@@ -19,7 +19,7 @@ class Heatmapkit(Vizkit):
     viz_epilog = (
         """Example:\t csvviz heatmap -x state -y item -c sold examples/hot.csv"""
     )
-    color_channeltype = "fill"
+    color_channel_name = "fill"
 
     COMMAND_DECORATORS = (
         click.option(
@@ -37,7 +37,7 @@ class Heatmapkit(Vizkit):
         click.option(
             "--colorvar",
             "-c",
-            "fillvar",
+            "colorvar",
             required=True,  # TODO: should this automatically be set to column_names[2]?
             type=click.STRING,
             help="The name of the column for mapping TK colors.",

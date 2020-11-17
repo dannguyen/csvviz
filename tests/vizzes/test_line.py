@@ -41,7 +41,7 @@ def test_kit():
 
     assert kit.viz_commandname == "line"
     assert kit.mark_method == "mark_line"
-    assert kit.color_channeltype == "stroke"
+    assert kit.color_channel_name == "stroke"
 
 
 def test_line_defaults():

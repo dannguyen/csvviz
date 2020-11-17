@@ -35,7 +35,7 @@ def test_kit():
 
     assert kit.viz_commandname == "scatter"
     assert kit.mark_method == "mark_point"
-    assert kit.color_channeltype == "fill"
+    assert kit.color_channel_name == "fill"
 
 
 def test_scatter_defaults():

@@ -38,7 +38,11 @@ MARK_METHOD_LOOKUP = {
 }
 
 
-class ArgFace:
+class ClickFace:
+    """The interface for making a click command, including meta info for generating the help"""
+
+    """TODO most of this should be in clicky.py?"""
+
     @staticmethod
     def lookup_mark_method(viz_commandname: str) -> str:
         """
@@ -50,34 +54,6 @@ class ArgFace:
             raise ValueError(f"{viz_commandname} is not a recognized viz/chart type")
         else:
             return "mark_%s" % m
-
-    @staticmethod
-    def parse_channel_arg(arg: str) -> TupleType[UnionType[str, None]]:
-        """
-        given an argument like:
-            --xvar='id|Product ID'
-                return ('id', 'Product ID')
-            --yvar='amount'
-                eturn ('amount', 'amount')
-        """
-        shorthand, title = parse_delimited_str(arg, delimiter="|", minlength=2)
-        title = title if title else None
-        return (
-            shorthand,
-            title,
-        )
-
-    @staticmethod
-    def parse_shorthand(
-        shorthand: str, data: OptionalType[pd.DataFrame] = None, **kwargs
-    ) -> DictType[str, str]:
-        return alt_parse_shorthand(shorthand, data, **kwargs)
-
-
-class ClickFace:
-    """The interface for making a click command, including meta info for generating the help"""
-
-    """TODO most of this should be in clicky.py?"""
 
     @classmethod
     def cmd_wrapper(klass):

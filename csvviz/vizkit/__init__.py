@@ -19,15 +19,13 @@ import pandas as pd
 from csvviz.helpers import parse_delimited_str
 from csvviz.settings import *
 
-from csvviz.vizkit.channeled import Channeled
-
 from csvviz.vizkit.channel_group import ChannelGroup
-from csvviz.vizkit.interfaces import ArgFace, ClickFace, ViewFace
+from csvviz.vizkit.interfaces import ClickFace, ViewFace
 
-Faces = [ArgFace, ClickFace, ViewFace]
+FACES = [ClickFace, ViewFace]
 
 
-class Vizkit(Channeled, *Faces):
+class Vizkit(*FACES):
     """
     The interface between Click.command, Altair.Chart, and Pandas.dataframe
     """
@@ -37,7 +35,7 @@ class Vizkit(Channeled, *Faces):
     viz_info = f"""A {viz_commandname} visualization"""  # this should be defined in every subclass
     viz_epilog = ""
 
-    color_channeltype = "fill"  # can be either 'fill' or 'stroke'
+    color_channel_name = "fill"  # can be either 'fill' or 'stroke'
 
     def __init__(self, input_file, kwargs):
         self.warnings = []
@@ -50,7 +48,7 @@ class Vizkit(Channeled, *Faces):
         ch = ChannelGroup(
             options=self.kwargs,
             df=self._dataframe,
-            color_channel_name=self.color_channeltype,
+            color_channel_name=self.color_channel_name,
         )
         # finalize_channels is implemented by each viztype
         self.channels = self.finalize_channels(ch)
@@ -61,8 +59,7 @@ class Vizkit(Channeled, *Faces):
         Raise errors/warnings based on the initial kwarg values; implement in each class
         """
         if kwargs.get("color_list") or kwargs.get("color_scheme"):
-            cvar = "%svar" % self.color_channeltype
-            if not kwargs.get(cvar):
+            if not kwargs.get("colorvar"):
                 self.warnings.append(
                     f"--colorvar was not specified, so --color-list and --color-scheme is ignored."
                 )
@@ -73,8 +70,8 @@ class Vizkit(Channeled, *Faces):
         """
         returns a copy  of kwargs, in which:
         xvar and yvar, if left blank, are set to the 0 and 1 of dataframe.columns
-        if self.color_channeltype exists, color_channeltype is added to the dict
-        if kwargs['colorvar'] exists, then kwargs[self.color_channeltype] is set
+        if self.color_channel_name exists, color_channel_name is added to the dict
+        if kwargs['colorvar'] exists, then kwargs[self.color_channel_name] is set
         """
         kargs = kwargs.copy()
         for i, v in enumerate(

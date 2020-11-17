@@ -18,7 +18,7 @@ class Linekit(Vizkit):
     # viz_epilog = (
     #     f"""Example:\t $ csvviz line -x date -y price -c company examples/stocks.csv"""
     # )
-    color_channeltype = "stroke"
+    color_channel_name = "stroke"
 
     COMMAND_DECORATORS = (
         click.option(
@@ -36,7 +36,7 @@ class Linekit(Vizkit):
         click.option(
             "--colorvar",
             "-c",
-            "strokevar",
+            "colorvar",
             type=click.STRING,
             help="The name of the column for mapping line colors. This is required for creating a multi-series line chart.",
         ),
@@ -44,3 +44,7 @@ class Linekit(Vizkit):
 
     def finalize_channels(self, channels):
         return channels
+
+    def validate_kwargs(self, kwargs: dict) -> bool:
+        super().validate_kwargs(kwargs)
+        return True

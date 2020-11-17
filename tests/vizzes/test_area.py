@@ -41,7 +41,7 @@ def test_kit():
 
     assert kit.viz_commandname == "area"
     assert kit.mark_method == "mark_area"
-    assert kit.color_channeltype == "fill"
+    assert kit.color_channel_name == "fill"
 
 
 def test_area_defaults():

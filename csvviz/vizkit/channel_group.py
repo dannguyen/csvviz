@@ -36,19 +36,24 @@ class Helpers:
     def get_data_field(self, channelname: str) -> str:
         """
         given channelname, e.g. 'x', 'y', 'fill', 'stroke'
-        return
+            return the associated field name
+        Note: this method used to be more complicated, but now is trivial
         """
-        NAMEFIELDS = (
-            "field",
-            "aggregate",
-        )
-        channel = self[channelname]
-        candidates = (
-            getattr(channel, NAME)
-            for NAME in NAMEFIELDS
-            if getattr(channel, NAME) != altUndefined
-        )
-        return next(candidates)
+        return self[channelname].field
+
+        # TK/TODO: not sure about the use cases in which this should return
+        # `aggregate(fieldname)`...so this stuff below is deprecated and was buggy anyway...
+        # NAMEFIELDS = (
+        #     "field",
+        #     "aggregate",
+        # )
+        # channel = self[channelname]
+        # candidates = (
+        #     getattr(channel, NAME)
+        #     for NAME in NAMEFIELDS
+        #     if getattr(channel, NAME) != altUndefined
+        # )
+        # return next(candidates)
 
     @staticmethod
     def configure_legend(kwargs: DictType) -> OptionalType[DictType]:
@@ -128,8 +133,17 @@ class ChannelGroup(dict, Helpers):
         return self.df.columns
 
     def scaffold(self) -> "ChannelGroup":
-        for cname, channel in CHANNELS.items():
-            karg = self.options.get(f"{cname}var")
+        # at this point, options['colorvar'] is set (via Click interface), but NOT
+        #  options['fillvar']/options['strokevar']/etc
+        # so we (messily) inject it into a copy of the self.options dict (don't want to alter original tho...)
+        # TK: seems like spaghetti but whatever...
+        _opts = self.options.copy()
+        colarg = _opts.get("colorvar")
+        if colarg:
+            _opts["%svar" % self.color_channel_name] = colarg
+
+        for cname, Ch in CHANNELS.items():
+            karg = _opts.get(f"{cname}var")
             if karg:
                 shorthand, title = self.parse_channel_arg(karg)
                 chargs = self.parse_shorthand(shorthand, data=self.df)
@@ -139,14 +153,14 @@ class ChannelGroup(dict, Helpers):
                     )
                 if title:
                     chargs["title"] = title
-                self[cname] = channel(**chargs)
+                self[cname] = Ch(**chargs)
 
         return self
 
     def colorize(self) -> "ChannelGroup":
         """
-        this method operates under the assumption that either/or fill and stroke can be colored. Nothing else
-        and NOT both
+        this method operates under the assumption that either/or fill and stroke can be
+          colored, i.e. nothing else and NOT both
         """
         if not self.color_channel:
             return self

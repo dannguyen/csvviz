@@ -14,7 +14,7 @@ class Scatterkit(Vizkit):
     viz_commandname = "scatter"
     viz_info = f"""A scatterplot for showing relationship between two independent variables x and y. Set -s/--sizevar to create a bubble (variable dot size) chart"""
     viz_epilog = """Example:  $ csvviz scatter -x mass -y volume -s velocity data.csv"""
-    color_channeltype = "fill"
+    color_channel_name = "fill"
 
     COMMAND_DECORATORS = (
         click.option(
@@ -32,7 +32,7 @@ class Scatterkit(Vizkit):
         click.option(
             "--colorvar",
             "-c",
-            "fillvar",
+            "colorvar",
             type=click.STRING,
             help="The name of the column for mapping dot colors. This is required for creating a multi-series scatter chart.",
         ),
@@ -47,3 +47,7 @@ class Scatterkit(Vizkit):
 
     def finalize_channels(self, channels):
         return channels
+
+    def validate_kwargs(self, kwargs: dict) -> bool:
+        super().validate_kwargs(kwargs)
+        return True

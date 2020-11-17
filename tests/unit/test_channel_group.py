@@ -253,3 +253,39 @@ def test_error_for_invalid_shorthand(mydata):
         f"'amount:H' is either an invalid column name, or invalid Altair shorthand"
         in str(e.value)
     )
+
+
+# get_data_field
+def test_get_data_field(mydata):
+    opts = {
+        "xvar": "name",
+        "yvar": "amount",
+        "sizevar": "amount:O",
+        "fillvar": "category|Cats!",
+        "strokevar": "sum(amount)",
+    }
+    cg = ChannelGroup(opts, mydata)
+    assert cg.get_data_field("x") == "name"
+    assert cg.get_data_field("y") == "amount"
+    assert cg.get_data_field("size") == "amount"
+    assert cg.get_data_field("fill") == "category"  # title is ignored
+    assert (
+        cg.get_data_field("stroke") == "amount"
+    )  # ignore aggregate function (for now)
+
+
+# parse_channel_arg
+@pytest.fixture
+def parsefoo():
+    return ChannelGroup.parse_channel_arg
+
+
+def test_parse_channel_arg_default_name(parsefoo):
+    assert parsefoo("id") == ("id", None)
+    assert parsefoo("id|") == ("id", None)
+    assert parsefoo("sum(thing)|") == ("sum(thing)", None)
+
+
+def test_parse_channel_arg_specified_name(parsefoo):
+    assert parsefoo("id|Foo") == ("id", "Foo")
+    assert parsefoo("sum(thing)|Bar") == ("sum(thing)", "Bar")
