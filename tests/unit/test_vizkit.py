@@ -24,7 +24,7 @@ REQUIRED_ARGS = {
 @pytest.fixture
 def tvk():
     SRC_PATH = "examples/tings.csv"
-    kwargs = {
+    options = {
         "xvar": "name",
         "yvar": "amount",
         "fillvar": "name",
@@ -32,8 +32,8 @@ def tvk():
         "no_preview": True,
         "to_json": True,
     }
-    kwargs.update(REQUIRED_ARGS)
-    return Vizkit(input_file=SRC_PATH, kwargs=kwargs)
+    options.update(REQUIRED_ARGS)
+    return Vizkit(input_file=SRC_PATH, options=options)
 
 
 def test_vizkit_basic_init(tvk):
@@ -43,7 +43,7 @@ def test_vizkit_basic_init(tvk):
 
 def test_vizkit_properties(tvk):
     assert tvk.viz_commandname == "abstract"
-    assert tvk.mark_method == "mark_bar"
+    assert tvk.mark_method_name == "mark_bar"
     assert tvk.color_channel_name == "fill"
     assert isinstance(tvk.df, pd.DataFrame)
     assert tvk.column_names == ["name", "amount"]
@@ -55,18 +55,18 @@ def test_vizkit_unneeded_properties_to_deprecate(tvk):
 
 def test_vizkit_kwarg_properties(tvk):
     """
-    these internal helpers copy from self.kwargs
+    these internal helpers copy from self.options
     """
     #    import pdb; pdb.set_trace()
-    assert tvk.kwargs.get("xvar") == "name"
-    assert tvk.kwargs.get("yvar") == "amount"
-    assert tvk.kwargs.get("fillvar") == "name"
-    assert tvk.kwargs.get("to_json") is True
-    assert tvk.kwargs.get("no_preview") is True
+    assert tvk.options.get("xvar") == "name"
+    assert tvk.options.get("yvar") == "amount"
+    assert tvk.options.get("fillvar") == "name"
+    assert tvk.options.get("to_json") is True
+    assert tvk.options.get("no_preview") is True
 
     # duh:
-    assert tvk.kwargs.get("colors") is None
-    assert tvk.kwargs.get("color_scheme") is None
+    assert tvk.options.get("colors") is None
+    assert tvk.options.get("color_scheme") is None
 
 
 ###################################################################################
@@ -97,14 +97,14 @@ def test_vizkit_output_basic(tvk, capsys):
 def test_parse_channel_arg_edge_case_vizkit_channels():
     """more of an integrated test than a unit one; makes sure Vizkit handles shorthand ok"""
     data = StringIO("id,Hello|World\nfoo,42\n")
-    kwargs = {
+    options = {
         "xvar": "id",
         "yvar": '"Hello|World"|"hey|world"',
     }
-    kwargs.update(REQUIRED_ARGS)
+    options.update(REQUIRED_ARGS)
     s = Vizkit(
         input_file=data,
-        kwargs=kwargs,
+        options=options,
     )
     assert s.channels["y"]["field"] == "Hello|World"
     assert s.channels["y"]["title"] == "hey|world"

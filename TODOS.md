@@ -4,68 +4,13 @@
 
 ## Refactoring
 
-### 2020-11-16: refactor
 
 ChannelGroup addition color stuff:
 - [ ] should validate colorscheme name
 - [ ] for default color scheme, should depend on `color_channel` being quantitative vs nominal
-
-
-
-More general vizkit stuff:
-- [x] refactor create_channels._set_default_xyvar_args
-- [x] ancillary mixins have been moved to interfaces.py for now
-- [ ] Vizkit.kwargs should be renamed to Vizkit.options
 - [ ] kill `-C` `-CS` and other dumb arg shortcuts
 
-
-ChannelGroup:
-- implementation
-    - [x] Channeled's basic implementation
-- [x] for every vizzes' click option, '--colorvar' should go to 'colorvar', not 'fillvar/strokevar'. Because channelgroup should use its channel_color_name to resolve what color should be.
-- [x] same for `--colorsort`
-- [x] basic tests
-- [x] integration/replaced Channeled
-- [x] parse_channel_arg/parse_shorthand can be removed from interfaces.ArgFace
-- [x] what to do with Channeled.configure_channel_sort?
-    - was un-DRYed for now
-- [x] what to do with Channeled.resolve_channel_name? 
-    - moved to ChannelGroup.get_data_field
-
-### 2020-11-13: refactor
-
-- [x] vizkit.py  is now vizkit/init
-- [x] vizkit channel stuff is now in vizkit/channeled, as a temp refactor
-
-### 2020-11-12: refactor
-
-Refamiliarizing myself with code:
-- in vizkit.py, fix/clean up "manage"/"create"/"configure" naming convention
-- figure out configure_legend
-- "finalize" methods need their own mixin?
-
-### moar refactor
-
-- [ ] make warnings.append be a method/property
-- color stuff
-    - [ ] for each vizkit.clicky, `--color` should just go to `colorvar`, not `fillvar`, `strokevar`
-    - [?] in vizkit, remove fill/stroke from ENCODED list
-    - [?] vizkit.create_channel should initiate fill/stroke based on colorvar
-    - [ ] write test for get_color warning...
-- vizkit
-    - [x] channels-related methods not meant to be subclassed should in own mixin
-        - break up create_channels into more submethods
-    - [?] clean up channels code, it's too big
-    - [x] organize properties
-    
-### first refactor phase
-
-- [x] Vizkit.validate_kwargs, to be implemented by each class
-- color stuff
-    - [x] vizkit.set_channel_colorscale now is vizkit.colorize_channels
-    - [x] --colors should be --color-list
-    - [x] write test for vizkit.color_channel_name
-
+(2020-11-16 and prior has been moved to Old section)
 
 
 ## Update 2020-11-11
@@ -560,3 +505,60 @@ https://stackoverflow.com/questions/61840072/show-x-and-y-labels-in-each-facet-s
     - [x] make sure horizontal bar sorts as expected
     - [x] test, including robust error handling when invalid column name is passed in
 
+
+
+
+### 2020-11-16: refactor
+
+More general vizkit stuff:
+- [x] refactor create_channels._set_default_xyvar_args
+- [x] ancillary mixins have been moved to interfaces.py for now
+- [x] Vizkit.kwargs should be renamed to Vizkit.options
+
+
+ChannelGroup phase 1:
+- implementation
+    - [x] Channeled's basic implementation
+- [x] for every vizzes' click option, '--colorvar' should go to 'colorvar', not 'fillvar/strokevar'. Because channelgroup should use its channel_color_name to resolve what color should be.
+- [x] same for `--colorsort`
+- [x] basic tests
+- [x] integration/replaced Channeled
+- [x] parse_channel_arg/parse_shorthand can be removed from interfaces.ArgFace
+- [x] what to do with Channeled.configure_channel_sort?
+    - was un-DRYed for now
+- [x] what to do with Channeled.resolve_channel_name? 
+    - moved to ChannelGroup.get_data_field
+
+### 2020-11-13: refactor
+
+- [x] vizkit.py  is now vizkit/init
+- [x] vizkit channel stuff is now in vizkit/channeled, as a temp refactor
+
+### 2020-11-12: refactor
+
+Refamiliarizing myself with code:
+- in vizkit.py, fix/clean up "manage"/"create"/"configure" naming convention
+- figure out configure_legend
+- "finalize" methods need their own mixin?
+
+### moar refactor
+
+- [ ] make warnings.append be a method/property
+- color stuff
+    - [X] for each vizkit.clicky, `--color` should just go to `colorvar`, not `fillvar`, `strokevar`
+    - [?] in vizkit, remove fill/stroke from ENCODED list
+    - [?] vizkit.create_channel should initiate fill/stroke based on colorvar
+    - [ ] write test for get_color warning...
+- vizkit
+    - [x] channels-related methods not meant to be subclassed should in own mixin
+        - break up create_channels into more submethods
+    - [?] clean up channels code, it's too big
+    - [x] organize properties
+    
+### first refactor phase
+
+- [x] Vizkit.validate_options, to be implemented by each class
+- color stuff
+    - [x] vizkit.set_channel_colorscale now is vizkit.colorize_channels
+    - [x] --colors should be --color-list
+    - [x] write test for vizkit.color_channel_name

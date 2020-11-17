@@ -60,12 +60,12 @@ class Histkit(Barkit):
         ),
     )
 
-    def validate_kwargs(self, kwargs: dict) -> bool:
-        super().validate_kwargs(kwargs)
+    def validate_options(self, options: dict) -> bool:
+        super().validate_options(options)
         return True
 
     def finalize_channels(self, channels):
-        bwargs = {k: self.kwargs[k] for k in BINNING_OPTS if self.kwargs.get(k)}
+        bwargs = {k: self.options[k] for k in BINNING_OPTS if self.options.get(k)}
         # deal with special case in which xvar is a nominal field, which means user
         # is trying to do a standard frequency count
         if channels["x"].type == "nominal":

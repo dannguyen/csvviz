@@ -24,7 +24,7 @@ OUTPUT_ARGS = [
 def test_kit():
     kit = Histkit(
         input_file="examples/tings.csv",
-        kwargs={
+        options={
             "xvar": "amount",
             "is_interactive": True,
             "no_preview": True,
@@ -33,7 +33,7 @@ def test_kit():
     )
 
     assert kit.viz_commandname == "hist"
-    assert kit.mark_method == "mark_bar"
+    assert kit.mark_method_name == "mark_bar"
     assert kit.color_channel_name == "fill"
 
 

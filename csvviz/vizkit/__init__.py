@@ -1,24 +1,19 @@
+"""vizkit.py basically"""
+import altair as alt
+import pandas as pd
+from pathlib import Path
 from typing import (
-    Any as AnyType,
     Callable as CallableType,
     Dict as DictType,
     List as ListType,
-    Mapping as MappingType,
     NoReturn as NoReturnType,
     Optional as OptionalType,
-    Tuple as TupleType,
     Union as UnionType,
 )
-
-TKTYPE = AnyType
-
-import altair as alt
-import pandas as pd
 
 
 from csvviz.helpers import parse_delimited_str
 from csvviz.settings import *
-
 from csvviz.vizkit.channel_group import ChannelGroup
 from csvviz.vizkit.interfaces import ClickFace, ViewFace
 
@@ -37,78 +32,81 @@ class Vizkit(*FACES):
 
     color_channel_name = "fill"  # can be either 'fill' or 'stroke'
 
-    def __init__(self, input_file, kwargs):
+    def __init__(self, input_file: UnionType[str, Path], options: dict):
         self.warnings = []
 
-        self.validate_kwargs(kwargs)
+        self.validate_options(options)
         self.input_file = input_file
         self._dataframe = pd.read_csv(self.input_file)
+        self.options = self.set_channel_defaults(options)
 
-        self.kwargs = self.set_channel_defaults(kwargs)
-        ch = ChannelGroup(
-            options=self.kwargs,
-            df=self._dataframe,
-            color_channel_name=self.color_channel_name,
-        )
-        # finalize_channels is implemented by each viztype
+        ch = self.init_channels()
         self.channels = self.finalize_channels(ch)
-        self.chart = self.build_chart()
 
-    def validate_kwargs(self, kwargs: dict) -> bool:
+        c = self.init_chart()
+        self.chart = self.stylize_chart(c)
+        # TK: init_styles/finalize_styles is buried in style_chart
+
+    def validate_options(self, options: dict) -> bool:
         """
         Raise errors/warnings based on the initial kwarg values; implement in each class
         """
-        if kwargs.get("color_list") or kwargs.get("color_scheme"):
-            if not kwargs.get("colorvar"):
+        if options.get("color_list") or options.get("color_scheme"):
+            if not options.get("colorvar"):
                 self.warnings.append(
                     f"--colorvar was not specified, so --color-list and --color-scheme is ignored."
                 )
 
         return True
 
-    def set_channel_defaults(self, kwargs: dict) -> dict:
+    def set_channel_defaults(self, options: dict) -> dict:
         """
-        returns a copy  of kwargs, in which:
-        xvar and yvar, if left blank, are set to the 0 and 1 of dataframe.columns
-        if self.color_channel_name exists, color_channel_name is added to the dict
-        if kwargs['colorvar'] exists, then kwargs[self.color_channel_name] is set
+        TODO: move to ChannelGroup?
+        returns a copy  of options, in which:
+            xvar and yvar, if left blank, are set to the 0 and 1 of dataframe.columns
         """
-        kargs = kwargs.copy()
+        opts = options.copy()
         for i, v in enumerate(
             (
                 "xvar",
                 "yvar",
             )
         ):
-            if not kargs.get(v):
-                kargs[v] = self.column_names[i]
+            if not opts.get(v):
+                opts[v] = self.column_names[i]
 
-        return kargs
+        return opts
 
-    def build_chart(self) -> alt.Chart:
-        """this used to be _build_chart(), because it's a hefty method"""
+    def init_chart(self) -> alt.Chart:
+        """
+        instantiate a Chart object and encode its channels
 
-        def mark_method_foo() -> CallableType:
-            return getattr(alt.Chart(self.df), self.mark_method)
+        prereq: self.channels has been set up
+        """
 
         alt.themes.enable(self.theme)
-        ch: alt.Chart
-        ch = mark_method_foo()
-        ch = ch(clip=True)
+        c: alt.Chart
+        c = self.mark_method_foo(clip=True)
+        c = c.encode(**self.channels)
 
         if self.is_faceted:
-            ch = ch.resolve_axis(x="independent")
-
-        ch = ch.encode(**self.channels)
-        ch = ch.properties(**self.style_properties)
+            c = c.resolve_axis(x="independent")
 
         if self.interactive_mode:
-            ch = ch.interactive()
+            c = c.interactive()
 
+        return c
+
+    def init_channels(self) -> ChannelGroup:
+        """just a wrapper around ChannelGroup constructor"""
+        ch = ChannelGroup(
+            options=self.options,
+            df=self._dataframe,
+            color_channel_name=self.color_channel_name,
+        )
         return ch
 
-    #################### prepare
-    def finalize_channels(self, channels: TKTYPE) -> TKTYPE:
+    def finalize_channels(self, channels: ChannelGroup) -> ChannelGroup:
         """
         The viz-specific channel set up, i.e. the finishing step.
 
@@ -116,24 +114,27 @@ class Vizkit(*FACES):
         """
         return channels
 
-    def finalize_styles(self, styles: dict) -> dict:
-        """another abstract class method, to be implemented when necessary by subclasses"""
-        return styles
+    def stylize_chart(self, chart: alt.Chart) -> alt.Chart:
+        styleprops = self.init_styles()
+        styleprops = self.finalize_styles(styleprops)
 
-    def _create_styles(self) -> DictType:
+        chart = chart.properties(**styleprops)
+
+        return chart
+
+    def init_styles(self) -> DictType:
         """assumes self.channels has been set, particularly the types of x/y channels"""
-        cargs = self.kwargs.copy()
-
         styles = {}
 
-        # these atts are only set if a value exists
-        for att in (
+        STYLE_ATTRS = (
             "height",
             "width",
             "title",
-        ):
-            if cargs.get(att):
-                styles[att] = cargs[att]
+        )
+        for att in STYLE_ATTRS:
+            if self.options.get(att):
+                styles[att] = self.options[att]
+        return styles
 
         # if cargs.get("title"):
         #     styles["title"] = cargs["title"]
@@ -148,26 +149,9 @@ class Vizkit(*FACES):
         #     "chart_height"
         # ]  # if cargs.get('chart_height') else DEFAULT_CHART_HEIGHT
 
+    def finalize_styles(self, styles: DictType) -> DictType:
+        """another abstract class method, to be implemented when necessary by subclasses"""
         return styles
-
-    @staticmethod
-    def configure_legend(kwargs: DictType) -> OptionalType[DictType]:
-        config = {}
-        if kwargs["no_legend"]:
-            config = None
-        else:
-            config["orient"] = DEFAULT_LEGEND_ORIENTATION
-        return config
-
-        # not needed; Vega already infers title from channel_name, including aggregate
-        # config["title"] = channel_name
-        # else:
-        #     # TODO: let users configure orientation and title...somehow
-        #     config["title"] = colname if not kwargs.get("TK-column-title") else colname
-        #     if _o := kwargs.get("TK-orientation"):
-        #         config["orient"] = _o
-        #     else:
-        #         config["orient"] = DEFAULT_LEGEND_ORIENTATION
 
     #####################################################################
     # properties
@@ -180,54 +164,26 @@ class Vizkit(*FACES):
         return self._dataframe
 
     @property
-    def has_custom_colors(self):  # TODO is needed?
-        return any(v for v in self.color_kwargs.values())
-
-    @property
     def interactive_mode(self) -> bool:
-        return self.kwargs.get("is_interactive")
+        return self.options.get("is_interactive")
 
     @property
     def is_faceted(self) -> bool:
         return True if self.channels.get("facet") else False
 
     @property
-    def mark_method(self) -> str:
+    def mark_method_name(self) -> str:
         """e.g. 'mark_rect', 'mark_line'"""
         return self.lookup_mark_method(self.viz_commandname)
+
+    @property
+    def mark_method_foo(self) -> CallableType:
+        return getattr(alt.Chart(self.df), self.mark_method_name)
 
     @property
     def name(self) -> str:
         return self.viz_commandname
 
     @property
-    def style_properties(self) -> dict:
-        _styles = self._create_styles()
-        return self.finalize_styles(_styles)
-
-    @property
     def theme(self) -> str:
-        return self.kwargs.get("theme")
-
-    ############################################
-    ##  TODO: deprecate these
-    @property
-    def legend_kwargs(self) -> DictType:
-        _ARGKEYS = (
-            "no_legend",
-            "TK-orient",
-            "TK-title",
-        )
-        return {k: self.kwargs.get(k) for k in _ARGKEYS}
-
-    @property
-    def output_kwargs(self) -> DictType:
-        _ARGKEYS = (
-            "to_json",
-            "no_preview",
-        )
-        return {k: self.kwargs.get(k) for k in _ARGKEYS}
-
-    @property
-    def color_kwargs(self) -> DictType:
-        return {k: self.kwargs.get(k) for k in ("color_list", "color_scheme")}
+        return self.options.get("theme")

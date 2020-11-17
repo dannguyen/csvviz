@@ -48,6 +48,6 @@ class Scatterkit(Vizkit):
     def finalize_channels(self, channels):
         return channels
 
-    def validate_kwargs(self, kwargs: dict) -> bool:
-        super().validate_kwargs(kwargs)
+    def validate_options(self, options: dict) -> bool:
+        super().validate_options(options)
         return True

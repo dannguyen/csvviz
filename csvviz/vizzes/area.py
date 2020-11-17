@@ -55,23 +55,23 @@ class Areakit(Vizkit):
         ),
     )
 
-    def validate_kwargs(self, kwargs: dict) -> bool:
-        super().validate_kwargs(kwargs)
+    def validate_options(self, options: dict) -> bool:
+        super().validate_options(options)
 
         # TODO: DRY this with bar's implementation
-        if not kwargs.get("colorvar"):
-            if kwargs.get("normalized"):
+        if not options.get("colorvar"):
+            if options.get("normalized"):
                 raise ConflictingArgs(
                     "-c/--colorvar needs to be specified when creating a normalized (i.e. stacked) chart"
                 )
-            if kwargs.get("color_sort"):
+            if options.get("color_sort"):
                 raise ConflictingArgs(
                     "--color-sort '{}' was specified, but no --colorvar value was provided".format(
-                        kwargs["color_sort"]
+                        options["color_sort"]
                     )
                 )
 
-        s = kwargs.get("color_sort")
+        s = options.get("color_sort")
         if s:
             if s not in (
                 "asc",
@@ -83,7 +83,7 @@ class Areakit(Vizkit):
 
     @property
     def normalized(self) -> bool:
-        return True if self.kwargs.get("normalized") else False
+        return True if self.options.get("normalized") else False
 
     def finalize_channels(self, channels: ChannelGroup) -> ChannelGroup:
         # https://altair-viz.github.io/gallery/normalized_stacked_bar_chart.html
@@ -96,7 +96,7 @@ class Areakit(Vizkit):
         # subfunction: --color-sort, i.e. ordering of fill; only valid for area and bar charts
         # somewhat confusingly, sort by fill does NOT alter alt.Fill, but adds an Order channel
         # https://altair-viz.github.io/user_guide/encoding.html?#ordering-marks
-        cs = self.kwargs.get("color_sort")
+        cs = self.options.get("color_sort")
         # validation has already been done by this point
         if cs:
             fname = channels.get_data_field(self.color_channel_name)

@@ -58,9 +58,9 @@ class ClickFace:
     @classmethod
     def cmd_wrapper(klass):
         # TODO: this is bad OOP; func should be properly named and in some more logical place
-        def func(**kwargs):
+        def func(**options):
             try:
-                vk = klass(input_file=kwargs.get("input_file"), kwargs=kwargs)
+                vk = klass(input_file=options.get("input_file"), options=options)
             except VizValueError as err:
                 # TODO: dude what?
                 clexit(1, err)
@@ -101,11 +101,11 @@ class ViewFace:
 
     def output_chart(self) -> NoReturnType:
         """Send to stdout the desired representation of a chart"""
-        if self.output_kwargs["to_json"]:
+        if self.options["to_json"]:
             clout(self.chart_to_json(self.chart))
 
     def preview_chart(self) -> UnionType[NoReturnType, bool]:
-        if not self.kwargs.get("no_preview"):
+        if not self.options.get("no_preview"):
             self.open_chart_in_browser(self.chart)
         else:
             return False

@@ -2,8 +2,9 @@ import pytest
 import altair as alt
 import pandas as pd
 
+from csvviz import altUndefined
 from csvviz.exceptions import *
-from csvviz.vizkit.channel_group import ChannelGroup, altUndefined
+from csvviz.vizkit.channel_group import ChannelGroup
 import csvviz.settings
 
 

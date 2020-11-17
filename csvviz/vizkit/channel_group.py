@@ -1,7 +1,6 @@
 """TODO/in progress: ChannelGroup subsumes/simplifies what's in Channeled.py"""
 
 import altair as alt
-from altair.utils.schemapi import Undefined as altUndefined
 from altair.utils import parse_shorthand as alt_parse_shorthand
 import pandas as pd
 from typing import (
@@ -12,6 +11,7 @@ from typing import (
     Union as UnionType,
 )
 
+from csvviz import altUndefined
 from csvviz.exceptions import InvalidDataReference
 from csvviz.helpers import parse_delimited_str
 from csvviz.settings import DEFAULT_COLOR_SCHEME, DEFAULT_LEGEND_ORIENTATION
@@ -54,16 +54,6 @@ class Helpers:
         #     if getattr(channel, NAME) != altUndefined
         # )
         # return next(candidates)
-
-    @staticmethod
-    def configure_legend(kwargs: DictType) -> OptionalType[DictType]:
-        config = {}
-        if kwargs["no_legend"]:
-            config = None
-        else:
-            config["orient"] = DEFAULT_LEGEND_ORIENTATION
-        return config
-        # TODO: explicitly set title; figure out how Altair devises the default title
 
     @staticmethod
     def parse_channel_arg(arg: str) -> TupleType[OptionalType[str]]:
@@ -117,10 +107,6 @@ class ChannelGroup(dict, Helpers):
         """Overrides the default implementation"""
         return {k: self[k] for k in CHANNELS.keys() if self.get(k)}
 
-    # @property
-    # def channels(self) -> ChannelsDictType:
-    #     return {k: v for k, v in self._channels.items() if v}
-
     @property
     def color_channel(self) -> OptionalType[UnionType[alt.Fill, alt.Stroke]]:
         if not self.color_channel_name:
@@ -142,10 +128,10 @@ class ChannelGroup(dict, Helpers):
         if colarg:
             _opts["%svar" % self.color_channel_name] = colarg
 
-        for cname, Ch in CHANNELS.items():
-            karg = _opts.get(f"{cname}var")
-            if karg:
-                shorthand, title = self.parse_channel_arg(karg)
+        for cname, Channel in CHANNELS.items():
+            k = _opts.get(f"{cname}var")
+            if k:
+                shorthand, title = self.parse_channel_arg(k)
                 chargs = self.parse_shorthand(shorthand, data=self.df)
                 if chargs["field"] not in self.column_names:
                     raise InvalidDataReference(
@@ -153,7 +139,7 @@ class ChannelGroup(dict, Helpers):
                     )
                 if title:
                     chargs["title"] = title
-                self[cname] = Ch(**chargs)
+                self[cname] = Channel(**chargs)
 
         return self
 
@@ -202,7 +188,7 @@ class ChannelGroup(dict, Helpers):
                     channel.legend = None
                 else:
                     channel.legend = alt.Legend(**config)
-
+        # TODO: explicitly set title; figure out how Altair devises the default title
         return self
 
     def limitize(self) -> "ChannelGroup":

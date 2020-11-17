@@ -52,9 +52,9 @@ class Heatmapkit(Vizkit):
         # ),
     )
 
-    def validate_kwargs(self, kwargs: dict) -> bool:
+    def validate_options(self, options: dict) -> bool:
         # already handled by Click.option constructor
-        # if not kwargs.get("fillvar"):  # TK colorvar
+        # if not options.get("fillvar"):  # TK colorvar
         #     raise ConflictingArgs("-c/--colorvar needs to be specified")
         return True
 

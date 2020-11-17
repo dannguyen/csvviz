@@ -24,7 +24,7 @@ HOT_ARGS = [
 def test_kit():
     kit = Heatmapkit(
         input_file="examples/hot.csv",
-        kwargs={
+        options={
             "xvar": "state",
             "yvar": "item",
             "fillvar": "sold",
@@ -35,7 +35,7 @@ def test_kit():
     )
 
     assert kit.viz_commandname == "heatmap"
-    assert kit.mark_method == "mark_rect"
+    assert kit.mark_method_name == "mark_rect"
     assert kit.color_channel_name == "fill"
 
 

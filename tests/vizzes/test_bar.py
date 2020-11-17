@@ -24,7 +24,7 @@ OUTPUT_ARGS = [
 def test_kit():
     kit = Barkit(
         input_file="examples/fruits.csv",
-        kwargs={
+        options={
             "xvar": "product",
             "yvar": "revenue",
             "fillvar": "season",
@@ -35,7 +35,7 @@ def test_kit():
     )
 
     assert kit.viz_commandname == "bar"
-    assert kit.mark_method == "mark_bar"
+    assert kit.mark_method_name == "mark_bar"
     assert kit.color_channel_name == "fill"
 
 

@@ -29,7 +29,7 @@ STOCK_ARGS = [
 def test_kit():
     kit = Linekit(
         input_file="examples/stocks.csv",
-        kwargs={
+        options={
             "xvar": "date",
             "yvar": "price",
             "strokevar": "company",
@@ -40,7 +40,7 @@ def test_kit():
     )
 
     assert kit.viz_commandname == "line"
-    assert kit.mark_method == "mark_line"
+    assert kit.mark_method_name == "mark_line"
     assert kit.color_channel_name == "stroke"
 
 
