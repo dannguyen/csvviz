@@ -19,6 +19,7 @@ class Heatmapkit(Vizkit):
     viz_epilog = (
         """Example:\t csvviz heatmap -x state -y item -c sold examples/hot.csv"""
     )
+    color_channeltype = "fill"
 
     COMMAND_DECORATORS = (
         click.option(
@@ -37,6 +38,7 @@ class Heatmapkit(Vizkit):
             "--colorvar",
             "-c",
             "fillvar",
+            required=True,  # TODO: should this automatically be set to column_names[2]?
             type=click.STRING,
             help="The name of the column for mapping TK colors.",
         ),
@@ -50,10 +52,10 @@ class Heatmapkit(Vizkit):
         # ),
     )
 
-    @classmethod
-    def validate_kwargs(klass, kwargs: dict) -> bool:
-        if not kwargs.get("fillvar"):  # TK colorvar
-            raise MissingDataReference("-c/--colorvar needs to be specified")
+    def validate_kwargs(self, kwargs: dict) -> bool:
+        # already handled by Click.option constructor
+        # if not kwargs.get("fillvar"):  # TK colorvar
+        #     raise ConflictingArgs("-c/--colorvar needs to be specified")
         return True
 
     def finalize_channels(self, channels):

@@ -12,7 +12,7 @@ from typing import (
 )
 
 from csvviz.settings import *
-from csvviz.exceptions import InvalidDataReference, MissingDataReference
+from csvviz.exceptions import InvalidDataReference, ConflictingArgs
 
 
 ChannelType = UnionType[alt.X, alt.Y, alt.Fill, alt.Size, alt.Stroke]
@@ -115,7 +115,7 @@ class Channeled:
         _osort = cargs.get("fillsort")  # walrus
         if _osort:  # /walrus
             if not channels.get("fill"):
-                raise MissingDataReference(
+                raise ConflictingArgs(
                     f"--color-sort '{_osort}' was specified, but no --colorvar value was provided"
                 )
             else:

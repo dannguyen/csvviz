@@ -8,6 +8,7 @@
 
 - [ ] refactor create_channels._set_default_xyvar_args
 - [x] ancillary mixins have been moved to interfaces.py for now
+- Vizkit.kwargs should be Vizkit.options
 
 ChannelGroup:
 - implementation

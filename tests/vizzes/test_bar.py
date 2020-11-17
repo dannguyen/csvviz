@@ -127,7 +127,7 @@ def test_bar_error_when_fill_sort_but_no_fill():
     result = CliRunner().invoke(bar, ["-cs", "desc", *OUTPUT_ARGS])
     assert result.exit_code == 1
     assert (
-        "MissingDataReference: --color-sort 'desc' was specified, but no --colorvar value"
+        "ConflictingArgs: --color-sort 'desc' was specified, but no --colorvar value"
         in result.output.strip()
     )
 
@@ -137,8 +137,8 @@ def test_bar_error_when_fill_sort_invalid():
     assert result.exit_code == 2
 
 
-@pytest.mark.skip(
-    reason="No idea why this was commented out, but we do want to test the warnings..."
+@pytest.mark.curious(
+    reason="this should be in unit/test_vizkit, as opposed to just Barkit"
 )
 def test_bar_warn_if_colors_specified_but_no_fill():
     result = CliRunner(mix_stderr=False).invoke(
@@ -146,7 +146,7 @@ def test_bar_warn_if_colors_specified_but_no_fill():
     )
     assert result.exit_code == 0
     assert (
-        "TK this is outdated:: Warning: Specifying --color-list/--color-scheme has no effect unless --fill is also specified"
+        "Warning: --colorvar was not specified, so --color-list and --color-scheme is ignored."
         in result.stderr
     )
 
@@ -183,7 +183,7 @@ def test_bar_error_when_normalize_but_no_fill_color_stack():
     result = CliRunner().invoke(bar, ["-N", *NORMAL_ARGS])
     assert result.exit_code == 1
     assert (
-        "MissingDataReference: -c/--colorvar needs to be specified when creating a normalized (i.e. stacked) chart"
+        "ConflictingArgs: -c/--colorvar needs to be specified when creating a normalized (i.e. stacked) chart"
         in result.output.strip()
     )
 

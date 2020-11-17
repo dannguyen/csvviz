@@ -24,6 +24,7 @@ CHANNELS = {
     "fill": alt.Fill,
     "stroke": alt.Stroke,
     "size": alt.Size,
+    "order": alt.Order,  # bar/area
 }
 
 
@@ -31,7 +32,56 @@ ChannelType = UnionType[tuple(CHANNELS.values())]
 ChannelsDictType = DictType[str, ChannelType]
 
 
-class ChannelGroup(dict):
+class Helpers:
+    def get_data_field(self, channelname: str) -> str:
+        """
+        given channelname, e.g. 'x', 'y', 'fill', 'stroke'
+        return
+        """
+        NAMEFIELDS = (
+            "field",
+            "aggregate",
+        )
+        channel = self[channelname]
+        candidates = (
+            getattr(channel, NAME)
+            for NAME in NAMEFIELDS
+            if getattr(channel, NAME) != altUndefined
+        )
+        return next(candidates)
+
+    @staticmethod
+    def configure_legend(kwargs: DictType) -> OptionalType[DictType]:
+        config = {}
+        if kwargs["no_legend"]:
+            config = None
+        else:
+            config["orient"] = DEFAULT_LEGEND_ORIENTATION
+        return config
+        # TODO: explicitly set title; figure out how Altair devises the default title
+
+    @staticmethod
+    def parse_channel_arg(arg: str) -> TupleType[OptionalType[str]]:
+        """
+        given an argument like:
+            --xvar='id|Product ID' => ('id', 'Product ID')
+            --yvar='amount' => return ('amount', 'amount')
+        """
+        shorthand, title = parse_delimited_str(arg, delimiter="|", minlength=2)
+        title = title if title else None
+        return (
+            shorthand,
+            title,
+        )
+
+    @staticmethod
+    def parse_shorthand(
+        shorthand: str, data: OptionalType[pd.DataFrame] = None, **kwargs
+    ) -> DictType[str, str]:
+        return alt_parse_shorthand(shorthand, data, **kwargs)
+
+
+class ChannelGroup(dict, Helpers):
     """
     Equivalent to:
             cgroup =  {
@@ -47,13 +97,16 @@ class ChannelGroup(dict):
     """
 
     def __init__(
-        self, options: dict, df: pd.DataFrame, color_channel: OptionalType[str] = None
+        self,
+        options: dict,
+        df: pd.DataFrame,
+        color_channel_name: OptionalType[str] = None,
     ):
         self.options = options  # i.e. "kwargs"
         self.df = df
-        self.color_channel_str = color_channel
+        self.color_channel_name = color_channel_name
 
-        self.create().colorize().facetize().legendize()
+        self.scaffold().colorize().facetize().legendize().limitize()
 
     def __eq__(self, other):
         """Overrides the default implementation"""
@@ -65,16 +118,16 @@ class ChannelGroup(dict):
 
     @property
     def color_channel(self) -> OptionalType[UnionType[alt.Fill, alt.Stroke]]:
-        if not self.color_channel_str:
+        if not self.color_channel_name:
             return None
         else:
-            return self.get(self.color_channel_str)
+            return self.get(self.color_channel_name)
 
     @property
     def column_names(self) -> ListType[str]:
         return self.df.columns
 
-    def create(self) -> "ChannelGroup":
+    def scaffold(self) -> "ChannelGroup":
         for cname, channel in CHANNELS.items():
             karg = self.options.get(f"{cname}var")
             if karg:
@@ -115,6 +168,7 @@ class ChannelGroup(dict):
                 fc.columns = self.options["facetcolumns"]
 
             xo = self.options.get("facetsort")
+            # TODO: DRY self.configure_channel_sort(channels["facet"], self.kwargs["facetsort"])
             if xo:
                 if xo == "asc":
                     fc.sort = "ascending"
@@ -137,43 +191,19 @@ class ChannelGroup(dict):
 
         return self
 
-    @staticmethod
-    def configure_legend(kwargs: DictType) -> OptionalType[DictType]:
-        config = {}
-        if kwargs["no_legend"]:
-            config = None
-        else:
-            config["orient"] = DEFAULT_LEGEND_ORIENTATION
-        return config
-
-        # not needed; Vega already infers title from channel_name, including aggregate
-        # config["title"] = channel_name
-        # else:
-        #     # TODO: let users configure orientation and title...somehow
-        #     config["title"] = colname if not kwargs.get("TK-column-title") else colname
-        #     if _o := kwargs.get("TK-orientation"):
-        #         config["orient"] = _o
-        #     else:
-        #         config["orient"] = DEFAULT_LEGEND_ORIENTATION
-
-    @staticmethod
-    def parse_channel_arg(arg: str) -> TupleType[OptionalType[str]]:
+    def limitize(self) -> "ChannelGroup":
         """
-        given an argument like:
-            --xvar='id|Product ID'
-                return ('id', 'Product ID')
-            --yvar='amount'
-                return ('amount', 'amount')
+        by now, self['x'] and self['y'] are expected to be set
         """
-        shorthand, title = parse_delimited_str(arg, delimiter="|", minlength=2)
-        title = title if title else None
-        return (
-            shorthand,
-            title,
+        LIMS = (
+            "xlim",
+            "ylim",
         )
+        for L in LIMS:
+            limarg = self.options.get(L)
+            lvar = L[0]  # e.g. 'x', 'y'
+            if limarg:
+                _min, _max = [a.strip() for a in limarg.split(",")]
+                self[lvar].scale = alt.Scale(domain=[_min, _max])
 
-    @staticmethod
-    def parse_shorthand(
-        shorthand: str, data: OptionalType[pd.DataFrame] = None, **kwargs
-    ) -> DictType[str, str]:
-        return alt_parse_shorthand(shorthand, data, **kwargs)
+        return self

@@ -21,6 +21,7 @@ class Histkit(Barkit):
     viz_commandname = "hist"
     viz_info = f"""A bar chart that maps the frequency count of a given variable. Can be stacked."""
     viz_epilog = """Example:\t csvviz hist -x Horsepower examples/cars.csv"""
+    color_channeltype = "fill"
 
     COMMAND_DECORATORS = (
         click.option(

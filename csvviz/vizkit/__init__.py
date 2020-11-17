@@ -18,7 +18,10 @@ import pandas as pd
 
 from csvviz.helpers import parse_delimited_str
 from csvviz.settings import *
+
 from csvviz.vizkit.channeled import Channeled
+
+from csvviz.vizkit.channel_group import ChannelGroup
 from csvviz.vizkit.interfaces import ArgFace, ClickFace, ViewFace
 
 Faces = [ArgFace, ClickFace, ViewFace]
@@ -37,21 +40,53 @@ class Vizkit(Channeled, *Faces):
     color_channeltype = "fill"  # can be either 'fill' or 'stroke'
 
     def __init__(self, input_file, kwargs):
-        self.validate_kwargs(kwargs)
-        self.kwargs = kwargs
         self.warnings = []
+
+        self.validate_kwargs(kwargs)
         self.input_file = input_file
         self._dataframe = pd.read_csv(self.input_file)
 
-        self.channels = self.build_channels()
+        self.kwargs = self.set_channel_defaults(kwargs)
+        ch = ChannelGroup(
+            options=self.kwargs,
+            df=self._dataframe,
+            color_channel_name=self.color_channeltype,
+        )
+        # finalize_channels is implemented by each viztype
+        self.channels = self.finalize_channels(ch)
         self.chart = self.build_chart()
 
-    @classmethod
-    def validate_kwargs(klass, kwargs: dict) -> bool:
+    def validate_kwargs(self, kwargs: dict) -> bool:
         """
         Raise errors/warnings based on the initial kwarg values; implement in each class
         """
+        if kwargs.get("color_list") or kwargs.get("color_scheme"):
+            cvar = "%svar" % self.color_channeltype
+            if not kwargs.get(cvar):
+                self.warnings.append(
+                    f"--colorvar was not specified, so --color-list and --color-scheme is ignored."
+                )
+
         return True
+
+    def set_channel_defaults(self, kwargs: dict) -> dict:
+        """
+        returns a copy  of kwargs, in which:
+        xvar and yvar, if left blank, are set to the 0 and 1 of dataframe.columns
+        if self.color_channeltype exists, color_channeltype is added to the dict
+        if kwargs['colorvar'] exists, then kwargs[self.color_channeltype] is set
+        """
+        kargs = kwargs.copy()
+        for i, v in enumerate(
+            (
+                "xvar",
+                "yvar",
+            )
+        ):
+            if not kargs.get(v):
+                kargs[v] = self.column_names[i]
+
+        return kargs
 
     def build_chart(self) -> alt.Chart:
         """this used to be _build_chart(), because it's a hefty method"""

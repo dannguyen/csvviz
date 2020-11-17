@@ -11,6 +11,6 @@ class InvalidDataReference(VizValueError):
         super().__init__(f"InvalidDataReference: {msg}")
 
 
-class MissingDataReference(VizValueError):
+class ConflictingArgs(VizValueError):
     def __init__(self, msg):
-        super().__init__(f"MissingDataReference: {msg}")
+        super().__init__(f"ConflictingArgs: {msg}")

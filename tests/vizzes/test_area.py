@@ -145,7 +145,7 @@ def test_area_error_when_fill_sort_but_no_fill():
     )
     assert result.exit_code == 1
     assert (
-        "MissingDataReference: --color-sort 'asc' was specified, but no --colorvar value"
+        "ConflictingArgs: --color-sort 'asc' was specified, but no --colorvar value"
         in result.output.strip()
     )
 
@@ -182,6 +182,6 @@ def test_area_error_when_normalize_but_no_fill_color_stack():
     result = CliRunner().invoke(area, ["-N", *NORMAL_ARGS])
     assert result.exit_code == 1
     assert (
-        "MissingDataReference: -c/--colorvar needs to be specified when creating a normalized (i.e. stacked) chart"
+        "ConflictingArgs: -c/--colorvar needs to be specified when creating a normalized (i.e. stacked) chart"
         in result.output.strip()
     )

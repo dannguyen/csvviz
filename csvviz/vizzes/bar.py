@@ -2,14 +2,16 @@ import altair as alt
 import click
 
 
-from csvviz.exceptions import *
+from csvviz.exceptions import ConflictingArgs, InvalidDataReference
 from csvviz.vizkit import Vizkit
+from csvviz.vizkit.channel_group import ChannelGroup
 
 
 class Barkit(Vizkit):
     viz_commandname = "bar"
     viz_info = f"""An bar/column chart"""
     viz_epilog = """Example:\tcsvviz bar -x name -y amount data.csv"""
+    color_channeltype = "fill"
 
     COMMAND_DECORATORS = (
         click.option(
@@ -67,14 +69,14 @@ class Barkit(Vizkit):
     def normalized(self) -> bool:
         return True if self.kwargs.get("normalized") else False
 
-    @classmethod
-    def validate_kwargs(klass, kwargs: dict) -> bool:
+    def validate_kwargs(self, kwargs: dict) -> bool:
+        super().validate_kwargs(kwargs)
+
         if kwargs.get("normalized"):
             if not kwargs.get("fillvar"):  # TK SHOULD BE COLORVAR NOT fillvar
-                raise MissingDataReference(
+                raise ConflictingArgs(
                     "-c/--colorvar needs to be specified when creating a normalized (i.e. stacked) chart"
                 )
-
         # sorting by x-axis var is unique to bar charts, and not like color/fill/facet sort,
         # because we are sorting by channel, e.g. x/y/etc
         # https://altair-viz.github.io/gallery/bar_chart_sorted.html
@@ -82,9 +84,22 @@ class Barkit(Vizkit):
         if s and s.lstrip("-") not in ("x", "y", "color"):
             raise InvalidDataReference(f"'{s}' is not a valid channel to sort by")
 
+        s = kwargs.get("fillsort")
+        if s:
+            if not kwargs.get("fillvar"):
+                raise ConflictingArgs(
+                    f"--color-sort '{s}' was specified, but no --colorvar value was provided"
+                )
+
+            if s not in (
+                "asc",
+                "desc",
+            ):
+                raise ValueError(f"Invalid sort order term: {s}")
+
         return True
 
-    def finalize_channels(self, channels):
+    def finalize_channels(self, channels: ChannelGroup) -> ChannelGroup:
 
         if self.kwargs.get("flipxy"):  # i.e. -H/--horizontal flag
             channels["x"], channels["y"] = (channels["y"], channels["x"])
@@ -97,6 +112,16 @@ class Barkit(Vizkit):
         if self.kwargs.get("sortx_var"):
             channels["x"].sort = self.kwargs["sortx_var"]
 
+        # fillsort functionality shared by bar and area charts
+        ##################################
+        # subfunction: --color-sort, i.e. ordering of fill; only valid for area and bar charts
+        # somewhat confusingly, sort by fill does NOT alter alt.Fill, but adds an Order channel
+        # https://altair-viz.github.io/user_guide/encoding.html?#ordering-marks
+        fsort = self.kwargs.get("fillsort")
+        # validation has already been done by this point
+        if fsort:
+            channels["order"] = alt.Order(channels.get_data_field("fill"))
+            channels["order"].sort = "descending" if fsort == "desc" else "ascending"
         return channels
 
 

@@ -134,7 +134,7 @@ def test_titled_vars(mydata):
 
 def test_colorize_default_color_scheme(mydata):
     opts = {"xvar": "name", "yvar": "amount", "fillvar": "category"}
-    cg = ChannelGroup(opts, mydata, color_channel="fill")
+    cg = ChannelGroup(opts, mydata, color_channel_name="fill")
     assert cg["fill"].scale == alt.Scale(scheme=csvviz.settings.DEFAULT_COLOR_SCHEME)
 
 
@@ -145,7 +145,7 @@ def test_only_specified_color_channel_gets_scale(mydata):
         "fillvar": "category",
         "strokevar": "category",
     }
-    cg = ChannelGroup(opts, mydata, color_channel="stroke")
+    cg = ChannelGroup(opts, mydata, color_channel_name="stroke")
     assert cg["stroke"].scale is not altUndefined
     assert cg["fill"].scale is altUndefined
 
@@ -158,7 +158,7 @@ def test_colorize_with_color_list(mydata):
         "strokevar": "category",
         "color_list": "red,blue",
     }
-    cg = ChannelGroup(opts, mydata, color_channel="fill")
+    cg = ChannelGroup(opts, mydata, color_channel_name="fill")
     assert cg["fill"].scale == alt.Scale(range=["red", "blue"])
 
 
@@ -169,7 +169,7 @@ def test_colorize_with_color_scheme(mydata):
         "fillvar": "category",
         "color_scheme": "brownbluegreen-10",
     }
-    cg = ChannelGroup(opts, mydata, color_channel="fill")
+    cg = ChannelGroup(opts, mydata, color_channel_name="fill")
     assert cg["fill"].scale == alt.Scale(scheme="brownbluegreen-10")
 
 
@@ -206,7 +206,7 @@ def test_legendize_default(mydata):
     cg = ChannelGroup(
         opts,
         mydata,
-        color_channel="fill",
+        color_channel_name="fill",
     )
     assert cg["fill"].legend == alt.Legend(
         orient=csvviz.settings.DEFAULT_LEGEND_ORIENTATION
@@ -227,7 +227,7 @@ def test_legendize_disabled(mydata):
     cg = ChannelGroup(
         opts,
         mydata,
-        color_channel="fill",
+        color_channel_name="fill",
     )
     assert cg["fill"].legend is None
     assert cg["size"].legend is None
