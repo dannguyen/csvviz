@@ -7,13 +7,6 @@
 
 ## 0.5.0 – better bespoke visuals and labels
 
-- smarter default color schemes
-    - should depend on `color_channel` being quantitative vs categorical
-    - for categorical color_channel type, use tableau10 when fewer than 10 categories, and tableau20 otherwise
-        - https://vega.github.io/vega/docs/schemes/
-        - write separate test suite
-        - if color_channel has `.aggregate`, do pandas group count
-
 - make streamgraph 
     - https://altair-viz.github.io/gallery/streamgraph.html
     - https://www.r-graph-gallery.com/154-basic-interactive-streamgraph-2.html
@@ -21,7 +14,15 @@
         - [x] examples/real/unemployment.csv
     - barebones implementation
         - [x] `csvviz stream -x 'yearmonth(date)' -y 'thousands' -c 'sector'  --json examples/jobless.csv`
-    - basic tests
+    - [x] basic tests
+
+
+- smarter default color schemes
+    - should depend on `color_channel` being quantitative vs categorical
+    - for categorical color_channel type, use tableau10 when fewer than 10 categories, and tableau20 otherwise
+        - https://vega.github.io/vega/docs/schemes/
+        - write separate test suite
+        - if color_channel has `.aggregate`, do pandas group count
 
 - heatmap 
     - [x] barebones implementation

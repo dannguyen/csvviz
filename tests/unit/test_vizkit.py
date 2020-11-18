@@ -1,6 +1,8 @@
 import pytest
-from io import StringIO
+
 import altair as alt
+from io import StringIO
+import json
 import pandas as pd
 
 
@@ -10,71 +12,163 @@ from csvviz.vizzes.scatter import Scatterkit
 
 from csvviz.helpers import parse_delimited_str
 
-# typically, these are set by Click default= args, which we don't have access to
-# when looking at Vizkit
-
-# TODO: messy hack for now, to manually update with REQUIRED_ARGS; maybe indication that
-# tests/implementation is too brittle?
-REQUIRED_ARGS = {
-    # "chart_height": DEFAULT_CHART_HEIGHT,
-    # "chart_width": DEFAULT_CHART_WIDTH,
-}
+SRC_PATH = "examples/tings.csv"
 
 
 @pytest.fixture
 def tvk():
-    SRC_PATH = "examples/tings.csv"
-    options = {
+    opts = {
         "xvar": "name",
         "yvar": "amount",
         "fillvar": "name",
         "is_interactive": True,
         "no_preview": True,
         "to_json": True,
+        "color_list": "red,white,blue",
     }
-    options.update(REQUIRED_ARGS)
-    return Vizkit(input_file=SRC_PATH, options=options)
+    return Vizkit(input_file=SRC_PATH, options=opts)
 
 
-def test_vizkit_basic_init(tvk):
-    assert isinstance(tvk, Vizkit)
-    assert isinstance(tvk.chart, alt.Chart)
+@pytest.fixture
+def bare():
+    opts = {
+        "xvar": "name",
+        "yvar": "amount",
+    }
+    return Vizkit(input_file=SRC_PATH, options=opts)
 
 
-def test_vizkit_properties(tvk):
-    assert tvk.viz_commandname == "abstract"
-    assert tvk.mark_method_name == "mark_bar"
-    assert tvk.color_channel_name == "fill"
-    assert isinstance(tvk.df, pd.DataFrame)
-    assert tvk.column_names == ["name", "amount"]
+def test_vizkit_basic_init(bare):
+    assert isinstance(bare, Vizkit)
+    assert isinstance(bare.chart, alt.Chart)
 
 
-def test_vizkit_unneeded_properties_to_deprecate(tvk):
-    assert tvk.name == "abstract"  # maybe viz_commandname isn't needed?
+def test_vizkit_unneeded_properties_to_deprecate(bare):
+    assert bare.name == "abstract"  # maybe viz_commandname isn't needed?
 
 
-def test_vizkit_kwarg_properties(tvk):
+def test_vizkit_bare_defaults(bare):
+    assert isinstance(bare.options, dict)
+    assert bare.options.get("xvar") == "name"
+    assert bare.options.get("yvar") == "amount"
+    # these are self evident...note that vizkit.__init__ does not yet
+    # whitelist what gets sent into "options"...maybe it should TKTK
+    assert bare.options.get("color_list") is None
+    assert bare.options.get("color_scheme") is None
+
+    # these 2 options are False/True only when the click interface passes in
+    # the kwargs...
+    assert bare.options.get("to_json") is None
+    assert bare.options.get("no_preview") is None
+
+
+@pytest.mark.curious(
+    "this test is basically pointless, as options arg is NOT whitelisted"
+)
+def test_vizkit_get_specified_options(tvk):
     """
     these internal helpers copy from self.options
     """
     #    import pdb; pdb.set_trace()
-    assert tvk.options.get("xvar") == "name"
-    assert tvk.options.get("yvar") == "amount"
     assert tvk.options.get("fillvar") == "name"
     assert tvk.options.get("to_json") is True
     assert tvk.options.get("no_preview") is True
+    assert tvk.options.get("color_list") == "red,white,blue"
 
-    # duh:
-    assert tvk.options.get("colors") is None
-    assert tvk.options.get("color_scheme") is None
+
+@pytest.mark.curious("kind of the same as test_basic_init")
+def test_vizkit_properties(tvk):
+    assert isinstance(tvk.df, pd.DataFrame)
+    assert tvk.viz_commandname == "abstract"
+    assert tvk.mark_method_name == "mark_bar"
+    assert tvk.color_channel_name == "fill"
+    assert tvk.column_names == ["name", "amount"]
+
+
+def test_vizkit_chart_dict(tvk):
+    d = tvk.chart_dict
+    assert isinstance(d, dict)
+
+
+def test_vizkit_chart_json(tvk):
+    j = tvk.chart_json
+
+    assert isinstance(j, str)
+    assert json.loads(j) == tvk.chart_dict
 
 
 ###################################################################################
 # chart building
 ###################################################################################
+def test_vizkit_chart_bare_defaults(bare):
+    """
+    basically, testing that the chart object meets expected spec and
+     has our expected defaults
+    """
+    d = bare.chart_dict
+    # make sure data is there
+    assert d["data"]["name"] in d["datasets"]
+    # default chart props
+    assert d["mark"]["clip"] is True
+    assert "type" in d["mark"]
+    assert all(
+        c in d["config"]["view"]
+        for c in (
+            "continuousHeight",
+            "continuousWidth",
+        )
+    )
+    assert all(
+        c in d["encoding"]
+        for c in (
+            "x",
+            "y",
+        )
+    )
+
+
+@pytest.mark.curious(
+    "should refactor this...and well, this entire test suite and its fixtures..."
+)
+def test_vizkit_chart_fill_set_and_color_list(tvk):
+    """prereq: vizkit.options includes 'color_list' => 'str,str,str'"""
+    d = tvk.chart_dict
+    e = d["encoding"]["fill"]
+    assert e["field"] == "name"
+    assert e["scale"]["range"] == ["red", "white", "blue"]
+    # this should be its own test
+    assert isinstance(e["legend"], dict)
+
+
+def test_vizkit_chart_interactive_mode_ie_option_is_interactive(tvk):
+    """
+    selection is set when is_interactive option is set to True
+    "selection": {
+        "selector001": {
+          "bind": "scales",
+          "encodings": [
+            "x",
+            "y"
+          ],
+          "type": "interval"
+        }
+      }
+    """
+    assert tvk.interactive_mode is True
+    d = tvk.chart_dict
+    sel = list(d["selection"].keys())[0]
+    assert "selector" in sel
+    s = d["selection"][sel]
+    assert isinstance(s, dict)
+    assert s["type"] == "interval"
+    assert s["bind"] == "scales"
+    assert s["encodings"] == ["x", "y"]
+
+
+@pytest.mark.curious(reason="This is basically covered in test_viz_chart_bare_defaults")
 def test_vizkit_chart_basic(tvk):
     chart = tvk.chart
-    vega = chart.to_dict()
+    vega = tvk.chart_dict
     assert "selection" in vega  # because of is_interactive
 
     # import pdb; pdb.set_trace()
@@ -101,7 +195,6 @@ def test_parse_channel_arg_edge_case_vizkit_channels():
         "xvar": "id",
         "yvar": '"Hello|World"|"hey|world"',
     }
-    options.update(REQUIRED_ARGS)
     s = Vizkit(
         input_file=data,
         options=options,

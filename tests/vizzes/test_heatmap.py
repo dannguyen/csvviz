@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import pytest
 from click.testing import CliRunner
 
@@ -13,24 +12,22 @@ from csvviz.vizzes.heatmap import Heatmapkit
 
 heatmap = Heatmapkit.register_command()
 
+INPUT_PATH = "examples/hot.csv"
 
-HOT_ARGS = [
-    "examples/hot.csv",
+COMMON_ARGS = [
+    INPUT_PATH,
     "--json",
     "--no-preview",
 ]
 
 
-def test_kit():
+def test_heatmapkit():
     kit = Heatmapkit(
-        input_file="examples/hot.csv",
+        input_file=INPUT_PATH,
         options={
             "xvar": "state",
             "yvar": "item",
             "fillvar": "sold",
-            "is_interactive": True,
-            "no_preview": True,
-            "to_json": True,
         },
     )
 
@@ -38,20 +35,30 @@ def test_kit():
     assert kit.mark_method_name == "mark_rect"
     assert kit.color_channel_name == "fill"
 
-
-def test_heatmap_defaults():
-    c = CliRunner().invoke(
-        heatmap,
-        [
-            "-x",
-            "state",
-            "-y",
-            "item",
-            "-c",
-            "sold",
-            *HOT_ARGS,
-        ],
+    # test its chart representation
+    d = kit.chart_dict
+    assert d["mark"]["type"] == "rect"
+    assert all(
+        c in d["encoding"]
+        for c in (
+            "x",
+            "y",
+            "fill",
+        )
     )
+
+
+def test_heatmap_cli_defaults():
+    opts = [
+        "-x",
+        "state",
+        "-y",
+        "item",
+        "-c",
+        "sold",
+    ]
+
+    c = CliRunner().invoke(heatmap, [*opts, *COMMON_ARGS])
 
     jdata = json.loads(c.output)
 

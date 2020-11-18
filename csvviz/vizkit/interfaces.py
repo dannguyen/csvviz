@@ -88,25 +88,21 @@ class ClickFace:
         return command
 
 
-class ViewFace:
+class OutputFace:
     """a namespace/mixin for functions that output the viz"""
-
-    @staticmethod
-    def chart_to_json(chart: alt.Chart) -> str:
-        return chart.to_json(indent=2)
-
-    @staticmethod
-    def open_chart_in_browser(chart: alt.Chart) -> NoReturnType:
-        # a helpful wrapper around altair_viewer.altview
-        altview.show(chart)
 
     def output_chart(self) -> NoReturnType:
         """Send to stdout the desired representation of a chart"""
         if self.options["to_json"]:
-            clout(self.chart_to_json(self.chart))
+            clout(self.chart_json)
 
     def preview_chart(self) -> UnionType[NoReturnType, bool]:
         if not self.options.get("no_preview"):
             self.open_chart_in_browser(self.chart)
         else:
             return False
+
+    @staticmethod
+    def open_chart_in_browser(chart: alt.Chart) -> NoReturnType:
+        # a helpful wrapper around altair_viewer.altview
+        altview.show(chart)

@@ -16,12 +16,10 @@ from csvviz.exceptions import ConflictingArgs
 from csvviz.helpers import parse_delimited_str
 from csvviz.settings import *
 from csvviz.vizkit.channel_group import ChannelGroup
-from csvviz.vizkit.interfaces import ClickFace, ViewFace
-
-FACES = [ClickFace, ViewFace]
+from csvviz.vizkit.interfaces import ClickFace, OutputFace
 
 
-class Vizkit(*FACES):
+class Vizkit(ClickFace, OutputFace):
     """
     The interface between Click.command, Altair.Chart, and Pandas.dataframe
     """
@@ -170,6 +168,20 @@ class Vizkit(*FACES):
         """another abstract class method, to be implemented when necessary by subclasses"""
         return styles
 
+    @staticmethod
+    def validate_color_scheme(scheme: str) -> str:
+        # TK: DRY this schema loading with info.py's use
+        # also should be lazy loading, etc.
+        core = alt.vegalite.core.load_schema()
+        defs = core["definitions"]
+        cats = [s["$ref"].split("/")[-1] for s in defs["ColorScheme"]["anyOf"]]
+        # e.g. ['Categorical', 'SequentialSingleHue', 'SequentialMultiHue', 'Diverging', 'Cyclical']
+        all_schemes = []
+        for c in cats:
+            all_schemes.extend(defs[c]["enum"])
+
+        return scheme in all_schemes
+
     #####################################################################
     # properties
     @property
@@ -205,16 +217,19 @@ class Vizkit(*FACES):
     def theme(self) -> str:
         return self.options.get("theme")
 
-    @staticmethod
-    def validate_color_scheme(scheme: str) -> str:
-        # TK: DRY this schema loading with info.py's use
-        # also should be lazy loading, etc.
-        core = alt.vegalite.core.load_schema()
-        defs = core["definitions"]
-        cats = [s["$ref"].split("/")[-1] for s in defs["ColorScheme"]["anyOf"]]
-        # e.g. ['Categorical', 'SequentialSingleHue', 'SequentialMultiHue', 'Diverging', 'Cyclical']
-        all_schemes = []
-        for c in cats:
-            all_schemes.extend(defs[c]["enum"])
+    # TK: untested props; maybe should be methods?
+    @property
+    def chart_dict(self) -> dict:
+        """
+        Convert the chart to a dictionary suitable for JSON export
+        File:   altair/vegalite/v4/api.py
+        """
+        return self.chart.to_dict()
 
-        return scheme in all_schemes
+    @property
+    def chart_json(self) -> str:
+        """
+        The JSON specification of the chart object.
+        altair/utils/schemapi.py
+        """
+        return self.chart.to_json(indent=2, sort_keys=False, validate=True)
