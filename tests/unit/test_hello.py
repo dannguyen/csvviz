@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""Tests for `csvviz` package."""
+"""this hsould be in unit/clicky but whatever"""
 
 import pytest
 import re

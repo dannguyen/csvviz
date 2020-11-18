@@ -21,22 +21,44 @@ OUTPUT_ARGS = [
 ]
 
 
-def test_kit():
+def test_barkit():
     kit = Barkit(
         input_file="examples/fruits.csv",
         options={
             "xvar": "product",
             "yvar": "revenue",
             "fillvar": "season",
-            "is_interactive": True,
-            "no_preview": True,
-            "to_json": True,
         },
     )
 
     assert kit.viz_commandname == "bar"
     assert kit.mark_method_name == "mark_bar"
     assert kit.color_channel_name == "fill"
+
+    d = kit.chart_dict
+    assert d["width"] == Barkit.default_chart_width
+    assert d["height"] == Barkit.default_chart_height
+
+
+def test_barkit_horizontalized():
+    opts = {
+        "xvar": "product",
+        "yvar": "revenue",
+        "fillvar": "season",
+        "is_horizontal": True,
+    }
+    kit = Barkit(input_file="examples/fruits.csv", options=opts)
+
+    assert kit.is_horizontal is True
+    assert kit.channels["y"]["field"] == opts["xvar"]
+    assert kit.channels["x"]["field"] == opts["yvar"]
+
+    d = kit.chart_dict
+    assert d["encoding"]["x"]["field"] == opts["yvar"]
+    assert d["encoding"]["y"]["field"] == opts["xvar"]
+
+    assert d["width"] == Barkit.default_chart_height
+    assert d["height"] == Barkit.default_chart_width
 
 
 def test_bar_defaults():
@@ -79,11 +101,19 @@ def test_bar_horizontal():
 
     csvviz does that for the user, i.e. user shouldn't expect x to be 'name', despite the command line setting
     """
-    result = CliRunner().invoke(bar, ["-x", "name", "-y", "amount", "-H", *OUTPUT_ARGS])
-    cdata = json.loads(result.output)
+    r = CliRunner().invoke(
+        bar, ["-x", "name", "-y", "amount", "--horizontal", *OUTPUT_ARGS]
+    )
+    jdata = json.loads(r.output)
+    assert jdata["encoding"]["x"]["field"] == "amount"
+    assert jdata["encoding"]["y"]["type"] == "nominal"
 
-    assert cdata["encoding"]["x"]["field"] == "amount"
-    assert cdata["encoding"]["y"]["type"] == "nominal"
+    r = CliRunner().invoke(bar, ["-x", "name", "-y", "amount", "--HZ", *OUTPUT_ARGS])
+    jdata = json.loads(r.output)
+
+    assert (
+        jdata["encoding"]["y"].items() <= {"field": "name", "type": "nominal"}.items()
+    )
 
 
 ##############################################################################################################

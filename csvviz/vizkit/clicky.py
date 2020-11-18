@@ -103,26 +103,25 @@ class GenOption(click.Option):
 GENERAL_OPTS = {}
 GENERAL_OPTS["facet"] = {
     "facetvar": GenOption.foo(
-        "--grid",
+        "--gridvar",
         "-g",
         "facetvar",
         category="Grid (i.e. faceted/trellis)",
         type=click.STRING,
         help="The name of the column to use as a facet for creating a grid of multiple charts",
     ),
-    "facetcolumns": GenOption.foo(
+    "facet_columns": GenOption.foo(
         "--grid-columns",
         "--gc",
-        "facetcolumns",
+        "facet_columns",
         category="Grid (i.e. faceted/trellis)",
-        default=0,
         type=click.INT,
         help="Number of columns per grid row. Default is '0' for infinite.",
     ),
-    "facetsort": GenOption.foo(
+    "facet_sort": GenOption.foo(
         "--grid-sort",
         "--gs",
-        "facetsort",
+        "facet_sort",
         category="Grid (i.e. faceted/trellis)",
         type=click.Choice(["asc", "desc"], case_sensitive=False),
         help="Sort the grid of charts by its facet variable in ascending or descending order.",
@@ -149,8 +148,6 @@ GENERAL_OPTS["visual"] = {
         "-H",
         "height",
         category="Chart visual styles and properties",
-        # default=DEFAULT_CHART_HEIGHT,
-        show_default=True,
         type=click.INT,
         help="The height in pixels for the chart",
     ),
@@ -179,8 +176,6 @@ GENERAL_OPTS["visual"] = {
         "-W",
         "width",
         category="Chart visual styles and properties",
-        # default=DEFAULT_CHART_WIDTH,
-        show_default=True,
         type=click.INT,
         help="The width in pixels for the chart",
     ),

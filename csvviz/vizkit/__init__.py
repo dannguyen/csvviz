@@ -31,6 +31,12 @@ class Vizkit(ClickFace, OutputFace):
 
     color_channel_name = "fill"  # can be either 'fill' or 'stroke'
 
+    default_chart_height = 400
+    default_chart_width = 600
+
+    default_faceted_height = 150
+    default_faceted_width = 250
+
     def __init__(self, input_file: UnionType[str, Path], options: dict):
         self.warnings = []
 
@@ -141,28 +147,31 @@ class Vizkit(ClickFace, OutputFace):
         """assumes self.channels has been set, particularly the types of x/y channels"""
         styles = {}
 
-        STYLE_ATTRS = (
-            "height",
-            "width",
-            "title",
-        )
-        for att in STYLE_ATTRS:
-            if self.options.get(att):
-                styles[att] = self.options[att]
+        # TODO: refactor this
+        styles["autosize"] = {"type": "pad", "contains": "padding"}
+
+        STYLE_ATTRS = {
+            "height": self.default_chart_height,
+            "width": self.default_chart_width,
+            "title": None,
+        }
+
+        # TK messy messy!
+        if self.is_faceted:
+            STYLE_ATTRS["height"] = self.default_faceted_height
+            STYLE_ATTRS["width"] = self.default_faceted_width
+
+        for att, default_val in STYLE_ATTRS.items():
+            setval = self.options.get(att)
+            if setval == 0 or setval:
+                styles[att] = setval
+            elif default_val:
+                styles[att] = default_val
+            else:
+                pass
+                # do nothing, including don't add :att to styles
+
         return styles
-
-        # if cargs.get("title"):
-        #     styles["title"] = cargs["title"]
-
-        # determine width
-        # _wvar = 'continuousWidth' if self.channels['x']['type'] in ('quantitative', 'temporal') else 'discreteWidth'
-        # styles["width"] = cargs[
-        #     "chart_width"
-        # ]  # if cargs.get('chart_width') else DEFAULT_CHART_WIDTH
-        # # _hvar = 'continuousHeight' if self.channels['x']['type'] in ('quantitative', 'temporal') else 'discreteHeight'
-        # styles["height"] = cargs[
-        #     "chart_height"
-        # ]  # if cargs.get('chart_height') else DEFAULT_CHART_HEIGHT
 
     def finalize_styles(self, styles: DictType) -> DictType:
         """another abstract class method, to be implemented when necessary by subclasses"""
@@ -198,6 +207,7 @@ class Vizkit(ClickFace, OutputFace):
 
     @property
     def is_faceted(self) -> bool:
+        """should throw error if accessed before self.channels is set"""
         return True if self.channels.get("facet") else False
 
     @property

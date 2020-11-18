@@ -1,3 +1,7 @@
+"""
+TK: no reason why most of these tests can't be refactored to be CLI independent
+    and then moved to unit/charting
+"""
 import pytest
 from click.testing import CliRunner
 

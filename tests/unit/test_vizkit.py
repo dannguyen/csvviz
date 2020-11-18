@@ -83,6 +83,7 @@ def test_vizkit_properties(tvk):
     assert tvk.mark_method_name == "mark_bar"
     assert tvk.color_channel_name == "fill"
     assert tvk.column_names == ["name", "amount"]
+    assert tvk.is_faceted is False
 
 
 def test_vizkit_chart_dict(tvk):
@@ -95,6 +96,19 @@ def test_vizkit_chart_json(tvk):
 
     assert isinstance(j, str)
     assert json.loads(j) == tvk.chart_dict
+
+
+@pytest.mark.curious(
+    "exists only to test Vizkit.is_faceted; messiness is b/c fixtures weren't refactored"
+)
+def test_vizkit_is_faceted_prop():
+    opts = {
+        "xvar": "name",
+        "yvar": "amount",
+        "facetvar": "name",
+    }
+    v = Vizkit(input_file=SRC_PATH, options=opts)
+    assert v.is_faceted is True
 
 
 ###################################################################################
@@ -140,6 +154,7 @@ def test_vizkit_chart_fill_set_and_color_list(tvk):
     assert isinstance(e["legend"], dict)
 
 
+@pytest.mark.curious("also tested in test_chart_properties...")
 def test_vizkit_chart_interactive_mode_ie_option_is_interactive(tvk):
     """
     selection is set when is_interactive option is set to True

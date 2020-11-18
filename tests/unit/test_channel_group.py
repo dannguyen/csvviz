@@ -191,7 +191,13 @@ def test_facetize_basic(mydata):
         "facetvar": "category",
     }
     cg = ChannelGroup(opts, mydata)
-    assert cg["facet"] == alt.Facet(**{"field": "category", "type": "nominal"})
+    defaults = {
+        "field": "category",
+        "type": "nominal",
+        "columns": csvviz.settings.DEFAULT_FACET_COLUMNS,
+        "spacing": csvviz.settings.DEFAULT_FACET_SPACING,
+    }
+    assert cg["facet"] == alt.Facet(**defaults)
 
 
 def test_facetize_with_opts(mydata):
@@ -199,8 +205,8 @@ def test_facetize_with_opts(mydata):
         "xvar": "name",
         "yvar": "amount",
         "facetvar": "category",
-        "facetcolumns": 5,
-        "facetsort": "desc",
+        "facet_columns": 5,
+        "facet_sort": "desc",
     }
     cg = ChannelGroup(opts, mydata)
     assert cg["facet"].columns == 5
@@ -227,6 +233,9 @@ def test_legendize_default(mydata):
     )
 
 
+@pytest.mark.curious(
+    "legend disabling is also tested at the vizkit(options={}).chart level..."
+)
 def test_legendize_disabled(mydata):
     opts = {
         "xvar": "name",

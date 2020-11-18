@@ -8,9 +8,9 @@ DEFAULT_COLOR_SCHEMES = {
     "quantitative": "blues",
     "ordinal": "blues",  # not sure if this is ever used
 }
-DEFAULT_FACET_COLUMNS = 2
+
+
+DEFAULT_FACET_COLUMNS = 3
+DEFAULT_FACET_SPACING = 20
+
 DEFAULT_LEGEND_ORIENTATION = "right"
-
-
-DEFAULT_CHART_HEIGHT = 600
-DEFAULT_CHART_WIDTH = 800

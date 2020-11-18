@@ -7,6 +7,7 @@ csvviz hist 'year(birthday)' examples/real/congress.csv
 
 import altair as alt
 import click
+from typing import Dict as DictType
 
 from csvviz.exceptions import *
 from csvviz.vizzes.bar import Barkit
@@ -54,7 +55,7 @@ class Histkit(Barkit):
         click.option(
             "--horizontal",
             "-H",
-            "flipxy",
+            "is_horizontal",
             is_flag=True,
             help="Make a horizontal bar chart",
         ),
@@ -65,6 +66,7 @@ class Histkit(Barkit):
         return True
 
     def finalize_channels(self, channels):
+
         bwargs = {k: self.options[k] for k in BINNING_OPTS if self.options.get(k)}
         # deal with special case in which xvar is a nominal field, which means user
         # is trying to do a standard frequency count
@@ -79,9 +81,8 @@ class Histkit(Barkit):
                 )
 
         else:
-            channels[
-                "y"
-            ] = "count()"  # explicitly set/override y to always be an aggregate count
+            channels["y"] = "count()"
+            # explicitly set/override y to always be an aggregate count
             # if no bin opts are set, then encoding.x.bins is just True
             #   and Vega defaults are used
             #   https://vega.github.io/vega-lite/docs/bin.html#bin-parameters
@@ -100,4 +101,15 @@ class Histkit(Barkit):
 
                 channels["x"].bin = alt.Bin(**bdict)
 
+        if self.options.get("is_horizontal"):  # i.e. -H/--horizontal flag
+            channels["x"], channels["y"] = (channels["y"], channels["x"])
+
         return channels
+
+    def finalize_styles(self, styles: DictType) -> DictType:
+        # for horizontal
+        if self.is_horizontal:
+            w = styles["width"]
+            styles["width"] = styles["height"]
+            styles["height"] = w
+        return styles

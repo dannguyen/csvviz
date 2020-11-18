@@ -7,6 +7,71 @@
 
 ## 0.5.0 – better bespoke visuals and labels
 
+##### Vizkit.chart stuff should be a class?
+- similar to channelgroup
+- name could be ChartSpec
+    - for example, is_faceted makes sense as a ChartSpec property, not Vizkit
+
+##### facet/grid stuff
+
+- Example calls:
+        ```sh
+        # simple
+        cvz bar examples/jobless.csv -x year:O -y thousands -g sector  --json
+        # complex
+        cvz line examples/real/unemployment.csv \
+            -x month:O -y rate -c sector -g year:O --json
+        ```
+
+- In general
+    - [x] `-g` should be `--gridvar` not `--grid` (but clicky stores it in facetvar)
+    - [x] `--grid-columns=0` creates a chart with unlimited facets
+    - if `-g/--gridvar`, calculate unique grid variables and set grid columns accordingly
+    - kill `--grid-sort` for now?
+    - set facet['spacing'] to DEFAULT_FACET_SPACING https://vega.github.io/vega-lite/docs/facet.html#config
+    - [x] Vizkit should have is_faceted property, which is derived from self.channels
+    - SHOULD I RENAME --grid to --facet?
+        - note that what we call `--grid` to the calling user is internally referred to as `facet`
+        - Vega refers to as a "wrapped facet" chart, i.e. with "facet encoding": https://vega.github.io/vega-lite/docs/facet.html#facet-encoding
+        - Further note: Vega also has a "grid facet" chart which is something slightly different: https://vega.github.io/vega-lite/docs/facet.html#grid-facet-with-row-and-column-encoding
+            - should we change up names?
+                - what does ggplot2 call it?
+                - if we use `-f/--facetvar`, this means we can't use `-f` for other stuff, like `--format`...
+
+- Legends
+    - Should legend be bottom-oriented?
+
+- How to deal with sizing for grid charts
+    - https://vega.github.io/vega-lite/docs/size.html#width-and-height-of-multi-view-displays
+    - use chart_grid_default_height/width? Or none at all?
+    - [x] allow `--width/--height` to have effect
+        - [x] defines width/height of each facet
+    
+
+
+##### make bar and column separate charts
+
+- [ ] kill `--HZ/--horizontal`
+
+
+##### chart width/height, i.e. init_styles
+- https://vega.github.io/vega-lite/docs/size.html#specifying-fixed-width-and-height
+- [x] chart-wide with `-W` and `-H`
+- [x] vizkit now has class vars default_chart_width and default_chart_height
+- autosize is by default set in chart spec
+- write tests 
+    - [x] create tests/unit/charting
+    - [x] to confirm the default h/w and autosize
+
+
+
+chart config
+- https://altair-viz.github.io/user_guide/customization.html#global-config
+- separate it from chart styling
+- what to do with config.continuouswidth?
+
+- hist
+    - [x] test is_horizontal (changed flipxy)
 - make streamgraph 
     - https://altair-viz.github.io/gallery/streamgraph.html
     - https://www.r-graph-gallery.com/154-basic-interactive-streamgraph-2.html
@@ -76,6 +141,10 @@
 - sorting
     - [ ] allow sorting by array of values: https://vega.github.io/vega-lite/docs/sort.html#sort-array
 
+- More sizing features
+    - https://vega.github.io/vega-lite/docs/spec.html#single
+    - [ ] should I use step sizing? https://vega.github.io/vega-lite/docs/facet.html#resolve
+    - [ ] should i create new click option where user sets total width and height, and futz width/height to fit?
 
 
 - custom visuals
@@ -103,19 +172,6 @@
 
 ## 0.5.5 
 
-- chart-wide properties: 
-    - width/height
-        - [x] chart-wide with `-W` and `-H`
-            - [ ] actually, maybe not explicitly define defaults?
-            - [ ] write tests
-        - use autosize? https://vega.github.io/vega-lite/docs/size.html#autosize
-        - [ ] handle special case of horizontal charts(?)
-        
-        - if grid chart
-            - use chart_grid_default_height/width? Or none at all?
-            - [ ] allow view width/height to be set, for grid charts
-                - https://vega.github.io/vega-lite/docs/spec.html#single
-                - `-vW` `-vH`
 - axis properties
     - [ ] `--no-grid`
     - https://altair-viz.github.io/gallery/us_population_over_time_facet.html

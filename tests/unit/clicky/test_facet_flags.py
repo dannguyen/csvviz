@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 from csvviz.exceptions import *
-from csvviz.settings import *
+import csvviz.settings
 
 
 from csvviz.vizzes.bar import Barkit
@@ -14,7 +14,7 @@ from csvviz.vizzes.bar import Barkit
 viz = Barkit.register_command()
 
 
-DEFAULT_ARGS = [
+COMMON_ARGS = [
     "examples/stocks.csv",
     "-x",
     "date",
@@ -28,30 +28,37 @@ DEFAULT_ARGS = [
 
 
 def test_facet_defaults():
-    cdata = json.loads(CliRunner().invoke(viz, DEFAULT_ARGS).output)
+    cdata = json.loads(CliRunner().invoke(viz, COMMON_ARGS).output)
     facet = cdata["encoding"]["facet"]
     assert facet["field"] == "company"
     assert facet["type"] == "nominal"
-    assert facet.get("columns") is None  # == DEFAULT_FACET_COLUMNS
-    assert facet.get("sort") is None
     assert cdata["resolve"]["axis"] == {"x": "independent"}
 
+    assert facet.get("columns") == csvviz.settings.DEFAULT_FACET_COLUMNS
+    assert facet.get("sort") is None
 
-def test_facet_column_count():
-    x = CliRunner().invoke(viz, ["--gc", "5", *DEFAULT_ARGS])
-    jdata = json.loads(x.output)
-    assert jdata["encoding"]["facet"]["columns"] == 5
 
-    x = CliRunner().invoke(viz, ["--grid-columns", "1", *DEFAULT_ARGS])
+def test_set_facet_columns():
+    x = CliRunner().invoke(viz, ["--grid-columns", "1", *COMMON_ARGS])
     jdata = json.loads(x.output)
     assert jdata["encoding"]["facet"]["columns"] == 1
 
+    x = CliRunner().invoke(viz, ["--gc", "5", *COMMON_ARGS])
+    jdata = json.loads(x.output)
+    assert jdata["encoding"]["facet"]["columns"] == 5
+
+
+def test_set_facet_columns_to_zero():
+    x = CliRunner().invoke(viz, ["--gc", "0", *COMMON_ARGS])
+    jdata = json.loads(x.output)
+    assert jdata["encoding"]["facet"]["columns"] == 0
+
 
 def test_facet_column_sort():
-    x = CliRunner().invoke(viz, ["--gs", "desc", *DEFAULT_ARGS])
+    x = CliRunner().invoke(viz, ["--gs", "desc", *COMMON_ARGS])
     jdata = json.loads(x.output)
     assert jdata["encoding"]["facet"]["sort"] == "descending"
 
-    x = CliRunner().invoke(viz, ["--grid-sort", "asc", *DEFAULT_ARGS])
+    x = CliRunner().invoke(viz, ["--grid-sort", "asc", *COMMON_ARGS])
     jdata = json.loads(x.output)
     assert jdata["encoding"]["facet"]["sort"] == "ascending"

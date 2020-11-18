@@ -1,5 +1,6 @@
 import altair as alt
 import click
+from typing import Dict as DictType
 
 
 from csvviz.exceptions import ConflictingArgs, InvalidDataReference
@@ -12,6 +13,11 @@ class Barkit(Vizkit):
     viz_info = f"""An bar/column chart"""
     viz_epilog = """Example:\tcsvviz bar -x name -y amount data.csv"""
     color_channel_name = "fill"
+
+    # ok, horizontal bar charts are confusing because by default, cvz bar makes a COLUMN chart
+    # TK: make cvz column type
+    default_chart_width = 400
+    default_chart_height = 600
 
     COMMAND_DECORATORS = (
         click.option(
@@ -53,8 +59,8 @@ class Barkit(Vizkit):
         ###### specific to bar charts
         click.option(
             "--horizontal",
-            "-H",
-            "flipxy",
+            "--HZ",  # TK kill this...
+            "is_horizontal",
             is_flag=True,
             help="Make a horizontal bar chart",
         ),
@@ -65,6 +71,10 @@ class Barkit(Vizkit):
             help="For stacked bar charts, normalize the total bar heights to 100%",
         ),
     )
+
+    @property
+    def is_horizontal(self) -> bool:
+        return self.options.get("is_horizontal") is True
 
     @property
     def normalized(self) -> bool:
@@ -108,7 +118,7 @@ class Barkit(Vizkit):
 
     def finalize_channels(self, channels: ChannelGroup) -> ChannelGroup:
 
-        if self.options.get("flipxy"):  # i.e. -H/--horizontal flag
+        if self.options.get("is_horizontal"):  # i.e. -H/--horizontal flag
             channels["x"], channels["y"] = (channels["y"], channels["x"])
 
         # https://altair-viz.github.io/gallery/normalized_stacked_bar_chart.html
@@ -120,7 +130,6 @@ class Barkit(Vizkit):
             channels["x"].sort = self.options["sortx_var"]
 
         return channels
-
         # color_sort functionality shared by bar and area charts
         ##################################
         # subfunction: --color-sort, i.e. ordering of fill; only valid for area and bar charts
@@ -134,6 +143,15 @@ class Barkit(Vizkit):
         #     fname = channels.get_data_field(self.color_channel_name)
         #     channels["order"] = alt.Order(fname)
         #     channels["order"].sort = "descending" if cs == "desc" else "ascending"
+
+    def finalize_styles(self, styles: DictType) -> DictType:
+        # ok, horizontal bar charts are confusing because by default, cvz bar makes a COLUMN chart
+        # TK: make cvz column type
+        if self.is_horizontal:
+            w = styles["width"]
+            styles["width"] = styles["height"]
+            styles["height"] = w
+        return styles
 
 
 """

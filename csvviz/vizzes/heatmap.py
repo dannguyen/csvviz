@@ -20,6 +20,8 @@ class Heatmapkit(Vizkit):
         """Example:\t csvviz heatmap -x state -y item -c sold examples/hot.csv"""
     )
     color_channel_name = "fill"
+    default_chart_width = 500
+    default_chart_height = 500
 
     COMMAND_DECORATORS = (
         click.option(

@@ -14,7 +14,12 @@ from typing import (
 from csvviz import altUndefined
 from csvviz.exceptions import InvalidDataReference
 from csvviz.helpers import parse_delimited_str
-from csvviz.settings import DEFAULT_COLOR_SCHEMES, DEFAULT_LEGEND_ORIENTATION
+from csvviz.settings import (
+    DEFAULT_COLOR_SCHEMES,
+    DEFAULT_LEGEND_ORIENTATION,
+    DEFAULT_FACET_COLUMNS,
+    DEFAULT_FACET_SPACING,
+)
 
 
 CHANNELS = {
@@ -120,17 +125,6 @@ class ChannelGroup(dict, Helpers):
         """Overrides the default implementation"""
         return {k: self[k] for k in CHANNELS.keys() if self.get(k)}
 
-    @property
-    def color_channel(self) -> OptionalType[UnionType[alt.Fill, alt.Stroke]]:
-        if not self.color_channel_name:
-            return None
-        else:
-            return self.get(self.color_channel_name)
-
-    @property
-    def column_names(self) -> ListType[str]:
-        return self.df.columns
-
     def scaffold(self) -> "ChannelGroup":
         # at this point, options['colorvar'] is set (via Click interface), but NOT
         #  options['fillvar']/options['strokevar']/etc
@@ -180,14 +174,19 @@ class ChannelGroup(dict, Helpers):
         return self
 
     def facetize(self) -> "ChannelGroup":
-        # set facets, i.e. grid
-        fc = self.get("facet")
+        """set facets, i.e. grid"""
+        fc = self.facet_channel
         if fc:
-            if self.options.get("facetcolumns"):
-                fc.columns = self.options["facetcolumns"]
+            fc.spacing = DEFAULT_FACET_SPACING
 
-            xo = self.options.get("facetsort")
-            # TODO: DRY self.configure_channel_sort(channels["facet"], self.kwargs["facetsort"])
+            colcount = self.options.get("facet_columns")
+            if colcount == 0 or colcount:
+                fc.columns = colcount
+            else:
+                fc.columns = DEFAULT_FACET_COLUMNS
+
+            # TODO: DRY self.configure_channel_sort(channels["facet"], self.kwargs["facet_sort"])
+            xo = self.options.get("facet_sort")
             if xo:
                 if xo == "asc":
                     fc.sort = "ascending"
@@ -226,3 +225,19 @@ class ChannelGroup(dict, Helpers):
                 self[lvar].scale = alt.Scale(domain=[_min, _max])
 
         return self
+
+    @property
+    def color_channel(self) -> OptionalType[UnionType[alt.Fill, alt.Stroke]]:
+        if not self.color_channel_name:
+            # this is an edge case, as every known viz type has at least the default
+            # :color_channel_name (i.e. 'fill')
+            return None
+        return self.get(self.color_channel_name)
+
+    @property
+    def column_names(self) -> ListType[str]:
+        return self.df.columns
+
+    @property
+    def facet_channel(self) -> alt.Facet:
+        return self.get("facet")
