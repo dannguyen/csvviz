@@ -7,11 +7,6 @@
 
 ## 0.5.0 – better bespoke visuals and labels
 
-- deprecate (TKD) color-sort for area/bar/stream
-    - when there *is* encoding
-        - `--color-sort=asc` arranges the marks in an order *opposite* of how they're sorted in the legend, which is not optimal
-    - [x] remove for now; produced JSON should have no `order` encoding
-    - [ ] write tests to confirm this: **test_bar.py:test_no_order_for_now**
 - smarter default color schemes
     - should depend on `color_channel` being quantitative vs categorical
     - for categorical color_channel type, use tableau10 when fewer than 10 categories, and tableau20 otherwise
@@ -63,6 +58,11 @@
         Warning: The fill variable was not specified, so colors/color_scheme is ignored.
         ```
 
+- [X] deprecate (TKD) color-sort for area/bar/stream
+    - when there *is* encoding
+        - `--color-sort=asc` arranges the marks in an order *opposite* of how they're sorted in the legend, which is not optimal
+    - [x] remove for now; produced JSON should have no `order` encoding
+    - [x] write tests to confirm this: **test_bar.py:test_no_order_for_now**
 
 
 

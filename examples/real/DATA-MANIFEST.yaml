@@ -1,6 +1,24 @@
-ined-demos:
+ined-demos.tk:
   landing_page: https://www.ined.fr/en/everything_about_population/data/all-countries/?lst_continent=935&lst_pays=922
   description: |
     Eight demographic factors for Western Asia countries
 
     Example: https://www.data-to-viz.com/graph/heatmap.html
+
+
+
+unemployment.csv:
+  landing_page: https://vega.github.io/vega-datasets/
+  url: https://vega.github.io/vega-datasets/data/unemployment-across-industries.json
+  description: |
+    - converted to CSV
+    - column name changes:
+      - 'series' » 'sector'
+      - 'count'  » 'thousands'
+    - removed all year=2010 rows (partial year)
+
+
+    To make examples/industries.csv:
+
+    cat examples/real/unemployment.csv |
+      csvgrep -c sector -r 'Government|Self|Information|Manufact' > examples/jobless.csv
