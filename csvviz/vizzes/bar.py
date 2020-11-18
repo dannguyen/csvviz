@@ -33,14 +33,15 @@ class Barkit(Vizkit):
             type=click.STRING,
             help="The name of the column for mapping bar colors. This is required for creating a stacked chart.",
         ),
-        # https://altair-viz.github.io/user_guide/encoding.html?#ordering-marks
-        click.option(
-            "--color-sort",
-            "--cs",
-            "color_sort",
-            type=click.Choice(("asc", "desc"), case_sensitive=False),
-            help="For stacked bar charts, the sort order of the color variable: 'asc' for ascending, 'desc' for descending/reverse",
-        ),
+        # TKD: DEPRECATED FOR NOW
+        # # https://altair-viz.github.io/user_guide/encoding.html?#ordering-marks
+        # click.option(
+        #     "--color-sort",
+        #     "--cs",
+        #     "color_sort",
+        #     type=click.Choice(("asc", "desc"), case_sensitive=False),
+        #     help="For stacked bar charts, the sort order of the color variable: 'asc' for ascending, 'desc' for descending/reverse",
+        # ),
         # https://altair-viz.github.io/user_guide/encoding.html#sorting
         click.option(
             "--x-sort",
@@ -77,12 +78,14 @@ class Barkit(Vizkit):
                 raise ConflictingArgs(
                     "-c/--colorvar needs to be specified when creating a normalized (i.e. stacked) chart"
                 )
-            if options.get("color_sort"):
-                raise ConflictingArgs(
-                    "--color-sort '{}' was specified, but no --colorvar value was provided".format(
-                        options["color_sort"]
-                    )
-                )
+
+            # TKD
+            # if options.get("color_sort"):
+            #     raise ConflictingArgs(
+            #         "--color-sort '{}' was specified, but no --colorvar value was provided".format(
+            #             options["color_sort"]
+            #         )
+            #     )
 
         # sorting by x-axis var is unique to bar charts, and not like color/fill/facet sort,
         # because we are sorting by channel, e.g. x/y/etc
@@ -91,14 +94,15 @@ class Barkit(Vizkit):
         if s and s.lstrip("-") not in ("x", "y", "color"):
             raise InvalidDataReference(f"'{s}' is not a valid channel to sort by")
 
+        # TKD
         # TODO: DRY this with area's code
-        s = options.get("color_sort")
-        if s:
-            if s not in (
-                "asc",
-                "desc",
-            ):
-                raise ValueError(f"Invalid sort order term: {s}")
+        # s = options.get("color_sort")
+        # if s:
+        #     if s not in (
+        #         "asc",
+        #         "desc",
+        #     ):
+        #         raise ValueError(f"Invalid sort order term: {s}")
 
         return True
 
@@ -115,18 +119,21 @@ class Barkit(Vizkit):
         if self.options.get("sortx_var"):
             channels["x"].sort = self.options["sortx_var"]
 
+        return channels
+
         # color_sort functionality shared by bar and area charts
         ##################################
         # subfunction: --color-sort, i.e. ordering of fill; only valid for area and bar charts
         # somewhat confusingly, sort by fill does NOT alter alt.Fill, but adds an Order channel
         # https://altair-viz.github.io/user_guide/encoding.html?#ordering-marks
-        cs = self.options.get("color_sort")
-        # validation has already been done by this point
-        if cs:
-            fname = channels.get_data_field(self.color_channel_name)
-            channels["order"] = alt.Order(fname)
-            channels["order"].sort = "descending" if cs == "desc" else "ascending"
-        return channels
+
+        # TKD
+        # cs = self.options.get("color_sort")
+        # # validation has already been done by this point
+        # if cs:
+        #     fname = channels.get_data_field(self.color_channel_name)
+        #     channels["order"] = alt.Order(fname)
+        #     channels["order"].sort = "descending" if cs == "desc" else "ascending"
 
 
 """

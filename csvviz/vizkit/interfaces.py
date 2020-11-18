@@ -34,6 +34,7 @@ MARK_METHOD_LOOKUP = {
     "hist": "bar",
     "line": "line",
     "scatter": "point",
+    "stream": "area",
     "abstract": "bar",  # for testing purposes
 }
 

@@ -4,7 +4,7 @@ from altair import themes
 AVAILABLE_THEMES = themes.names()
 
 DEFAULT_COLOR_SCHEMES = {
-    "categorical": "category10",
+    "categorical": "tableau20",
     "quantitative": "blues",
     "ordinal": "blues",  # not sure if this is ever used
 }

@@ -78,44 +78,6 @@ def test_area_multiseries_defaults():
     assert "title" not in e["legend"]  # ["title"] == "company"
 
 
-def test_area_fill_sort():
-    cdata = json.loads(
-        CliRunner()
-        .invoke(
-            area,
-            [
-                "-x",
-                "date",
-                "-y",
-                "price",
-                "--colorvar",
-                "company",
-                "--color-sort",
-                "asc",
-                *STOCK_ARGS,
-            ],
-        )
-        .output
-    )
-    o = cdata["encoding"]["order"]
-    assert o["field"] == "company"
-    assert o["sort"] == "ascending"
-
-
-def test_area_fill_sort_desc():
-    cdata = json.loads(
-        CliRunner()
-        .invoke(
-            area,
-            ["-x", "date", "-y", "price", "-c", "company", "--cs", "desc", *STOCK_ARGS],
-        )
-        .output
-    )
-    o = cdata["encoding"]["order"]
-    assert o["field"] == "company"
-    assert o["sort"] == "descending"
-
-
 def test_area_colors():
     cdata = json.loads(
         CliRunner()
@@ -137,17 +99,6 @@ def test_area_colors():
     )
     e = cdata["encoding"]["fill"]
     assert e["scale"]["range"] == ["red", "yellow"]
-
-
-def test_area_error_when_fill_sort_but_no_fill():
-    result = CliRunner().invoke(
-        area, ["-x", "date", "-y", "price", "--cs", "asc", *STOCK_ARGS]
-    )
-    assert result.exit_code == 1
-    assert (
-        "ConflictingArgs: --color-sort 'asc' was specified, but no --colorvar value"
-        in result.output.strip()
-    )
 
 
 ##############################################################################################################
@@ -183,5 +134,67 @@ def test_area_error_when_normalize_but_no_fill_color_stack():
     assert result.exit_code == 1
     assert (
         "ConflictingArgs: -c/--colorvar needs to be specified when creating a normalized (i.e. stacked) chart"
+        in result.output.strip()
+    )
+
+
+#############################################
+# color-sort
+# (TKD)
+#############################################
+@pytest.mark.skip(
+    reason="TKD: Deprecating all color-sorting until i figure out a more graceful solution"
+)
+def test_area_fill_sort():
+    cdata = json.loads(
+        CliRunner()
+        .invoke(
+            area,
+            [
+                "-x",
+                "date",
+                "-y",
+                "price",
+                "--colorvar",
+                "company",
+                "--color-sort",
+                "asc",
+                *STOCK_ARGS,
+            ],
+        )
+        .output
+    )
+    o = cdata["encoding"]["order"]
+    assert o["field"] == "company"
+    assert o["sort"] == "ascending"
+
+
+@pytest.mark.skip(
+    reason="TKD: Deprecating all color-sorting until i figure out a more graceful solution"
+)
+def test_area_fill_sort_desc():
+    cdata = json.loads(
+        CliRunner()
+        .invoke(
+            area,
+            ["-x", "date", "-y", "price", "-c", "company", "--cs", "desc", *STOCK_ARGS],
+        )
+        .output
+    )
+    o = cdata["encoding"]["order"]
+    assert o["field"] == "company"
+    assert o["sort"] == "descending"
+
+
+@pytest.mark.skip(
+    reason="TKD: Deprecating all color-sorting until i figure out a more graceful solution"
+)
+def test_area_error_when_fill_sort_but_no_fill():
+    result = CliRunner().invoke(
+        area, ["-x", "date", "-y", "price", "--cs", "asc", *STOCK_ARGS]
+    )
+    assert result.exit_code == 1
+    assert (
+        "ConflictingArgs: --color-sort 'asc' was specified, but no --colorvar value"
         in result.output.strip()
     )

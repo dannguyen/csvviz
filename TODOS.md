@@ -2,76 +2,42 @@
 
 
 
-## Refactoring 2020-11-17
 
-ChannelGroup addition color stuff:
-- [x] should validate colorscheme name
-- [x] for default color scheme, should depend on `color_channel` being quantitative vs nominal
-- [x] kill `-C` `-CS` and other dumb arg shortcuts [just made them more consistent]
-
-(2020-11-16 and prior has been moved to Old section)
-
-
-## Update 2020-11-11
-
-Been many weeks since I looked at this code base. After some struggling, was able to come up with a reliable bar chart command:
-
-    $  cvz bar examples/stocks.csv -x date:N -y price:Q -c company --json
-
-Scatter chart:
-
-    $ cvz scatter -x date:T examples/tonk.csv --json
-
-
-### Jumping in
-
-- Moved a bunch of 0.4.0 stuff to 0.5.5 -- basically everything that wasn't already done, and seemed like over-customization stuff, like `--no-grid`
-- moving on to 0.5.0 with new chart types
-- working on heatmap: basic implementation so far (2020-11-11)
-- time for a code refactor? vizkit.py is just a mess to me
-    - add more type hinting
-    - use more OOP stuff like @property
-
-### Noted problems
-
-Doesn't seem to be a way to set a default color if we leave `-c` blank:
-
-    $ cvz scatter -x date:T  --colors 'green' examples/tonk.csv --json 
-    Warning: The fill variable was not specified, so colors/color_scheme is ignored.
-
-- should change warning from `fill variable` to `color variable` (vizkit.py:409)
-
-
--------------------------------------------
-
-
-## 0.4.0 – more fundamentals, more refactoring
-
-- [x] normalized bar/area charts
-- [X] Name channel vars, which sets axes and legend titles:
-    - [X] extend mini-syntax: `-y 'amount|Named Amount'`
-- [X] fix setup.py and requirements
-    - [x] got tox working
-    - [x] bump2version works?
-- [x] alias csvviz to cvz
-- [x] facet/grid: `-gs/--grid-sort`
-- [x] subclass click.Command to have type/category attribute, e.g. to specify 'general/specific' options
-    - [x] subclass helpformatter to print subsections of general/specific options, as well as categories of options 
 
 
 ## 0.5.0 – better bespoke visuals and labels
 
-Check out R-guides:
+- deprecate (TKD) color-sort for area/bar/stream
+    - when there *is* encoding
+        - `--color-sort=asc` arranges the marks in an order *opposite* of how they're sorted in the legend, which is not optimal
+    - [x] remove for now; produced JSON should have no `order` encoding
+    - [ ] write tests to confirm this: **test_bar.py:test_no_order_for_now**
+- smarter default color schemes
+    - should depend on `color_channel` being quantitative vs categorical
+    - for categorical color_channel type, use tableau10 when fewer than 10 categories, and tableau20 otherwise
+        - https://vega.github.io/vega/docs/schemes/
+        - write separate test suite
+        - if color_channel has `.aggregate`, do pandas group count
+
+- make streamgraph 
+    - https://altair-viz.github.io/gallery/streamgraph.html
+    - https://www.r-graph-gallery.com/154-basic-interactive-streamgraph-2.html
+    - get better sample data (vega?)
+        - [x] examples/real/unemployment.csv
+    - barebones implementation
+        - [x] `csvviz stream -x 'yearmonth(date)' -y 'thousands' -c 'sector'  --json examples/jobless.csv`
+    - basic tests
 
 - heatmap 
     - [x] barebones implementation
     - default color scale is categorical and terrible
         - this is fixed with `--color-scheme` but a sane default should be used:
             ``` 
-            csvviz heatmap -x state -y item -c sold --color-scheme blues  examples/hot.csv --json
+            cvz area -x 'yearmonth(date)' -y 'sum(thousands)' -c sector \
+                examples/real/unemployment.csv --title 'Unemployment'
             ```
-    - [ ] by default, third column should be passed into -c?
-    - [ ] enable sorting x-axis (and y-axis?)
+    - [NO] by default, third column should be passed into -c?
+    - [DEFER] enable sorting x-axis (and y-axis?)
     - [ ] write tests
     - [ ] use heatmap to try out sizing options, since default heatmap is tiny!
 
@@ -84,19 +50,20 @@ Check out R-guides:
         - https://www.r-graph-gallery.com/heatmap.html
             - Most basic heatmap: https://www.r-graph-gallery.com/215-the-heatmap-function.html
 
-- make stream chart? 
-    - https://altair-viz.github.io/gallery/streamgraph.html
-    - https://www.r-graph-gallery.com/154-basic-interactive-streamgraph-2.html
-
 
 - density
     - https://altair-viz.github.io/user_guide/transform/density.html
     - https://www.r-graph-gallery.com/density-plot.html
 
 
-- hist (why is this here?): https://www.r-graph-gallery.com/histogram.html
+- in general
+    - [ ] Doesn't seem to be a way to set a default color if we leave `-c` blank:
+        ```
+        $ cvz scatter -x date:T  --colors 'green' examples/tonk.csv --json 
+        Warning: The fill variable was not specified, so colors/color_scheme is ignored.
+        ```
 
-- [ ] allow sorting by array of values: https://vega.github.io/vega-lite/docs/sort.html#sort-array
+
 
 
 ## 0.5.2 -- more bespokeness 
@@ -104,6 +71,10 @@ Check out R-guides:
 - More chartwide options
     - `-op/--opacity` mark opacity option, for use in scatterplots
     - bar width: https://altair-viz.github.io/user_guide/customization.html#adjusting-the-width-of-bar-marks
+
+- sorting
+    - [ ] allow sorting by array of values: https://vega.github.io/vega-lite/docs/sort.html#sort-array
+
 
 
 - custom visuals
@@ -505,6 +476,49 @@ https://stackoverflow.com/questions/61840072/show-x-and-y-labels-in-each-facet-s
     - [x] test, including robust error handling when invalid column name is passed in
 
 
+
+## 0.4.0 – more fundamentals, more refactoring
+
+- [x] normalized bar/area charts
+- [X] Name channel vars, which sets axes and legend titles:
+    - [X] extend mini-syntax: `-y 'amount|Named Amount'`
+- [X] fix setup.py and requirements
+    - [x] got tox working
+    - [x] bump2version works?
+- [x] alias csvviz to cvz
+- [x] facet/grid: `-gs/--grid-sort`
+- [x] subclass click.Command to have type/category attribute, e.g. to specify 'general/specific' options
+    - [x] subclass helpformatter to print subsections of general/specific options, as well as categories of options 
+
+
+## Refactoring 2020-11-17
+
+ChannelGroup addition color stuff:
+- [x] should validate colorscheme name
+- [x] kill `-C` `-CS` and other dumb arg shortcuts [just made them more consistent]
+
+(2020-11-16 and prior has been moved to Old section)
+
+
+## Update 2020-11-11
+
+Been many weeks since I looked at this code base. After some struggling, was able to come up with a reliable bar chart command:
+
+    $  cvz bar examples/stocks.csv -x date:N -y price:Q -c company --json
+
+Scatter chart:
+
+    $ cvz scatter -x date:T examples/tonk.csv --json
+
+
+### Jumping in
+
+- Moved a bunch of 0.4.0 stuff to 0.5.5 -- basically everything that wasn't already done, and seemed like over-customization stuff, like `--no-grid`
+- moving on to 0.5.0 with new chart types
+- working on heatmap: basic implementation so far (2020-11-11)
+- time for a code refactor? vizkit.py is just a mess to me
+    - add more type hinting
+    - use more OOP stuff like @property
 
 
 ### 2020-11-16: refactor

@@ -101,42 +101,6 @@ def test_bar_fill():
     assert fill["type"] == "nominal"
 
 
-def test_bar_fill_sort():
-    cdata = json.loads(
-        CliRunner()
-        .invoke(bar, ["--colorvar", "name", "--color-sort", "asc", *OUTPUT_ARGS])
-        .output
-    )
-
-    o = cdata["encoding"]["order"]
-    assert o["field"] == "name"
-    assert o["sort"] == "ascending"
-
-
-def test_bar_fill_sort_desc():
-    cdata = json.loads(
-        CliRunner().invoke(bar, ["-c", "name", "--cs", "desc", *OUTPUT_ARGS]).output
-    )
-
-    o = cdata["encoding"]["order"]
-    assert o["field"] == "name"
-    assert o["sort"] == "descending"
-
-
-def test_bar_error_when_fill_sort_but_no_fill():
-    result = CliRunner().invoke(bar, ["--cs", "desc", *OUTPUT_ARGS])
-    assert result.exit_code == 1
-    assert (
-        "ConflictingArgs: --color-sort 'desc' was specified, but no --colorvar value"
-        in result.output.strip()
-    )
-
-
-def test_bar_error_when_fill_sort_invalid():
-    result = CliRunner().invoke(bar, ["--cs", "BOOBOO", *OUTPUT_ARGS])
-    assert result.exit_code == 2
-
-
 @pytest.mark.curious(
     reason="this should be in unit/test_vizkit, as opposed to just Barkit"
 )
@@ -245,3 +209,65 @@ def test_bar_sortx_var_handle_column_name_that_starts_with_hyphen():
     b_result = CliRunner().invoke(bar, ["-xs", r"--stuff", *OUTPUT_ARGS])
     b_data = json.loads(b_result.output)
     assert b_data["encoding"]["x"]["sort"] == {"field": "-stuff", "order": "descending"}
+
+
+#############################################
+# color-sort
+# (TKD)
+#############################################
+@pytest.mark.curious(
+    reason="trivial placeholder to confirm that encoding.order is by default not set; not while --color-sort is deprecated"
+)
+def test_no_order_for_now():
+    args = ["--colorvar", "name", *OUTPUT_ARGS]
+    r = CliRunner().invoke(bar, args)
+    jdata = json.loads(r.output)
+    assert "order" not in jdata["encoding"]
+
+
+@pytest.mark.skip(
+    reason="TKD: Deprecating all color-sorting until i figure out a more graceful solution"
+)
+def test_bar_fill_sort():
+    cdata = json.loads(
+        CliRunner()
+        .invoke(bar, ["--colorvar", "name", "--color-sort", "asc", *OUTPUT_ARGS])
+        .output
+    )
+
+    o = cdata["encoding"]["order"]
+    assert o["field"] == "name"
+    assert o["sort"] == "ascending"
+
+
+@pytest.mark.skip(
+    reason="TKD: Deprecating all color-sorting until i figure out a more graceful solution"
+)
+def test_bar_fill_sort_desc():
+    cdata = json.loads(
+        CliRunner().invoke(bar, ["-c", "name", "--cs", "desc", *OUTPUT_ARGS]).output
+    )
+
+    o = cdata["encoding"]["order"]
+    assert o["field"] == "name"
+    assert o["sort"] == "descending"
+
+
+@pytest.mark.skip(
+    reason="TKD: Deprecating all color-sorting until i figure out a more graceful solution"
+)
+def test_bar_error_when_fill_sort_but_no_fill():
+    result = CliRunner().invoke(bar, ["--cs", "desc", *OUTPUT_ARGS])
+    assert result.exit_code == 1
+    assert (
+        "ConflictingArgs: --color-sort 'desc' was specified, but no --colorvar value"
+        in result.output.strip()
+    )
+
+
+@pytest.mark.skip(
+    reason="TKD: Deprecating all color-sorting until i figure out a more graceful solution"
+)
+def test_bar_error_when_fill_sort_invalid():
+    result = CliRunner().invoke(bar, ["--cs", "BOOBOO", *OUTPUT_ARGS])
+    assert result.exit_code == 2
