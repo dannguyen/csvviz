@@ -32,8 +32,8 @@ def test_kit():
         },
     )
 
-    assert kit.viz_commandname == "hist"
-    assert kit.mark_method_name == "mark_bar"
+    assert kit.viz_commandname == kit.viz_name == "hist"
+    assert kit.mark_name == "bar"
     assert kit.color_channel_name == "fill"
 
 

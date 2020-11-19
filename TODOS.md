@@ -7,10 +7,24 @@
 
 ## 0.5.0 – better bespoke visuals and labels
 
+- [x] kill --theme for now
+- [ ] make Columnkit?
+
 ##### Vizkit.chart stuff should be a class?
-- similar to channelgroup
-- name could be ChartSpec
-    - for example, is_faceted makes sense as a ChartSpec property, not Vizkit
+- [ ] cut out commented and deprecated code
+- [x] commit and push refactoring work for tonight
+- [x] Dataful should be a class
+- [x] similar to channelgroup
+- [x] name is Chart for now... ChartSpec, or Viz?
+- refactoring Vizkit.init   
+    - [no why?] do not let Viz class touch `colorvar` or Vizkit.color_channel_name
+    - [NO] maybe Viz should handle channels/ChannelGroup, and Vizkit shouldn't at all?
+        - but then Viz would have to know about Vizkit.color_channel_name
+    - [x] rename viz_info/iz_epilog to help_info and help_epilog
+    - [x] is_faceted and interactive_mode are now Chart properties and are removed from Vizkit
+- testing
+    - [x] all prior tests run, including integration
+    - [x] held up at vizzes/test_*, with vizkit.mark_name and vizkit.chart.mark_name breaking on test_line.py
 
 ##### facet/grid stuff
 
@@ -35,8 +49,11 @@
         - Vega refers to as a "wrapped facet" chart, i.e. with "facet encoding": https://vega.github.io/vega-lite/docs/facet.html#facet-encoding
         - Further note: Vega also has a "grid facet" chart which is something slightly different: https://vega.github.io/vega-lite/docs/facet.html#grid-facet-with-row-and-column-encoding
             - should we change up names?
-                - what does ggplot2 call it?
                 - if we use `-f/--facetvar`, this means we can't use `-f` for other stuff, like `--format`...
+            - ggplot2 context
+                - ggplot2 calls it a `facet_grid`: https://ggplot2.tidyverse.org/reference/facet_grid.html
+                - extra confusing: ggplot2 says a `facet_wrap` is when "you have only one variable with many levels"???
+                    - i.e vega's facet_row/facet_column: http://zevross.com/blog/2019/04/02/easy-multi-panel-plots-in-r-using-facet_wrap-and-facet_grid-from-ggplot2/#useful-arguments-for-facet_wrap-and-facet_grid
 
 - Legends
     - Should legend be bottom-oriented?

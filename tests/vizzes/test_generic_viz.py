@@ -188,6 +188,7 @@ def test_error_if_user_specifies_columns_as_integers():
     )
 
 
+@pytest.mark.skip("TKD deprecated --themes for now")
 def test_error_if_invalid_theme_specified():
     result = CliRunner().invoke(viz, ["--theme", "NotGood", *OUTPUT_ARGS])
     assert result.exit_code == 2

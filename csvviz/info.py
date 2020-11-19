@@ -15,7 +15,7 @@ INFO_OPTIONS = {
     "aggregates": "list vega-lite aggregate functions available for Altair shorthand syntax, e.g. `-y 'sum(amount)' ",
     "colors": "list the HTML-valid color names, e.g. 'firebrick', 'hotpink'",
     "colorschemes": "list the vega supported color scales, e.g. 'tableau10', 'purples'",
-    "themes": "list the Altair themes, e.g. 'latimes', 'ggplot2', 'fivethirtyeight'",
+    # TKD:  "themes": "list the Altair themes, e.g. 'latimes', 'ggplot2', 'fivethirtyeight'",
     "timeunits": "list the timeunits available to Vega and available Altair shorthand syntax, e.g. `-y 'year(birthday)' `",
     "typecodes": "list datatypes and their shorthand syntax, e.g. `-x 'birthday:O'`",
     "versions": "list the versions of csvviz and main dependencies",
@@ -72,8 +72,9 @@ def command(infotype, **kwargs):
             (c, val) for c in sorted(cats) for val in schema["definitions"][c]["enum"]
         )
 
-    elif infotype == "themes":
-        values = sorted(AVAILABLE_THEMES)  # TODO refactor
+    # TKD
+    # elif infotype == "themes":
+    #     values = sorted(AVAILABLE_THEMES)  # TODO refactor
 
     elif infotype == "versions":
         # this should be a refactored constant

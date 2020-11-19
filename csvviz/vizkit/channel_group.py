@@ -1,5 +1,3 @@
-"""TODO/in progress: ChannelGroup subsumes/simplifies what's in Channeled.py"""
-
 import altair as alt
 from altair.utils import parse_shorthand as alt_parse_shorthand
 import pandas as pd
@@ -20,6 +18,8 @@ from csvviz.settings import (
     DEFAULT_FACET_COLUMNS,
     DEFAULT_FACET_SPACING,
 )
+
+from csvviz.vizkit.dataful import Dataful
 
 
 CHANNELS = {
@@ -94,7 +94,7 @@ class Helpers:
         return ds
 
 
-class ChannelGroup(dict, Helpers):
+class ChannelGroup(dict, Dataful, Helpers):
     """
     Equivalent to:
             cgroup =  {
@@ -112,11 +112,11 @@ class ChannelGroup(dict, Helpers):
     def __init__(
         self,
         options: dict,
-        df: pd.DataFrame,
+        data: pd.DataFrame,
         color_channel_name: OptionalType[str] = None,
     ):
         self.options = options  # i.e. "kwargs"
-        self.df = df
+        self._dataframe = data
         self.color_channel_name = color_channel_name
 
         self.scaffold().colorize().facetize().legendize().limitize()
@@ -233,10 +233,6 @@ class ChannelGroup(dict, Helpers):
             # :color_channel_name (i.e. 'fill')
             return None
         return self.get(self.color_channel_name)
-
-    @property
-    def column_names(self) -> ListType[str]:
-        return self.df.columns
 
     @property
     def facet_channel(self) -> alt.Facet:

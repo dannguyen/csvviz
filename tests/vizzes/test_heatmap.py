@@ -32,11 +32,12 @@ def test_heatmapkit():
     )
 
     assert kit.viz_commandname == "heatmap"
-    assert kit.mark_method_name == "mark_rect"
+    assert kit.viz_name == "heatmap"
+    assert kit.mark_name == "rect"
     assert kit.color_channel_name == "fill"
 
     # test its chart representation
-    d = kit.chart_dict
+    d = kit.chart_dict()
     assert d["mark"]["type"] == "rect"
     assert all(
         c in d["encoding"]

@@ -20,8 +20,8 @@ BINNING_OPTS = (
 
 class Histkit(Barkit):
     viz_commandname = "hist"
-    viz_info = f"""A bar chart that maps the frequency count of a given variable. Can be stacked."""
-    viz_epilog = """Example:\t csvviz hist -x Horsepower examples/cars.csv"""
+    help_info = f"""A bar chart that maps the frequency count of a given variable. Can be stacked."""
+    help_epilog = """Example:\t csvviz hist -x Horsepower examples/cars.csv"""
     color_channel_name = "fill"
 
     COMMAND_DECORATORS = (

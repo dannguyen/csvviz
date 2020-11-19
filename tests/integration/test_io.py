@@ -119,14 +119,3 @@ def test_io_error_when_missing_input_file():
     output, exitcode, err = process_program(pviz)
     assert exitcode == 2
     assert "Error: Missing argument: INPUT_FILE" in err
-
-
-#  # have to use CliRunner
-#  runner = CliRunner()
-#  result = runner.invoke(viz, DEFAULT_OPTS)
-# # assert not result.exception
-#  assert result.exit_code == 1
-#  # assert (
-#  #     """Error: Invalid value for '--theme': invalid choice: NotGood"""
-#  #     in result.output
-#  # )

@@ -31,11 +31,11 @@ def test_barkit():
         },
     )
 
-    assert kit.viz_commandname == "bar"
-    assert kit.mark_method_name == "mark_bar"
+    assert kit.viz_commandname == kit.viz_name == "bar"
+    assert kit.mark_name == "bar"
     assert kit.color_channel_name == "fill"
 
-    d = kit.chart_dict
+    d = kit.chart_dict()
     assert d["width"] == Barkit.default_chart_width
     assert d["height"] == Barkit.default_chart_height
 
@@ -53,7 +53,7 @@ def test_barkit_horizontalized():
     assert kit.channels["y"]["field"] == opts["xvar"]
     assert kit.channels["x"]["field"] == opts["yvar"]
 
-    d = kit.chart_dict
+    d = kit.chart_dict()
     assert d["encoding"]["x"]["field"] == opts["yvar"]
     assert d["encoding"]["y"]["field"] == opts["xvar"]
 
@@ -61,7 +61,7 @@ def test_barkit_horizontalized():
     assert d["height"] == Barkit.default_chart_width
 
 
-def test_bar_defaults():
+def test_click_bar_defaults():
     """
     MVP, where x is columns[0] and y is columns[1]
 
@@ -81,7 +81,7 @@ def test_bar_defaults():
     assert cdata["encoding"]["y"] == {"field": "amount", "type": "quantitative"}
 
 
-def test_bar_x_y():
+def test_click_bar_x_y():
     """
     setting x and y
     """
@@ -95,7 +95,7 @@ def test_bar_x_y():
     assert cdata["encoding"]["y"]["type"] == "quantitative"
 
 
-def test_bar_horizontal():
+def test_click_bar_horizontal():
     """
     Making a horizontal bar chart in Altair means flipping how x and y are specified.
 
@@ -119,7 +119,7 @@ def test_bar_horizontal():
 ##############################################################################################################
 # fill
 ##############################################################################################################
-def test_bar_fill():
+def test_click_bar_fill():
     """
     fill can be varied by the same column as x
     """
@@ -134,7 +134,7 @@ def test_bar_fill():
 @pytest.mark.curious(
     reason="this should be in unit/test_vizkit, as opposed to just Barkit"
 )
-def test_bar_warn_if_colors_specified_but_no_fill():
+def test_click_bar_warn_if_colors_specified_but_no_fill():
     result = CliRunner(mix_stderr=False).invoke(
         bar, ["--color-list", "red,blue", *OUTPUT_ARGS]
     )
@@ -158,7 +158,7 @@ NORMAL_ARGS = [
 @pytest.mark.curious(
     reason="Should this modify default legend title to 'Percentage of'?"
 )
-def test_bar_normalize():
+def test_click_bar_normalize():
     """
     y.stack is set to 'normalize'
     y axis is in '%' format
@@ -170,7 +170,7 @@ def test_bar_normalize():
     assert y["axis"]["format"] == "%"
 
 
-def test_bar_error_when_normalize_but_no_fill_color_stack():
+def test_click_bar_error_when_normalize_but_no_fill_color_stack():
     """
     User shouldn't be allowed to create normalized bars of 1 segment, even though it's technically valid
     """
@@ -185,7 +185,7 @@ def test_bar_error_when_normalize_but_no_fill_color_stack():
 ##############################################################################################################
 # sort-x
 ##############################################################################################################
-def test_bar_sortx_var_default():
+def test_click_bar_sortx_var_default():
     """default sort is ascending"""
     result = CliRunner().invoke(
         bar, ["-x", "name", "-y", "amount", "-xs", "y", *OUTPUT_ARGS]
@@ -202,7 +202,7 @@ def test_bar_sortx_var_default():
     assert dataset[-1]["name"] == "Ellie"
 
 
-def test_bar_sortx_var_reverse():
+def test_click_bar_sortx_var_reverse():
     """column name prefixed with '-' indicated descending sort"""
     result = CliRunner().invoke(bar, ["--x-sort", "-x", *OUTPUT_ARGS])
     cdata = json.loads(result.output)
@@ -212,7 +212,7 @@ def test_bar_sortx_var_reverse():
     )  # {"field": "amount", "order": "descending"}
 
 
-def test_bar_sortx_var_error_invalid_column():
+def test_click_bar_sortx_var_error_invalid_column():
     """
     If a non-existent column name is passed into the sort field, Altair accepts it and
     includes it in the ['encoding']['x']['sort'] object, with no apparent effect (similar to sorting by none)
@@ -228,7 +228,7 @@ def test_bar_sortx_var_error_invalid_column():
 
 
 @pytest.mark.skip(reason="Deprecated; --x-sort takes x/y/fill, not column name")
-def test_bar_sortx_var_handle_column_name_that_starts_with_hyphen():
+def test_click_bar_sortx_var_handle_column_name_that_starts_with_hyphen():
     """
     TODO: need to create a fixture dataset with column name '-stuff'
     """
@@ -248,7 +248,7 @@ def test_bar_sortx_var_handle_column_name_that_starts_with_hyphen():
 @pytest.mark.curious(
     reason="trivial placeholder to confirm that encoding.order is by default not set; not while --color-sort is deprecated"
 )
-def test_no_order_for_now():
+def test_click_no_order_for_now():
     args = ["--colorvar", "name", *OUTPUT_ARGS]
     r = CliRunner().invoke(bar, args)
     jdata = json.loads(r.output)
@@ -258,7 +258,7 @@ def test_no_order_for_now():
 @pytest.mark.skip(
     reason="TKD: Deprecating all color-sorting until i figure out a more graceful solution"
 )
-def test_bar_fill_sort():
+def test_click_bar_fill_sort():
     cdata = json.loads(
         CliRunner()
         .invoke(bar, ["--colorvar", "name", "--color-sort", "asc", *OUTPUT_ARGS])
@@ -273,7 +273,7 @@ def test_bar_fill_sort():
 @pytest.mark.skip(
     reason="TKD: Deprecating all color-sorting until i figure out a more graceful solution"
 )
-def test_bar_fill_sort_desc():
+def test_click_bar_fill_sort_desc():
     cdata = json.loads(
         CliRunner().invoke(bar, ["-c", "name", "--cs", "desc", *OUTPUT_ARGS]).output
     )
@@ -286,7 +286,7 @@ def test_bar_fill_sort_desc():
 @pytest.mark.skip(
     reason="TKD: Deprecating all color-sorting until i figure out a more graceful solution"
 )
-def test_bar_error_when_fill_sort_but_no_fill():
+def test_click_bar_error_when_fill_sort_but_no_fill():
     result = CliRunner().invoke(bar, ["--cs", "desc", *OUTPUT_ARGS])
     assert result.exit_code == 1
     assert (
@@ -298,6 +298,6 @@ def test_bar_error_when_fill_sort_but_no_fill():
 @pytest.mark.skip(
     reason="TKD: Deprecating all color-sorting until i figure out a more graceful solution"
 )
-def test_bar_error_when_fill_sort_invalid():
+def test_click_bar_error_when_fill_sort_invalid():
     result = CliRunner().invoke(bar, ["--cs", "BOOBOO", *OUTPUT_ARGS])
     assert result.exit_code == 2

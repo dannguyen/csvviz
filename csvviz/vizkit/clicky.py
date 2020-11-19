@@ -157,13 +157,14 @@ GENERAL_OPTS["visual"] = {
         is_flag=True,
         help="Omits any/all legends",
     ),
-    "theme": GenOption.foo(
-        "--theme",
-        category="Chart visual styles and properties",
-        type=click.Choice(AVAILABLE_THEMES, case_sensitive=False),
-        default="default",
-        help="Choose a built-in theme for chart",
-    ),
+    # TKD
+    # "theme": GenOption.foo(
+    #     "--theme",
+    #     category="Chart visual styles and properties",
+    #     type=click.Choice(AVAILABLE_THEMES, case_sensitive=False),
+    #     default="default",
+    #     help="Choose a built-in theme for chart",
+    # ),
     "title": GenOption.foo(
         "--title",
         "-t",

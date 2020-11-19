@@ -13,8 +13,8 @@ from csvviz.vizkit.channel_group import ChannelGroup
 
 class Streamkit(Vizkit):
     viz_commandname = "stream"
-    viz_info = f"""A streamgraph. Like an area chart, but streamy TK"""
-    viz_epilog = """Example:  $ csvviz stream examples/stocks.csv  -x 'date:T' -y price -c company --jsonv"""
+    help_info = f"""A streamgraph. Like an area chart, but streamy TK"""
+    help_epilog = """Example:  $ csvviz stream examples/stocks.csv  -x 'date:T' -y price -c company --jsonv"""
     color_channel_name = "fill"
 
     COMMAND_DECORATORS = (

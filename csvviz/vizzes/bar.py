@@ -6,12 +6,13 @@ from typing import Dict as DictType
 from csvviz.exceptions import ConflictingArgs, InvalidDataReference
 from csvviz.vizkit import Vizkit
 from csvviz.vizkit.channel_group import ChannelGroup
+from csvviz.vizkit.chart import Chart
 
 
 class Barkit(Vizkit):
     viz_commandname = "bar"
-    viz_info = f"""An bar/column chart"""
-    viz_epilog = """Example:\tcsvviz bar -x name -y amount data.csv"""
+    help_info = f"""A bar/column chart"""  # TK change this when we make Columnkit
+    help_epilog = """Example:\tcsvviz bar -x name -y amount data.csv"""
     color_channel_name = "fill"
 
     # ok, horizontal bar charts are confusing because by default, cvz bar makes a COLUMN chart
@@ -144,14 +145,14 @@ class Barkit(Vizkit):
         #     channels["order"] = alt.Order(fname)
         #     channels["order"].sort = "descending" if cs == "desc" else "ascending"
 
-    def finalize_styles(self, styles: DictType) -> DictType:
+    def finalize_chart(self, chart: Chart) -> Chart:
         # ok, horizontal bar charts are confusing because by default, cvz bar makes a COLUMN chart
         # TK: make cvz column type
         if self.is_horizontal:
-            w = styles["width"]
-            styles["width"] = styles["height"]
-            styles["height"] = w
-        return styles
+            w = chart.get_prop("width")
+            h = chart.get_prop("height")
+            chart.set_props({"width": h, "height": w})
+        return chart
 
 
 """

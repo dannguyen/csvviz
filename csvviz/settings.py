@@ -1,7 +1,5 @@
-from altair import themes
-
-
-AVAILABLE_THEMES = themes.names()
+# from altair import themes
+# AVAILABLE_THEMES = themes.names()
 
 DEFAULT_COLOR_SCHEMES = {
     "categorical": "tableau20",

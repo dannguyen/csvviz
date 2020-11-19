@@ -14,8 +14,8 @@ from csvviz.vizkit import Vizkit
 
 class Linekit(Vizkit):
     viz_commandname = "line"
-    viz_info = f"""A line chart"""
-    # viz_epilog = (
+    help_info = f"""A line chart"""
+    # help_epilog = (
     #     f"""Example:\t $ csvviz line -x date -y price -c company examples/stocks.csv"""
     # )
     color_channel_name = "stroke"

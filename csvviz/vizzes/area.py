@@ -15,8 +15,8 @@ from csvviz.vizkit.channel_group import ChannelGroup
 
 class Areakit(Vizkit):
     viz_commandname = "area"
-    viz_info = f"""An area chart. Can be stacked"""
-    viz_epilog = """Example:  $ csvviz area -x date -y price -c company stocks.csv"""
+    help_info = f"""An area chart. Can be stacked"""
+    help_epilog = """Example:  $ csvviz area -x date -y price -c company stocks.csv"""
     color_channel_name = "fill"
 
     COMMAND_DECORATORS = (

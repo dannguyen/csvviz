@@ -15,8 +15,8 @@ from csvviz.vizkit import Vizkit
 class Heatmapkit(Vizkit):
 
     viz_commandname = "heatmap"
-    viz_info = f"""A TKTKTK"""
-    viz_epilog = (
+    help_info = f"""A TKTKTK"""
+    help_epilog = (
         """Example:\t csvviz heatmap -x state -y item -c sold examples/hot.csv"""
     )
     color_channel_name = "fill"

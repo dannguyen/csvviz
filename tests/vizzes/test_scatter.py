@@ -20,7 +20,7 @@ OUTPUT_ARGS = [
 ]
 
 
-def test_kit():
+def test_scatterkit():
     kit = Scatterkit(
         input_file="examples/vals.csv",
         options={
@@ -33,8 +33,8 @@ def test_kit():
         },
     )
 
-    assert kit.viz_commandname == "scatter"
-    assert kit.mark_method_name == "mark_point"
+    assert kit.viz_commandname == kit.viz_name == "scatter"
+    assert kit.mark_name == "point"
     assert kit.color_channel_name == "fill"
 
 

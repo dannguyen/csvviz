@@ -39,8 +39,8 @@ def test_kit():
         },
     )
 
-    assert kit.viz_commandname == "line"
-    assert kit.mark_method_name == "mark_line"
+    assert kit.viz_commandname == kit.viz_name == "line"
+    assert kit.mark_name == "line"
     assert kit.color_channel_name == "stroke"
 
 

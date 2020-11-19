@@ -29,12 +29,12 @@ def test_streamkit():
         },
     )
 
-    assert kit.viz_commandname == "stream"
-    assert kit.mark_method_name == "mark_area"
+    assert kit.viz_commandname == kit.viz_name == "stream"
+    assert kit.mark_name == "area"
     assert kit.color_channel_name == "fill"
 
     # test its chart representation
-    d = kit.chart_dict
+    d = kit.chart_dict()
     assert d["mark"]["type"] == "area"
     assert all(
         c in d["encoding"]

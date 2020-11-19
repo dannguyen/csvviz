@@ -16,18 +16,20 @@ from csvviz.exceptions import ConflictingArgs
 from csvviz.helpers import parse_delimited_str
 from csvviz.settings import *
 from csvviz.vizkit.channel_group import ChannelGroup
+from csvviz.vizkit.chart import Chart
+from csvviz.vizkit.dataful import Dataful
 from csvviz.vizkit.interfaces import ClickFace, OutputFace
 
 
-class Vizkit(ClickFace, OutputFace):
+class Vizkit(Dataful, ClickFace, OutputFace):
     """
     The interface between Click.command, Altair.Chart, and Pandas.dataframe
     """
 
     # help meta
     viz_commandname = "abstract"
-    viz_info = f"""A {viz_commandname} visualization"""  # this should be defined in every subclass
-    viz_epilog = ""
+    help_info = f"""A {viz_commandname} visualization"""  # this should be defined in every subclass
+    help_epilog = ""
 
     color_channel_name = "fill"  # can be either 'fill' or 'stroke'
 
@@ -37,7 +39,7 @@ class Vizkit(ClickFace, OutputFace):
     default_faceted_height = 150
     default_faceted_width = 250
 
-    def __init__(self, input_file: UnionType[str, Path], options: dict):
+    def __init__(self, input_file: UnionType[str, Path], options: DictType):
         self.warnings = []
 
         self.validate_options(options)
@@ -49,10 +51,23 @@ class Vizkit(ClickFace, OutputFace):
         self.channels = self.finalize_channels(ch)
 
         c = self.init_chart()
-        self.chart = self.stylize_chart(c)
-        # TK: init_styles/finalize_styles is buried in style_chart
+        self.chart = self.finalize_chart(c)
 
-    def validate_options(self, raw_options: dict) -> bool:
+    @classmethod
+    def chart_defaults(klass) -> DictType:
+        """
+        this exists as a method b/c too lazy to figure out how to make a @chartproperty
+
+        TODO: make it a class variable dict, and do away with klass.default_chart_height etc
+        """
+        return {
+            "chart_height": klass.default_chart_height,
+            "chart_width": klass.default_chart_width,
+            "faceted_height": klass.default_faceted_height,
+            "faceted_width": klass.default_faceted_width,
+        }
+
+    def validate_options(self, raw_options: DictType) -> bool:
         """
         At this point, raw_options is basically taken directly from the Command kwargs
 
@@ -98,31 +113,11 @@ class Vizkit(ClickFace, OutputFace):
 
         return opts
 
-    def init_chart(self) -> alt.Chart:
-        """
-        instantiate a Chart object and encode its channels
-
-        prereq: self.channels has been set up
-        """
-
-        alt.themes.enable(self.theme)
-        c: alt.Chart
-        c = self.mark_method_foo(clip=True)
-        c = c.encode(**self.channels)
-
-        if self.is_faceted:
-            c = c.resolve_axis(x="independent")
-
-        if self.interactive_mode:
-            c = c.interactive()
-
-        return c
-
     def init_channels(self) -> ChannelGroup:
         """just a wrapper around ChannelGroup constructor"""
         ch = ChannelGroup(
             options=self.options,
-            df=self._dataframe,
+            data=self.df,
             color_channel_name=self.color_channel_name,
         )
         return ch
@@ -135,47 +130,31 @@ class Vizkit(ClickFace, OutputFace):
         """
         return channels
 
-    def stylize_chart(self, chart: alt.Chart) -> alt.Chart:
-        styleprops = self.init_styles()
-        styleprops = self.finalize_styles(styleprops)
+    def init_chart(self) -> Chart:
+        """
+        instantiate and create a Chart object
 
-        chart = chart.properties(**styleprops)
+        prereqs:
+            - self.channels has been set up
+            - self.chart_defaults() is defined
 
-        return chart
+        Note: `options` is still just a sloppy grabbag from the command-line arg parser, consider
+            refactoring Chart to prevent leaky abstraction
+        """
+        x = Chart(
+            viz_name=self.viz_commandname,
+            data=self.df,
+            channels=self.channels,
+            defaults=self.chart_defaults(),
+            options=self.options,
+        )
+        return x
 
-    def init_styles(self) -> DictType:
-        """assumes self.channels has been set, particularly the types of x/y channels"""
-        styles = {}
-
-        # TODO: refactor this
-        styles["autosize"] = {"type": "pad", "contains": "padding"}
-
-        STYLE_ATTRS = {
-            "height": self.default_chart_height,
-            "width": self.default_chart_width,
-            "title": None,
-        }
-
-        # TK messy messy!
-        if self.is_faceted:
-            STYLE_ATTRS["height"] = self.default_faceted_height
-            STYLE_ATTRS["width"] = self.default_faceted_width
-
-        for att, default_val in STYLE_ATTRS.items():
-            setval = self.options.get(att)
-            if setval == 0 or setval:
-                styles[att] = setval
-            elif default_val:
-                styles[att] = default_val
-            else:
-                pass
-                # do nothing, including don't add :att to styles
-
-        return styles
-
-    def finalize_styles(self, styles: DictType) -> DictType:
+    def finalize_chart(self, chart: Chart) -> Chart:
         """another abstract class method, to be implemented when necessary by subclasses"""
-        return styles
+        return chart
+        # chart = chart.set_props({})
+        # return chart
 
     @staticmethod
     def validate_color_scheme(scheme: str) -> str:
@@ -191,55 +170,33 @@ class Vizkit(ClickFace, OutputFace):
 
         return scheme in all_schemes
 
-    #####################################################################
-    # properties
-    @property
-    def column_names(self) -> ListType[str]:
-        return list(self.df.columns)
-
-    @property
-    def df(self) -> pd.DataFrame:
-        return self._dataframe
-
-    @property
-    def interactive_mode(self) -> bool:
-        return self.options.get("is_interactive")
-
-    @property
-    def is_faceted(self) -> bool:
-        """should throw error if accessed before self.channels is set"""
-        return True if self.channels.get("facet") else False
-
-    @property
-    def mark_method_name(self) -> str:
-        """e.g. 'mark_rect', 'mark_line'"""
-        return self.lookup_mark_method(self.viz_commandname)
-
-    @property
-    def mark_method_foo(self) -> CallableType:
-        return getattr(alt.Chart(self.df), self.mark_method_name)
-
-    @property
-    def name(self) -> str:
-        return self.viz_commandname
-
-    @property
-    def theme(self) -> str:
-        return self.options.get("theme")
-
-    # TK: untested props; maybe should be methods?
-    @property
-    def chart_dict(self) -> dict:
+    def chart_dict(self, **kwargs) -> dict:
         """
         Convert the chart to a dictionary suitable for JSON export
         File:   altair/vegalite/v4/api.py
         """
-        return self.chart.to_dict()
+        return self.chart.to_dict(**kwargs)
 
-    @property
-    def chart_json(self) -> str:
+    def chart_json(self, **kwargs) -> str:
         """
         The JSON specification of the chart object.
         altair/utils/schemapi.py
         """
-        return self.chart.to_json(indent=2, sort_keys=False, validate=True)
+        return self.chart.to_json(**kwargs)
+
+    @property
+    def mark_name(self) -> str:
+        return self.chart.mark_name
+
+    @property
+    def name(self) -> str:
+        """TK: deprecate this? is it ever used?"""
+        return self.viz_commandname
+
+    @property
+    def raw_chart(self) -> alt.Chart:
+        return self.chart.raw_chart
+
+    @property
+    def viz_name(self) -> str:
+        return self.viz_commandname

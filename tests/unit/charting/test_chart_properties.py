@@ -1,39 +1,70 @@
 """
-These tests test the effect of vizkit options on its chart object
-They do NOT invoke CliRunner i.e. integrated cli output
+Basically more specific tests vs test_chart.py
+
+These tests are isolated from CliRunner, i.e. does not show integrated cli output
+
+They are mostly isolated from Vizkit...depends on (mocked) Vizkit.viz_commandname and chart_defaults()
+
+They are mostly isolated from ChannelGroup...depends on:
+    - channels['facet'] for is_faceted
 """
 
 import pytest
 
 import altair as alt
+import pandas as pd
 from pathlib import Path
+from typing import Dict as DictType
 
 from csvviz.exceptions import *
 import csvviz.settings
-
-# for now, the bar chart seems like a good default viz
-from csvviz.vizzes.bar import Barkit as Gkit
+from csvviz.vizkit.chart import Chart
+from csvviz.vizkit.channel_group import ChannelGroup
 
 INPUT_PATH = "examples/fruits.csv"
 
+SETUP_OPTS = {
+    "xvar": "product",
+    "yvar": "revenue",
+    "colorvar": "season",
+}
+MOCK_COMMAND_NAME = "bar"
+MOCK_DEFAULTS = {
+    "chart_height": 2000,
+    "chart_width": 1000,
+    "faceted_height": 420,
+    "faceted_width": 240,
+}
 
-def vfoo(options={}, input_file=INPUT_PATH) -> Gkit:
-    return Gkit(input_file, options=options)
+
+def setup_viz(options={}) -> Chart:
+    opts = SETUP_OPTS.copy()
+    opts.update(options)
+    dataframe = pd.read_csv(INPUT_PATH)
+    channels = ChannelGroup(options=opts, data=dataframe, color_channel_name="fill")
+
+    return Chart(
+        viz_name=MOCK_COMMAND_NAME,
+        channels=channels,
+        data=dataframe,
+        defaults=MOCK_DEFAULTS,
+        options=opts,
+    )
 
 
-def cfoo(
-    options={},
-    input_file=INPUT_PATH,
-) -> alt.Chart:
-    return vfoo(options, input_file).chart_dict
+def chartprops(options={}) -> DictType:
+    return setup_viz(options).to_dict()
 
 
-def test_chart_defaults():
-    chart = cfoo()
-    assert "title" not in chart
-    assert chart["height"] == Gkit.default_chart_height
-    assert chart["width"] == Gkit.default_chart_width
-    assert chart["autosize"] == {
+def test_chart_and_chart_defaults():
+    """
+    Chart defaults should be equal to Vizkit.chart_defaults()
+    """
+    p = chartprops()
+    assert "title" not in p
+    assert p["height"] == MOCK_DEFAULTS["chart_height"]
+    assert p["width"] == MOCK_DEFAULTS["chart_width"]
+    assert p["autosize"] == {
         "type": "pad",
         "contains": "padding",
     }
@@ -41,40 +72,40 @@ def test_chart_defaults():
 
 @pytest.mark.curious("this should be deprecated/fixed or whatever later TK")
 def test_chart_default_config():
-    chart = cfoo()
-    assert chart["config"]["view"] == {"continuousWidth": 400, "continuousHeight": 300}
+    p = chartprops()
+    assert p["config"]["view"] == {"continuousWidth": 400, "continuousHeight": 300}
 
 
 ##############################################################################################################
 # chart style properties
 ##############################################################################################################
 def test_set_title():
-    chart = cfoo({"title": "My Title"})
-    assert chart["title"] == "My Title"
+    p = chartprops({"title": "My Title"})
+    assert p["title"] == "My Title"
 
 
 def test_set_width_height():
-    chart = cfoo({"height": 42, "width": 100})
-    assert chart["width"] == 100
-    assert chart["height"] == 42
+    p = chartprops({"height": 42, "width": 100})
+    assert p["width"] == 100
+    assert p["height"] == 42
 
 
 def test_set_auto_width_height():
-    chart = cfoo({"height": 0})
-    assert chart["height"] == 0
-    assert chart["width"] == Gkit.default_chart_width
+    p = chartprops({"height": 0})
+    assert p["height"] == 0
+    assert p["width"] == MOCK_DEFAULTS["chart_width"]
 
-    chart = cfoo({"width": 0})
-    assert chart["height"] == Gkit.default_chart_height
-    assert chart["width"] == 0
+    p = chartprops({"width": 0})
+    assert p["height"] == MOCK_DEFAULTS["chart_height"]
+    assert p["width"] == 0
 
 
 #####################
 # legend stuff
 #####################
 def test_chart_default_legend():
-    chart = cfoo({"colorvar": "season"})
-    fill = chart["encoding"]["fill"]
+    p = chartprops({"colorvar": "season"})
+    fill = p["encoding"]["fill"]
     assert fill["legend"]["orient"] == csvviz.settings.DEFAULT_LEGEND_ORIENTATION
 
 
@@ -83,8 +114,8 @@ def test_chart_default_legend():
 )
 def test_chart_disable_legend():
     """encoding's legend prop is explicitly set to None"""
-    chart = cfoo({"colorvar": "season", "no_legend": True})
-    fill = chart["encoding"]["fill"]
+    p = chartprops({"colorvar": "season", "no_legend": True})
+    fill = p["encoding"]["fill"]
     assert fill["legend"] is None
 
 
@@ -92,48 +123,15 @@ def test_chart_disable_legend():
 # chart style interactivity
 ##############################################################################################################
 def test_is_interactive():
-    chart = cfoo({"is_interactive": True})
-    sel = list(chart["selection"].keys())[0]
-    s = chart["selection"][sel]
+    p = chartprops({"is_interactive": True})
+    sel = list(p["selection"].keys())[0]
+    s = p["selection"][sel]
     assert isinstance(s, dict)
     assert s["type"] == "interval"
     assert s["bind"] == "scales"
     assert s["encodings"] == ["x", "y"]
 
 
-# ##############################################################################################################
-# # output and preview
-# ##############################################################################################################
-
-
-# def test_interactive_chart():
-#     result = CliRunner().invoke(viz, ["--static", *TING_ARGS])
-#     cdata = json.loads(result.output)
-
-#     assert "selection" not in cdata
-
-
-# def test_static_chart():
-#     result = CliRunner().invoke(viz, ["--interactive", *TING_ARGS])
-#     cdata = json.loads(result.output)
-
-#     assert "selection" in cdata
-
-
-# ##############################################################################################################
-# # --theme
-# ##############################################################################################################
-
-
-# def test_specify_theme():
-#     result = CliRunner().invoke(viz, ["--theme", "latimes", *TING_ARGS])
-#     cdata = json.loads(result.output)
-
-#     assert "latimes" == cdata["usermeta"]["embedOptions"]["theme"]
-
-
-# def test_specify_default_theme_has_no_effect():
-#     result = CliRunner().invoke(viz, ["--theme", "default", *TING_ARGS])
-#     cdata = json.loads(result.output)
-#     assert "usermeta" not in cdata
-#     # i.e. NOT cdata['usermeta']['embedOptions']['theme'] == 'default'
+def test_is_static():
+    p = chartprops({"is_interactive": False})
+    assert "selection" not in p

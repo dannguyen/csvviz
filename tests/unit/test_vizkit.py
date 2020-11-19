@@ -8,6 +8,7 @@ import pandas as pd
 
 from csvviz.settings import *
 from csvviz.vizkit import Vizkit
+from csvviz.vizkit.chart import Chart
 from csvviz.vizzes.scatter import Scatterkit
 
 from csvviz.helpers import parse_delimited_str
@@ -40,7 +41,9 @@ def bare():
 
 def test_vizkit_basic_init(bare):
     assert isinstance(bare, Vizkit)
-    assert isinstance(bare.chart, alt.Chart)
+    assert isinstance(bare.chart, Chart)
+    # raw_chart is used for handing off to an external process like browser opening
+    assert isinstance(bare.raw_chart, alt.Chart)
 
 
 def test_vizkit_unneeded_properties_to_deprecate(bare):
@@ -76,39 +79,29 @@ def test_vizkit_get_specified_options(tvk):
     assert tvk.options.get("color_list") == "red,white,blue"
 
 
-@pytest.mark.curious("kind of the same as test_basic_init")
-def test_vizkit_properties(tvk):
-    assert isinstance(tvk.df, pd.DataFrame)
-    assert tvk.viz_commandname == "abstract"
-    assert tvk.mark_method_name == "mark_bar"
-    assert tvk.color_channel_name == "fill"
-    assert tvk.column_names == ["name", "amount"]
-    assert tvk.is_faceted is False
-
-
 def test_vizkit_chart_dict(tvk):
-    d = tvk.chart_dict
+    d = tvk.chart_dict()
     assert isinstance(d, dict)
 
 
 def test_vizkit_chart_json(tvk):
-    j = tvk.chart_json
+    j = tvk.chart_json()
 
     assert isinstance(j, str)
-    assert json.loads(j) == tvk.chart_dict
+    assert json.loads(j) == tvk.chart_dict()
 
 
 @pytest.mark.curious(
-    "exists only to test Vizkit.is_faceted; messiness is b/c fixtures weren't refactored"
+    "exists only to confirm that Vizkit.is_faceted is actually in Vizkit.chart.is_faceted"
 )
-def test_vizkit_is_faceted_prop():
+def test_vizkit_is_faceted_prop_belongs_to_its_chart():
     opts = {
         "xvar": "name",
         "yvar": "amount",
         "facetvar": "name",
     }
     v = Vizkit(input_file=SRC_PATH, options=opts)
-    assert v.is_faceted is True
+    assert v.chart.is_faceted is True
 
 
 ###################################################################################
@@ -119,7 +112,7 @@ def test_vizkit_chart_bare_defaults(bare):
     basically, testing that the chart object meets expected spec and
      has our expected defaults
     """
-    d = bare.chart_dict
+    d = bare.chart_dict()
     # make sure data is there
     assert d["data"]["name"] in d["datasets"]
     # default chart props
@@ -146,7 +139,7 @@ def test_vizkit_chart_bare_defaults(bare):
 )
 def test_vizkit_chart_fill_set_and_color_list(tvk):
     """prereq: vizkit.options includes 'color_list' => 'str,str,str'"""
-    d = tvk.chart_dict
+    d = tvk.chart_dict()
     e = d["encoding"]["fill"]
     assert e["field"] == "name"
     assert e["scale"]["range"] == ["red", "white", "blue"]
@@ -155,6 +148,9 @@ def test_vizkit_chart_fill_set_and_color_list(tvk):
 
 
 @pytest.mark.curious("also tested in test_chart_properties...")
+@pytest.mark.curious(
+    "exists only to confirm that Vizkit.interactive_mode is actually in Vizkit.chart.interactive_mode"
+)
 def test_vizkit_chart_interactive_mode_ie_option_is_interactive(tvk):
     """
     selection is set when is_interactive option is set to True
@@ -169,8 +165,8 @@ def test_vizkit_chart_interactive_mode_ie_option_is_interactive(tvk):
         }
       }
     """
-    assert tvk.interactive_mode is True
-    d = tvk.chart_dict
+    assert tvk.chart.interactive_mode is True
+    d = tvk.chart_dict()
     sel = list(d["selection"].keys())[0]
     assert "selector" in sel
     s = d["selection"][sel]
@@ -183,7 +179,7 @@ def test_vizkit_chart_interactive_mode_ie_option_is_interactive(tvk):
 @pytest.mark.curious(reason="This is basically covered in test_viz_chart_bare_defaults")
 def test_vizkit_chart_basic(tvk):
     chart = tvk.chart
-    vega = tvk.chart_dict
+    vega = tvk.chart_dict()
     assert "selection" in vega  # because of is_interactive
 
     # import pdb; pdb.set_trace()
@@ -194,7 +190,7 @@ def test_vizkit_chart_basic(tvk):
     assert vega["encoding"]["fill"]["field"] == "name"
 
 
-def test_vizkit_output_basic(tvk, capsys):
+def test_vizkit_output_chart_basic(tvk, capsys):
     tvk.output_chart()
     outs = capsys.readouterr().out
     assert "{" == outs.splitlines()[0]
@@ -216,15 +212,3 @@ def test_parse_channel_arg_edge_case_vizkit_channels():
     )
     assert s.channels["y"]["field"] == "Hello|World"
     assert s.channels["y"]["title"] == "hey|world"
-
-
-#####################################
-# get_chart_methodname
-#####################################
-def test_lookup_mark_method():
-    foo = Vizkit.lookup_mark_method
-    assert "mark_area" == foo("area")
-    assert "mark_bar" == foo("bar")
-    assert "mark_bar" == foo("hist")
-    assert "mark_line" == foo("line")
-    assert "mark_point" == foo("scatter")

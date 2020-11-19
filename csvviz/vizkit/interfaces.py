@@ -27,34 +27,10 @@ from csvviz.vizkit.clicky import (
 )  # TODO: general_options_decor should not be knowable here?
 
 
-MARK_METHOD_LOOKUP = {
-    "area": "area",
-    "bar": "bar",
-    "heatmap": "rect",
-    "hist": "bar",
-    "line": "line",
-    "scatter": "point",
-    "stream": "area",
-    "abstract": "bar",  # for testing purposes
-}
-
-
 class ClickFace:
     """The interface for making a click command, including meta info for generating the help"""
 
     """TODO most of this should be in clicky.py?"""
-
-    @staticmethod
-    def lookup_mark_method(viz_commandname: str) -> str:
-        """
-        convenience method that translates our command names, e.g. bar, dot, line, to
-        the equivalent in altair
-        """
-        m = MARK_METHOD_LOOKUP.get(viz_commandname.lower())
-        if not m:
-            raise ValueError(f"{viz_commandname} is not a recognized viz/chart type")
-        else:
-            return "mark_%s" % m
 
     @classmethod
     def cmd_wrapper(klass):
@@ -78,8 +54,8 @@ class ClickFace:
         command = click.command(
             cls=Clicky,
             name=klass.viz_commandname,
-            help=klass.viz_info,
-            epilog=klass.viz_epilog,
+            help=klass.help_info,
+            epilog=klass.help_epilog,
         )(command)
         command = general_options_decor(command)
         for decor in klass.COMMAND_DECORATORS:
@@ -94,13 +70,11 @@ class OutputFace:
     def output_chart(self) -> NoReturnType:
         """Send to stdout the desired representation of a chart"""
         if self.options["to_json"]:
-            clout(self.chart_json)
+            clout(self.chart_json())
 
-    def preview_chart(self) -> UnionType[NoReturnType, bool]:
+    def preview_chart(self) -> NoReturnType:
         if not self.options.get("no_preview"):
-            self.open_chart_in_browser(self.chart)
-        else:
-            return False
+            self.open_chart_in_browser(self.raw_chart)
 
     @staticmethod
     def open_chart_in_browser(chart: alt.Chart) -> NoReturnType:
