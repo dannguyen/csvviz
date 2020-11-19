@@ -9,6 +9,8 @@
 
 - [x] kill --theme for now
 - [ ] make Columnkit?
+    - but then how to handle Histkit? Other than to make it always a column kit?
+
 
 ##### Vizkit.chart stuff should be a class?
 - [ ] cut out commented and deprecated code

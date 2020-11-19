@@ -11,6 +11,7 @@ from typing import Dict as DictType
 
 from csvviz.exceptions import *
 from csvviz.vizzes.bar import Barkit
+from csvviz.vizkit.chart import Chart
 
 BINNING_OPTS = (
     "bincount",
@@ -66,7 +67,6 @@ class Histkit(Barkit):
         return True
 
     def finalize_channels(self, channels):
-
         bwargs = {k: self.options[k] for k in BINNING_OPTS if self.options.get(k)}
         # deal with special case in which xvar is a nominal field, which means user
         # is trying to do a standard frequency count
@@ -106,10 +106,11 @@ class Histkit(Barkit):
 
         return channels
 
-    def finalize_styles(self, styles: DictType) -> DictType:
-        # for horizontal
+    def finalize_chart(self, chart: Chart) -> Chart:
+        # ok, horizontal bar charts are confusing because by default, cvz bar makes a COLUMN chart
+        # TK: make cvz column type
         if self.is_horizontal:
-            w = styles["width"]
-            styles["width"] = styles["height"]
-            styles["height"] = w
-        return styles
+            w = chart.get_prop("width")
+            h = chart.get_prop("height")
+            chart.set_props({"width": h, "height": w})
+        return chart
