@@ -2,22 +2,36 @@
 
 
 
+## The state of things (2020-11-20): v0.4.9
 
-
+- mostly done with 0.5.0 -- put version number at '0.4.9'
+- think about doing documentation
+    - get an idea of what's easy to explain and what seems extraneous
+    - find another gallery site to pattern off of
+        - altair gallery: https://altair-viz.github.io/gallery/
+        - https://www.r-graph-gallery.com/
+        - https://vega.github.io/vega-lite/examples/
+        - http://www.cookbook-r.com/Graphs/
+    - Gallery: make a spreadsheet of all chart types and variations
+        - https://docs.google.com/spreadsheets/d/1X8hn71T5jHNeMXLc03LOeak-uVTu4tSr-ZnfVcCXeJ8/edit#gid=0
+- grid vs facet
+    - should probably call option `-f/--facetvar` to maintain consistency with docs and common understanding
+    - also, 'grid' implies being able to specify a regular grid, e.g. '4x8'...but we only give user option to specify `--grid-columns`
 
 ## 0.5.0 – better bespoke visuals and labels
-
-
 
 ##### overall
 - [x] kill --theme for now
 - [x] set altair theme to None
 
 ##### color_list and color_scheme
-- [ ] allow color_list/color_scheme to be set globally if color var is not set
+
+- [x] allow color_list to set mark.color even if --colorvar left unspecified
+        - https://vega.github.io/vega/docs/config/#mark
+
 
 ##### Vizkit.chart stuff should be a class?
-- [ ] cut out commented and deprecated code
+- [?] cut out commented and deprecated code
 - [x] commit and push refactoring work for tonight
 - [x] Dataful should be a class
 - [x] similar to channelgroup
@@ -42,12 +56,12 @@
         cvz line examples/real/unemployment.csv \
             -x month:O -y rate -c sector -g year:O --json
         ```
+- [ ] kill `--grid-sort` for now?
 
 - In general
     - [x] `-g` should be `--gridvar` not `--grid` (but clicky stores it in facetvar)
     - [x] `--grid-columns=0` creates a chart with unlimited facets
     - if `-g/--gridvar`, calculate unique grid variables and set grid columns accordingly
-    - kill `--grid-sort` for now?
     - set facet['spacing'] to DEFAULT_FACET_SPACING https://vega.github.io/vega-lite/docs/facet.html#config
     - [x] Vizkit should have is_faceted property, which is derived from self.channels
     - SHOULD I RENAME --grid to --facet?
@@ -61,9 +75,6 @@
                 - extra confusing: ggplot2 says a `facet_wrap` is when "you have only one variable with many levels"???
                     - i.e vega's facet_row/facet_column: http://zevross.com/blog/2019/04/02/easy-multi-panel-plots-in-r-using-facet_wrap-and-facet_grid-from-ggplot2/#useful-arguments-for-facet_wrap-and-facet_grid
 
-- Legends
-    - Should legend be bottom-oriented?
-
 - How to deal with sizing for grid charts
     - https://vega.github.io/vega-lite/docs/size.html#width-and-height-of-multi-view-displays
     - use chart_grid_default_height/width? Or none at all?
@@ -72,12 +83,9 @@
     
 
 
-##### make bar and column separate charts
-
-- [ ] kill `--HZ/--horizontal`
 
 
-##### chart width/height, i.e. init_styles
+##### chart width/height, i.e. init_props
 - https://vega.github.io/vega-lite/docs/size.html#specifying-fixed-width-and-height
 - [x] chart-wide with `-W` and `-H`
 - [x] vizkit now has class vars default_chart_width and default_chart_height
@@ -105,13 +113,6 @@ chart config
     - [x] basic tests
 
 
-- smarter default color schemes
-    - should depend on `color_channel` being quantitative vs categorical
-    - for categorical color_channel type, use tableau10 when fewer than 10 categories, and tableau20 otherwise
-        - https://vega.github.io/vega/docs/schemes/
-        - write separate test suite
-        - if color_channel has `.aggregate`, do pandas group count
-
 - heatmap 
     - [x] barebones implementation
     - default color scale is categorical and terrible
@@ -135,20 +136,6 @@ chart config
             - Most basic heatmap: https://www.r-graph-gallery.com/215-the-heatmap-function.html
 
 
-- density
-    - https://altair-viz.github.io/user_guide/transform/density.html
-    - https://www.r-graph-gallery.com/density-plot.html
-
-
-- in general
-    - [ ] Doesn't seem to be a way to set a default color if we leave `-c` blank:
-        ```
-        $ cvz scatter -x date:T  --colors 'green' examples/tonk.csv --json 
-        Warning: The fill variable was not specified, so colors/color_scheme is ignored.
-        ```
-        - Define it at the config.mark level? https://vega.github.io/vega/docs/config/#mark
-
-
 - [X] deprecate (TKD) color-sort for area/bar/stream
     - when there *is* encoding
         - `--color-sort=asc` arranges the marks in an order *opposite* of how they're sorted in the legend, which is not optimal
@@ -158,6 +145,23 @@ chart config
 
 
 ## 0.5.2 -- more bespokeness 
+
+##### make bar and column separate charts
+
+- [ ] kill `--HZ/--horizontal`
+
+- density
+    - https://altair-viz.github.io/user_guide/transform/density.html
+    - https://www.r-graph-gallery.com/density-plot.html
+
+
+- smarter default color schemes
+    - [x] should depend on `color_channel` being quantitative vs categorical
+    - for categorical color_channel type, use tableau10 when fewer than 10 categories, and tableau20 otherwise
+        - https://vega.github.io/vega/docs/schemes/
+        - [ ] write separate test suite
+        - [ ] if color_channel has `.aggregate`, do pandas group count
+
 
 - [ ] make Columnkit?
     - but then how to handle Histkit? Other than to make it always a column kit?
@@ -201,6 +205,13 @@ chart config
 
 ## 0.5.5 
 
+##### channelgroup limits
+
+- [ ] allow user to do: `--xlim ',120' and --ylim '20,' `
+- [ ] what happens when `--xlim [0,50]` but xvar is non-quant?
+- [ ] add tests and warnings
+
+
 - axis properties
     - [ ] `--no-grid`
     - https://altair-viz.github.io/gallery/us_population_over_time_facet.html
@@ -218,6 +229,10 @@ chart config
     - chart-fill `-BGC/--background-color`
 
 
+
+## 0.5.9 layered charts with highlights and rules
+
+- https://altair-viz.github.io/gallery/bar_chart_with_highlighted_segment.html
 
 
 ## 0.6.0 – better input/output

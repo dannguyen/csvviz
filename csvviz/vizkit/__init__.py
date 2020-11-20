@@ -89,12 +89,12 @@ class Vizkit(Dataful, ClickFace, OutputFace):
                 "--color-list and --color-scheme cannot both be specified."
             )
 
-        if raw_options.get("color_list") or raw_options.get("color_scheme"):
+        if raw_options.get("color_scheme"):
             if not raw_options.get("colorvar"):
                 self.warnings.append(
-                    f"--colorvar was not specified, so --color-list and --color-scheme is ignored."
+                    f"--colorvar was not specified, so --color-scheme is ignored."
                 )
-            elif raw_options.get("color_scheme"):
+            else:
                 cs = raw_options.get("color_scheme")
                 if not self.validate_color_scheme(cs):
                     self.warnings.append(

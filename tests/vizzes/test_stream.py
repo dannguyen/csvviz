@@ -68,4 +68,4 @@ def test_streamkit_cli_defaults():
     fill = jdata["encoding"]["fill"]
     assert fill["field"] == "region"
     assert fill["type"] == "nominal"
-    assert fill["scale"]["scheme"] == DEFAULT_COLOR_SCHEMES["categorical"]
+    assert fill["scale"]["scheme"] == DEFAULT_COLOR_SCHEMES["category"]

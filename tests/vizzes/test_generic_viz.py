@@ -76,7 +76,7 @@ def test_fill_default_quant_color_scheme():
 
     fill = cdata["encoding"]["fill"]
     assert fill["type"] == "quantitative"
-    assert fill["scale"]["scheme"] == DEFAULT_COLOR_SCHEMES["quantitative"]
+    assert fill["scale"]["scheme"] == DEFAULT_COLOR_SCHEMES["ramp"]
 
 
 @pytest.mark.skip(reason="Not worrying about extra legend functionality until later")
@@ -132,7 +132,7 @@ def test_warn_if_colors_scheme_specified_but_no_colorvar():
     r = CliRunner().invoke(viz, ["--color-scheme", "dark2", *OUTPUT_ARGS])
     assert r.exit_code == 0
     assert (
-        "Warning: --colorvar was not specified, so --color-list and --color-scheme is ignored"
+        "Warning: --colorvar was not specified, so --color-scheme is ignored"
         in r.output
     )
 

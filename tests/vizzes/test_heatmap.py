@@ -71,4 +71,5 @@ def test_heatmap_cli_defaults():
     fill = jdata["encoding"]["fill"]
     assert fill["field"] == "sold"
     assert fill["type"] == "quantitative"
-    assert fill["scale"]["scheme"] == DEFAULT_COLOR_SCHEMES["quantitative"]
+    # as opposed to DEFAULT_COLOR_SCHEMES["heatmap"]
+    assert fill["scale"]["scheme"] == DEFAULT_COLOR_SCHEMES["ramp"]

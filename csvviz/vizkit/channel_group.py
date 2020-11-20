@@ -86,11 +86,11 @@ class Helpers:
             "quantitative",
             "temporal",
         ):
-            ds = DEFAULT_COLOR_SCHEMES["quantitative"]
+            ds = DEFAULT_COLOR_SCHEMES["ramp"]
         elif datatype == "ordinal":
             ds = DEFAULT_COLOR_SCHEMES["ordinal"]
         else:
-            ds = DEFAULT_COLOR_SCHEMES["categorical"]
+            ds = DEFAULT_COLOR_SCHEMES["category"]
         return ds
 
 
@@ -163,12 +163,20 @@ class ChannelGroup(dict, Dataful, Helpers):
             config["scheme"] = self.options["color_scheme"]
         else:
             config["scheme"] = self.get_default_color_scheme(self.color_channel.type)
-            # TODO: move to its own method
 
         if self.options.get("color_list"):
-            config["range"] = [s.strip() for s in self.options["color_list"].split(",")]
+            colornames = [s.strip() for s in self.options["color_list"].split(",")]
+            if len(colornames) > 1:
+                config["range"] = colornames
+            else:
+                # if the color variable is quantitative, it will display nothing unless
+                # the color list has at least 2 things...
+                # this amounts to a silent failure tho....TKTK
+                config["range"] = [colornames[0], colornames[0]]
             # color_list` kwarg overrides any color_scheme setting
-            config.pop("scheme")
+            # TKD: Note: Vizkit validation prevents color_scheme and color_list from being set
+            # but unit testing purposes, we need to do this pop:
+            config.pop("scheme", None)
 
         self.color_channel.scale = alt.Scale(**config)
         return self
@@ -218,6 +226,9 @@ class ChannelGroup(dict, Dataful, Helpers):
     def limitize(self) -> "ChannelGroup":
         """
         by now, self['x'] and self['y'] are expected to be set
+
+        Note that because options['xlim/ylim'] is a comma-delimited str, like '-10,40'
+        the channel.scale will be set to alt.Scale(domain=["-10", "40"])...and Vega figures it out?
         """
         LIMS = (
             "xlim",

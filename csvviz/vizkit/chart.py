@@ -15,6 +15,7 @@ from typing import (
 from csvviz.vizkit.channel_group import ChannelGroup
 from csvviz.vizkit.dataful import Dataful
 
+
 DEFAULT_PROPS = {
     "autosize": {
         "contains": "padding",
@@ -69,15 +70,28 @@ class Chart(Dataful):
     def scaffold(self) -> alt.Chart:
         alt.themes.enable("none")
         c = alt.Chart(data=self.df)
-        c = getattr(c, self.mark_method_name)(clip=True)
+
+        # set local configs
+        # c = getattr(c, self.mark_method_name)(clip=True)
+        mark_foo = getattr(c, self.mark_method_name)
+        mark_opts = {"clip": True}
+        if not self.color_channel and self.options.get("color_list"):
+            # user hasn't defined a fill/stroke var, but wants to define a color...
+            # TK DRY this up
+            xcols = [s.strip() for s in self.options["color_list"].split(",")]
+            mark_opts["color"] = xcols[0]
+        c = mark_foo(**mark_opts)
+
+        ##### encode channels
         c = c.encode(**self.channels)
 
+        # set global configs
+        # TODO: call these "local" configs? and move to own method?
         if self.is_faceted:
             c = c.resolve_axis(x="independent")
 
         if self.interactive_mode:
             c = c.interactive()
-
         c = c.properties(**self.init_props())
 
         return c
@@ -144,6 +158,11 @@ class Chart(Dataful):
     @property
     def channels(self) -> ChannelGroup:
         return self._channels
+
+    @property
+    def color_channel(self):
+        """returns OptionalType[UnionType[alt.Fill, alt.Stroke]]"""
+        return self.channels.color_channel
 
     @property
     def is_faceted(self) -> bool:

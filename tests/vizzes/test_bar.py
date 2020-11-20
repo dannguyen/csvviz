@@ -134,13 +134,26 @@ def test_click_bar_fill():
 @pytest.mark.curious(
     reason="this should be in unit/test_vizkit, as opposed to just Barkit"
 )
-def test_click_bar_warn_if_colors_specified_but_no_fill():
+def test_click_bar_no_colorvar_but_color_list_specified():
+    """ take first color in list and apply it to the mark"""
     result = CliRunner(mix_stderr=False).invoke(
-        bar, ["--color-list", "red,blue", *OUTPUT_ARGS]
+        bar, ["--color-list", " deeppink , red,blue", *OUTPUT_ARGS]
+    )
+    assert result.exit_code == 0
+    jdata = json.loads(result.output)
+    assert jdata["mark"]["color"] == "deeppink"
+
+
+@pytest.mark.curious(
+    reason="this should be in unit/test_vizkit, as opposed to just Barkit"
+)
+def test_click_bar_warn_if_color_scheme_specified_but_no_colorvar():
+    result = CliRunner(mix_stderr=False).invoke(
+        bar, ["--color-scheme", "purples", *OUTPUT_ARGS]
     )
     assert result.exit_code == 0
     assert (
-        "Warning: --colorvar was not specified, so --color-list and --color-scheme is ignored."
+        "Warning: --colorvar was not specified, so --color-scheme is ignored."
         in result.stderr
     )
 

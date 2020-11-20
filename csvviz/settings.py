@@ -2,9 +2,11 @@
 # AVAILABLE_THEMES = themes.names()
 
 DEFAULT_COLOR_SCHEMES = {
-    "categorical": "tableau20",
-    "quantitative": "blues",
-    "ordinal": "blues",  # not sure if this is ever used
+    "category": "tableau20",
+    "diverging": "blueorange",
+    "heatmap": "blues",
+    "ordinal": "bluepurple",
+    "ramp": "purples",
 }
 
 
