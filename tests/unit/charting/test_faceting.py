@@ -95,17 +95,17 @@ def test_set_ininite_facet_columns():
 
 def test_set_faceted_width_and_height():
     """no different in effect than non-faceted chart"""
-    c = chartprops({"height": 42, "width": 100})
+    c = chartprops({"chart_height": 42, "chart_width": 100})
     assert c["width"] == 100
     assert c["height"] == 42
 
 
 def test_set_facted_auto_width_height():
     """basically same as effect in non-faceted chart"""
-    c = chartprops({"height": 0})
+    c = chartprops({"chart_height": 0})
     assert c["height"] == 0
     assert c["width"] == MOCK_DEFAULTS["faceted_width"]
 
-    c = chartprops({"width": 0})
+    c = chartprops({"chart_width": 0})
     assert c["height"] == MOCK_DEFAULTS["faceted_height"]
     assert c["width"] == 0

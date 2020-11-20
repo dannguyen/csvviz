@@ -45,7 +45,16 @@ class Vizkit(Dataful, ClickFace, OutputFace):
         self.validate_options(options)
         self.input_file = input_file
         self._dataframe = pd.read_csv(self.input_file)
-        self.options = self.set_channel_defaults(options)
+        # as of now, input_file is supposed to be a Path/str, but
+        # in the edge case that it isn't like for testing, filename needs
+        # to be something...        self.filename = self.input_file.name
+        self.filename = (
+            Path(self.input_file).name
+            if isinstance(self.input_file, (str, Path))
+            else "[input]"
+        )
+
+        self.options = self.set_default_channels_and_options(options)
 
         ch = self.init_channels()
         self.channels = self.finalize_channels(ch)
@@ -95,13 +104,20 @@ class Vizkit(Dataful, ClickFace, OutputFace):
 
         return True
 
-    def set_channel_defaults(self, options: dict) -> dict:
+    def set_default_channels_and_options(self, options: dict) -> dict:
         """
-        TODO: move to ChannelGroup?
-        returns a copy  of options, in which:
-            xvar and yvar, if left blank, are set to the 0 and 1 of dataframe.columns
+        some chart-wide options set to defaults if not provided in command-line options
         """
         opts = options.copy()
+
+        # TK: nah, user shouldn't have to explicitly set title to none to disable this
+        # if not opts.get('chart_title'):
+        #     opts['chart_title'] = self.filename
+
+        # TODO: move to ChannelGroup?
+        # returns a copy  of options, in which:
+        #     xvar and yvar, if left blank, are set to the 0 and 1 of dataframe.columns
+
         for i, v in enumerate(
             (
                 "xvar",

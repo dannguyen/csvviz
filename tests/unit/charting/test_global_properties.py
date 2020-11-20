@@ -70,53 +70,28 @@ def test_chart_and_chart_defaults():
     }
 
 
-@pytest.mark.curious("this should be deprecated/fixed or whatever later TK")
-def test_chart_default_config():
-    p = chartprops()
-    assert p["config"]["view"] == {"continuousWidth": 400, "continuousHeight": 300}
-
-
 ##############################################################################################################
-# chart style properties
+# chart wide properties
 ##############################################################################################################
 def test_set_title():
-    p = chartprops({"title": "My Title"})
+    p = chartprops({"chart_title": "My Title"})
     assert p["title"] == "My Title"
 
 
 def test_set_width_height():
-    p = chartprops({"height": 42, "width": 100})
+    p = chartprops({"chart_height": 42, "chart_width": 100})
     assert p["width"] == 100
     assert p["height"] == 42
 
 
 def test_set_auto_width_height():
-    p = chartprops({"height": 0})
+    p = chartprops({"chart_height": 0})
     assert p["height"] == 0
     assert p["width"] == MOCK_DEFAULTS["chart_width"]
 
-    p = chartprops({"width": 0})
+    p = chartprops({"chart_width": 0})
     assert p["height"] == MOCK_DEFAULTS["chart_height"]
     assert p["width"] == 0
-
-
-#####################
-# legend stuff
-#####################
-def test_chart_default_legend():
-    p = chartprops({"colorvar": "season"})
-    fill = p["encoding"]["fill"]
-    assert fill["legend"]["orient"] == csvviz.settings.DEFAULT_LEGEND_ORIENTATION
-
-
-@pytest.mark.curious(
-    "legend disabling is also tested at the channel_group(options={}) level..."
-)
-def test_chart_disable_legend():
-    """encoding's legend prop is explicitly set to None"""
-    p = chartprops({"colorvar": "season", "no_legend": True})
-    fill = p["encoding"]["fill"]
-    assert fill["legend"] is None
 
 
 ##############################################################################################################

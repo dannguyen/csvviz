@@ -12,7 +12,7 @@ import csvviz.settings
 """
 These tests are isolated from CliRunner, i.e. does not show integrated cli output
 
-They are NOT isolated from Chart or ChannelGroup
+They are NOT isolated from Chart or ChannelGroup (see also test_leaks.y)
 
 test_vizkit_is_leaky_to_chart::
 Has a dependency on Vizkit/Barkit, but mostly to make sure shared attributes are properly reflected:
@@ -25,38 +25,6 @@ VIZKIT = Vizkit
 VIZ_NAME = VIZKIT.viz_commandname
 
 SRC_PATH = "examples/fruits.csv"
-
-
-@pytest.mark.curious(
-    "basically an integration test...it exists to break when i do future decoupling of Vizkit and Chart"
-)
-def test_chart_has_leaky_relation_to_vizkit_and_channel_group(mydata):
-    """fragile, canary test!"""
-    opts = {
-        "xvar": "product",
-        "yvar": "revenue",
-        "colorvar": "season",
-        "facetvar": "region",
-    }
-    vk = VIZKIT(input_file=SRC_PATH, options=opts)
-    chart = vk.chart
-    # Vizkit passes raw_chart to things that need an alt.Chart
-    assert chart.raw_chart == vk.raw_chart
-    # sharing
-    assert chart.viz_name == vk.viz_name == vk.viz_commandname == VIZKIT.viz_commandname
-    # shares options
-    assert chart.options == vk.options
-    # shares defaults
-    assert chart.defaults["chart_height"] == vk.chart_defaults()["chart_height"]
-    assert chart.defaults["faceted_height"] == vk.chart_defaults()["faceted_height"]
-    # shares helpers
-    assert chart.to_dict() == vk.chart_dict()
-    assert chart.to_json() == vk.chart_json()
-    # shares channels
-    assert chart.channels == vk.channels
-    # chart doesn't use options['colorvar/facetvar']; instead, it only depends on its own channels
-    assert chart.is_faceted and vk.channels["facet"]
-    assert chart.channels["fill"]["field"] == opts["colorvar"]
 
 
 @pytest.fixture
@@ -109,8 +77,6 @@ def test_dataful(bchart):
 def test_to_dict(bchart):
     d = bchart.to_dict()
     assert isinstance(d, dict)
-
-    assert isinstance(d["config"], dict)
     assert isinstance(d["encoding"], dict)
     assert d["mark"]["type"] == bchart.mark_name
 
@@ -122,7 +88,16 @@ def test_to_json(bchart):
     assert json.loads(j) == bchart.to_dict()
 
 
-def test_bchart_construction(bchart):
+def test_has_no_global_config(bchart):
+    """
+    as a result of `alt.themes.enable('none')`, global config should
+    not be present
+    """
+    d = bchart.to_dict()
+    assert "config" not in d
+
+
+def test_basic_construction(bchart):
     assert isinstance(bchart, Chart)
     assert isinstance(bchart.channels, ChannelGroup)
     assert isinstance(bchart.raw_chart, alt.Chart)

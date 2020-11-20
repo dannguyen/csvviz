@@ -198,6 +198,12 @@ class ChannelGroup(dict, Dataful, Helpers):
         return self
 
     def legendize(self) -> "ChannelGroup":
+        """
+        Vega doesn't seem to have a legend-disabling config at the global/local level,
+        so we have to do it at the encoding level
+
+        https://altair-viz.github.io/user_guide/generated/toplevel/altair.Chart.html#altair.Chart.configure_legend
+        """
         config = {"orient": DEFAULT_LEGEND_ORIENTATION}
         for cname in ("fill", "size", "stroke"):
             channel = self.get(cname)

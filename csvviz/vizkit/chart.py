@@ -15,9 +15,15 @@ from typing import (
 from csvviz.vizkit.channel_group import ChannelGroup
 from csvviz.vizkit.dataful import Dataful
 
-# from csvviz import altUndefined
-# from csvviz.exceptions import InvalidDataReference
-
+DEFAULT_PROPS = {
+    "autosize": {
+        "contains": "padding",
+        "type": "pad",
+    },
+    "height": None,
+    "title": None,
+    "width": None,
+}
 
 VIZ_MARK_NAME_LOOKUP = {
     "abstract": "bar",  # for testing purposes
@@ -39,9 +45,6 @@ class Chart(Dataful):
         channels: ChannelGroup,
         defaults: DictType,
         options: DictType = {},
-        # styles:DictType = {},
-        # config:DictType = {},
-        # is_interactive:bool = True
     ):
         """
         A class that abstracts the actual chart building
@@ -57,9 +60,6 @@ class Chart(Dataful):
         self.defaults = defaults
         self._dataframe = data
         self._channels = channels
-        # self._init_styles = styles
-        # self._init_config = config  # chart wide stuff, like width, height, title
-        # self.is_interactive = is_interactive
 
         tkc = self.scaffold()
         # given a funky name because _chart_object is not meant to be touched
@@ -67,6 +67,7 @@ class Chart(Dataful):
         self._chart_object = tkc
 
     def scaffold(self) -> alt.Chart:
+        alt.themes.enable("none")
         c = alt.Chart(data=self.df)
         c = getattr(c, self.mark_method_name)(clip=True)
         c = c.encode(**self.channels)
@@ -77,40 +78,33 @@ class Chart(Dataful):
         if self.interactive_mode:
             c = c.interactive()
 
-        c = c.properties(**self.init_styles())
+        c = c.properties(**self.init_props())
 
         return c
 
-    def init_styles(self) -> DictType:
+    def init_props(self) -> DictType:
         """assumes self.channels has been set, particularly the types of x/y channels"""
-        # TK rename this...
-        styles = {}
-
-        # TODO: refactor this
-        styles["autosize"] = {"type": "pad", "contains": "padding"}
-
-        STYLE_ATTRS = {
-            "height": self.defaults["chart_height"],
-            "width": self.defaults["chart_width"],
-            "title": None,
-        }
+        props = {}
 
         # TK messy messy!
         if self.is_faceted:
-            STYLE_ATTRS["height"] = self.defaults["faceted_height"]
-            STYLE_ATTRS["width"] = self.defaults["faceted_width"]
+            props["height"] = self.defaults["faceted_height"]
+            props["width"] = self.defaults["faceted_width"]
+        else:
+            props["height"] = self.defaults["chart_height"]
+            props["width"] = self.defaults["chart_width"]
 
-        for att, default_val in STYLE_ATTRS.items():
-            setval = self.options.get(att)
+        for att, default_val in DEFAULT_PROPS.items():
+            setval = self.options.get("chart_%s" % att)
             if setval == 0 or setval:
-                styles[att] = setval
+                props[att] = setval
             elif default_val:
-                styles[att] = default_val
+                props[att] = default_val
             else:
                 pass
-                # do nothing, including don't add :att to styles
+                # do nothing, including don't add :att to props
 
-        return styles
+        return props
 
     def get_prop(self, propname: str) -> AnyType:
         """used by Vizkit to talk to the raw chart properties without having to do vizkit.raw_chart.prop"""
@@ -183,58 +177,3 @@ class Chart(Dataful):
             raise ValueError(f"{name} is not a recognized viz/chart type")
         else:
             return m
-
-
-# def lookup_mark_method(viz_commandname: str) -> str:
-#     """
-#     convenience method that translates our command names, e.g. bar, dot, line, to
-#     the equivalent in altair
-#     """
-#     m = VIZ_MARK_NAME_LOOKUP.get(viz_commandname.lower())
-#     if not m:
-#         raise ValueError(f"{viz_commandname} is not a recognized viz/chart type")
-#     else:
-#         return "mark_%s" % m
-
-# @property
-# def mark_method_foo(self) -> CallableType:
-#     return getattr(alt.Chart(self.df), self.mark_method_name)
-
-
-# def stylize_chart(self, chart: alt.Chart) -> alt.Chart:
-#     styleprops = self.init_styles()
-#     styleprops = self.finalize_styles(styleprops)
-
-#     chart = chart.properties(**styleprops)
-
-#     return chart
-
-# def init_styles(self) -> DictType:
-#     """assumes self.channels has been set, particularly the types of x/y channels"""
-#     styles = {}
-
-#     # TODO: refactor this
-#     styles["autosize"] = {"type": "pad", "contains": "padding"}
-
-#     STYLE_ATTRS = {
-#         "height": self.default_chart_height,
-#         "width": self.default_chart_width,
-#         "title": None,
-#     }
-
-#     # TK messy messy!
-#     if self.is_faceted:
-#         STYLE_ATTRS["height"] = self.default_faceted_height
-#         STYLE_ATTRS["width"] = self.default_faceted_width
-
-#     for att, default_val in STYLE_ATTRS.items():
-#         setval = self.options.get(att)
-#         if setval == 0 or setval:
-#             styles[att] = setval
-#         elif default_val:
-#             styles[att] = default_val
-#         else:
-#             pass
-#             # do nothing, including don't add :att to styles
-
-#     return styles

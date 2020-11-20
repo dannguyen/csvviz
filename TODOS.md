@@ -7,10 +7,14 @@
 
 ## 0.5.0 – better bespoke visuals and labels
 
-- [x] kill --theme for now
-- [ ] make Columnkit?
-    - but then how to handle Histkit? Other than to make it always a column kit?
 
+
+##### overall
+- [x] kill --theme for now
+- [x] set altair theme to None
+
+##### color_list and color_scheme
+- [ ] allow color_list/color_scheme to be set globally if color var is not set
 
 ##### Vizkit.chart stuff should be a class?
 - [ ] cut out commented and deprecated code
@@ -118,8 +122,8 @@ chart config
             ```
     - [NO] by default, third column should be passed into -c?
     - [DEFER] enable sorting x-axis (and y-axis?)
+    - [x] use heatmap to try out sizing options, since default heatmap is tiny!
     - [ ] write tests
-    - [ ] use heatmap to try out sizing options, since default heatmap is tiny!
 
     - notes:
         - https://altair-viz.github.io/gallery/simple_heatmap.html 
@@ -142,6 +146,8 @@ chart config
         $ cvz scatter -x date:T  --colors 'green' examples/tonk.csv --json 
         Warning: The fill variable was not specified, so colors/color_scheme is ignored.
         ```
+        - Define it at the config.mark level? https://vega.github.io/vega/docs/config/#mark
+
 
 - [X] deprecate (TKD) color-sort for area/bar/stream
     - when there *is* encoding
@@ -152,6 +158,10 @@ chart config
 
 
 ## 0.5.2 -- more bespokeness 
+
+- [ ] make Columnkit?
+    - but then how to handle Histkit? Other than to make it always a column kit?
+
 
 - More chartwide options
     - `-op/--opacity` mark opacity option, for use in scatterplots
@@ -349,9 +359,15 @@ chart config
 
 - revisions to CLI api
 
+
+##### colorvar should override config, not mark
+- https://altair-viz.github.io/user_guide/customization.html#encoding
+- However, it's probably better to do color range at the encoding level, in case we want to layer charts...
+
 ## 2.0 
 
 - add option to do seaborn viz
+
 
 -----------------------------------------------------------------------------
 

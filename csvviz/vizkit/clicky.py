@@ -143,10 +143,10 @@ GENERAL_OPTS["visual"] = {
         type=click.STRING,
         help="The name of a Vega color scheme to use for fill (this is overridden by -C/--color-list)",
     ),
-    "height": GenOption.foo(
+    "chart_height": GenOption.foo(
         "--height",
         "-H",
-        "height",
+        "chart_height",
         category="Chart visual styles and properties",
         type=click.INT,
         help="The height in pixels for the chart",
@@ -165,17 +165,18 @@ GENERAL_OPTS["visual"] = {
     #     default="default",
     #     help="Choose a built-in theme for chart",
     # ),
-    "title": GenOption.foo(
+    "chart_title": GenOption.foo(
         "--title",
-        "-t",
+        "-T",
+        "chart_title",
         category="Chart visual styles and properties",
         type=click.STRING,
         help="A title for the chart",
     ),
-    "width": GenOption.foo(
+    "chart_width": GenOption.foo(
         "--width",
         "-W",
-        "width",
+        "chart_width",
         category="Chart visual styles and properties",
         type=click.INT,
         help="The width in pixels for the chart",

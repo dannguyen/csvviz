@@ -29,7 +29,7 @@ def assert_valid_json(output: str):
     assert re.match(
         r"https://vega.github.io/schema/vega-lite/v\d.+?json", data["$schema"]
     )
-    assert all(k in data for k in ("config", "data", "mark", "encoding"))
+    assert all(k in data for k in ("data", "mark", "encoding"))
 
 
 def process_program(pipe: PIPE):
@@ -48,6 +48,28 @@ def test_io_basic():
     output, exitcode, err = process_program(pviz)
     assert exitcode == 0
     assert_valid_json(output)
+
+
+def test_io_set_chartwide_props():
+    """make sure -T/-W/-H are mapped internally to chart_title, chart_height, chart_width"""
+    pviz = Popen(
+        [
+            *DEFAULT_ARGS,
+            *DEFAULT_OPTS,
+            PATH_CSV,
+            "-T",
+            "Chart Title",
+            "-W",
+            "42",
+            "-H",
+            "99",
+        ],
+        stdout=PIPE,
+    )
+    output, exitcode, err = process_program(pviz)
+    assert '"title": "Chart Title"' in output
+    assert '"width": 42' in output
+    assert '"height": 99' in output
 
 
 def test_args_and_opts_intermixed():

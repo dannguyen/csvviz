@@ -4,7 +4,7 @@ import altair as alt
 from io import StringIO
 import json
 import pandas as pd
-
+from pathlib import Path
 
 from csvviz.settings import *
 from csvviz.vizkit import Vizkit
@@ -44,6 +44,7 @@ def test_vizkit_basic_init(bare):
     assert isinstance(bare.chart, Chart)
     # raw_chart is used for handing off to an external process like browser opening
     assert isinstance(bare.raw_chart, alt.Chart)
+    assert bare.filename == Path(SRC_PATH).name  # i.e. tings.csv
 
 
 def test_vizkit_unneeded_properties_to_deprecate(bare):
@@ -118,13 +119,6 @@ def test_vizkit_chart_bare_defaults(bare):
     # default chart props
     assert d["mark"]["clip"] is True
     assert "type" in d["mark"]
-    assert all(
-        c in d["config"]["view"]
-        for c in (
-            "continuousHeight",
-            "continuousWidth",
-        )
-    )
     assert all(
         c in d["encoding"]
         for c in (
@@ -212,3 +206,8 @@ def test_parse_channel_arg_edge_case_vizkit_channels():
     )
     assert s.channels["y"]["field"] == "Hello|World"
     assert s.channels["y"]["title"] == "hey|world"
+
+    # as of now, input_file is supposed to be a Path/str, but
+    # in the edge case that it isn't like for testing, filename needs
+    # to be something...
+    assert s.filename == "[input]"
