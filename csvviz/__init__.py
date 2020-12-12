@@ -2,7 +2,7 @@
 
 __author__ = """Dan Nguyen"""
 __author_email__ = "dansonguyen@gmail.com"
-__version__ = "0.4.9.1"
+__version__ = "0.4.9.2"
 
 
 from altair.utils.schemapi import Undefined as altUndefined

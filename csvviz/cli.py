@@ -42,24 +42,33 @@ def cli(**kwargs):
     """csvviz (cvz) is a command-line tool for producing visualizations using the Vega-lite spec"""
     pass
 
+# manual hack for now
+from csvviz.vizzes import area, bar, heatmap, hist, line, scatter, stream
 
 def main():
-    def _add_viz_subcommands() -> NoReturnType:
-        for path in SUBCOMMAND_PATHS:
-            modname = re.sub(f"/", ".", str(path)).rpartition(".py")[
-                0
-            ]  # e.g. "csvviz.viz.bar" or "csvviz.viz.info"
-            klassname = modname.split(".")[-1].capitalize() + "kit"
-            klass = getattr(importlib.import_module(modname), klassname)
+    ## this doesn't work for release, for some reason
+    # def _add_viz_subcommands() -> NoReturnType:
+    #     for path in SUBCOMMAND_PATHS:
+    #         modname = re.sub(f"/", ".", str(path)).rpartition(".py")[
+    #             0
+    #         ]  # e.g. "csvviz.viz.bar" or "csvviz.viz.info"
+    #         klassname = modname.split(".")[-1].capitalize() + "kit"
+    #         klass = getattr(importlib.import_module(modname), klassname)
 
-            if getattr(klass, "register_command", None):  # TODO: remove after testing
-                cli.add_command(klass.register_command())
+    #         if getattr(klass, "register_command", None):  # TODO: remove after testing
+    #             cli.add_command(klass.register_command())
 
-    _add_viz_subcommands()
+    # _add_viz_subcommands()
     # manually add info command
     cli.add_command(infocommand)
+    cli.add_command(area.Areakit.register_command())
+    cli.add_command(bar.Barkit.register_command())
+    cli.add_command(heatmap.Heatmapkit.register_command())
+    cli.add_command(hist.Histkit.register_command())
+    cli.add_command(line.Linekit.register_command())
+    cli.add_command(scatter.Scatterkit.register_command())
+    cli.add_command(stream.Streamkit.register_command())
     cli()
-
 
 if __name__ == "__main__":
     sys.exit(main())  # pragma: no cover
