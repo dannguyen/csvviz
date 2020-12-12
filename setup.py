@@ -36,7 +36,7 @@ setup(
     author_email=csvviz_vals.__author_email__,
     python_requires=">=3.6",
     classifiers=[
-        "Development Status :: 3 - Pre-Alpha",
+        "Development Status :: 3 - Alpha",
         "Environment :: Console",
         "Framework :: Pytest",
         "Framework :: tox",
