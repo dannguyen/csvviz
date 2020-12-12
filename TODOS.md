@@ -4,6 +4,25 @@
 
 ## The state of things (2020-11-20): v0.4.9
 
+
+- Rethink adding barkit and columnkit, on the basis that histkit is ALWAYS vertical columns: https://ggplot2.tidyverse.org/reference/geom_histogram.html
+    - and if user doesn't want that, provide special option to histkit
+
+Check out ggplot2 doc pages:
+- each geom page has self-contained examples
+    - Get those right, worry about gallery in future release
+- geoms:
+    - area: https://ggplot2.tidyverse.org/reference/geom_ribbon.html
+    - bar: https://ggplot2.tidyverse.org/reference/geom_bar.html
+    - columns: https://ggplot2.tidyverse.org/reference/geom_bar.html
+    - line: https://ggplot2.tidyverse.org/reference/geom_path.html
+    - histogram: https://ggplot2.tidyverse.org/reference/geom_histogram.html
+    - rect/heatmap: https://ggplot2.tidyverse.org/reference/geom_tile.html
+    - scatter: https://ggplot2.tidyverse.org/reference/geom_point.html
+        - jitter: https://ggplot2.tidyverse.org/reference/geom_jitter.html
+    - density: https://ggplot2.tidyverse.org/reference/geom_density.html
+        - `Computes and draws kernel density estimate, which is a smoothed version of the histogram. This is a useful alternative to the histogram for continuous data that comes from an underlying smooth distribution.`
+
 - mostly done with 0.5.0 -- put version number at '0.4.9'
 - think about doing documentation
     - get an idea of what's easy to explain and what seems extraneous
@@ -148,7 +167,8 @@ chart config
 
 ##### make bar and column separate charts
 
-- [ ] kill `--HZ/--horizontal`
+- [ ] kill `--HZ/--horizontal`?
+- ggplot2 has a geom_hist, and it only allows for column charts
 
 - density
     - https://altair-viz.github.io/user_guide/transform/density.html
