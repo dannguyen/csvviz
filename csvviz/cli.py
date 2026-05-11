@@ -31,6 +31,8 @@ def _handle_errors(func: Callable) -> Callable:
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
+        except click.ClickException:
+            raise
         except CsvvizError as err:
             click.echo(f"error: {err}", err=True)
             sys.exit(1)
@@ -48,8 +50,11 @@ def _parse_lim(value: str | None) -> tuple[float, float] | None:
         return None
     parts = [p.strip() for p in value.split(",")]
     if len(parts) != 2:
-        raise click.BadParameter("must be MIN,MAX")
-    return (float(parts[0]), float(parts[1]))
+        raise click.BadParameter("must be MIN,MAX (e.g. '0,100')")
+    try:
+        return (float(parts[0]), float(parts[1]))
+    except ValueError as e:
+        raise click.BadParameter(f"both values must be numeric: {e}")
 
 
 def _parse_colors(value: str | None) -> list[str] | None:

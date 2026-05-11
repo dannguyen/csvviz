@@ -127,3 +127,15 @@ def test_conflict_normalized_without_colorvar_exits_1(tmp_path):
     )
     assert result.exit_code == 1
     assert "colorvar" in result.output or "-c" in result.output
+
+
+def test_xlim_bad_value_gives_usage_error(tmp_path):
+    runner = CliRunner()
+    out = tmp_path / "out.png"
+    result = runner.invoke(
+        cli,
+        ["bar", "--xlim", "a,b", "--no-show", "-o", str(out), str(FIXTURES / "tings.csv")],
+    )
+    # Click usage errors exit with code 2 (not 1, not "unexpected failure")
+    assert result.exit_code == 2
+    assert "unexpected failure" not in result.output
