@@ -176,3 +176,37 @@ def scatter_cmd(input_file, output, no_show, dpi, sizevar, alpha, **kw):
     base = _build_base_kwargs(input_file, kw)
     spec = ScatterSpec(**base, sizevar=sizevar, alpha=alpha)
     _run(spec, "scatter", MatplotlibRenderer.render_scatter, output, no_show, dpi)
+
+
+@cli.command("hist")
+@common_options
+@click.option("--bins", type=int, default=None, help="number of bins")
+@click.option("--cumulative", is_flag=True, help="cumulative histogram")
+@_handle_errors
+def hist_cmd(input_file, output, no_show, dpi, bins, cumulative, **kw):
+    """A histogram."""
+    base = _build_base_kwargs(input_file, kw)
+    spec = HistSpec(**base, bins=bins, cumulative=cumulative)
+    _run(spec, "hist", MatplotlibRenderer.render_hist, output, no_show, dpi)
+
+
+@cli.command("area")
+@common_options
+@click.option("--stacked", is_flag=True, help="stack areas (requires -c)")
+@click.option("--normalized", is_flag=True, help="normalize stacks to 100%% (implies --stacked)")
+@_handle_errors
+def area_cmd(input_file, output, no_show, dpi, stacked, normalized, **kw):
+    """An area chart."""
+    base = _build_base_kwargs(input_file, kw)
+    spec = AreaSpec(**base, stacked=stacked, normalized=normalized)
+    _run(spec, "area", MatplotlibRenderer.render_area, output, no_show, dpi)
+
+
+@cli.command("heatmap")
+@common_options
+@_handle_errors
+def heatmap_cmd(input_file, output, no_show, dpi, **kw):
+    """A heatmap (x=col1, y=col2, value=col3 by default)."""
+    base = _build_base_kwargs(input_file, kw)
+    spec = HeatmapSpec(**base)
+    _run(spec, "heatmap", MatplotlibRenderer.render_heatmap, output, no_show, dpi)

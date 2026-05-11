@@ -76,3 +76,54 @@ def test_scatter_writes_png(tmp_path):
     result = runner.invoke(cli, ["scatter", "--no-show", "-o", str(out), str(p)])
     assert result.exit_code == 0, result.output
     assert out.exists()
+
+
+def test_hist_writes_png(tmp_path):
+    runner = CliRunner()
+    out = tmp_path / "out.png"
+    result = runner.invoke(
+        cli,
+        ["hist", "-x", "amount", "--no-show", "-o", str(out), str(FIXTURES / "tings.csv")],
+    )
+    assert result.exit_code == 0, result.output
+    assert out.exists()
+
+
+def test_area_writes_png(tmp_path):
+    runner = CliRunner()
+    out = tmp_path / "out.png"
+    result = runner.invoke(
+        cli,
+        [
+            "area",
+            "-x",
+            "date",
+            "-y",
+            "price",
+            "--no-show",
+            "-o",
+            str(out),
+            str(FIXTURES / "stocks.csv"),
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert out.exists()
+
+
+def test_heatmap_writes_png(tmp_path):
+    runner = CliRunner()
+    out = tmp_path / "out.png"
+    result = runner.invoke(cli, ["heatmap", "--no-show", "-o", str(out), str(FIXTURES / "hot.csv")])
+    assert result.exit_code == 0, result.output
+    assert out.exists()
+
+
+def test_conflict_normalized_without_colorvar_exits_1(tmp_path):
+    runner = CliRunner()
+    out = tmp_path / "out.png"
+    result = runner.invoke(
+        cli,
+        ["bar", "--normalized", "--no-show", "-o", str(out), str(FIXTURES / "tings.csv")],
+    )
+    assert result.exit_code == 1
+    assert "colorvar" in result.output or "-c" in result.output
