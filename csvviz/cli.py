@@ -135,3 +135,44 @@ def _run(spec: BaseSpec, chart_type: str, render_fn: Callable, output, no_show, 
 @click.version_option(__version__, "--version", prog_name="csvviz")
 def cli() -> None:
     """csvviz — quick charts from CSV files."""
+
+
+@cli.command("bar")
+@common_options
+@click.option("--horizontal", is_flag=True, help="horizontal bar chart")
+@click.option("--stacked", is_flag=True, help="stack bars (requires -c)")
+@click.option("--normalized", is_flag=True, help="normalize stacks to 100%% (implies --stacked)")
+@click.option(
+    "--sort",
+    type=click.Choice(["x", "y", "-x", "-y"]),
+    default=None,
+    help="sort bars by axis",
+)
+@_handle_errors
+def bar_cmd(input_file, output, no_show, dpi, horizontal, stacked, normalized, sort, **kw):
+    """A bar/column chart."""
+    base = _build_base_kwargs(input_file, kw)
+    spec = BarSpec(**base, horizontal=horizontal, stacked=stacked, normalized=normalized, sort=sort)
+    _run(spec, "bar", MatplotlibRenderer.render_bar, output, no_show, dpi)
+
+
+@cli.command("line")
+@common_options
+@_handle_errors
+def line_cmd(input_file, output, no_show, dpi, **kw):
+    """A line chart."""
+    base = _build_base_kwargs(input_file, kw)
+    spec = LineSpec(**base)
+    _run(spec, "line", MatplotlibRenderer.render_line, output, no_show, dpi)
+
+
+@cli.command("scatter")
+@common_options
+@click.option("-s", "--sizevar", default=None, help="column to map to marker size")
+@click.option("--alpha", type=float, default=None, help="marker opacity (0..1)")
+@_handle_errors
+def scatter_cmd(input_file, output, no_show, dpi, sizevar, alpha, **kw):
+    """A scatter plot."""
+    base = _build_base_kwargs(input_file, kw)
+    spec = ScatterSpec(**base, sizevar=sizevar, alpha=alpha)
+    _run(spec, "scatter", MatplotlibRenderer.render_scatter, output, no_show, dpi)
