@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+build/
+dist/
+*.png
+*.svg
+*.pdf
+!tests/fixtures/*
+!examples/*
+.DS_Store
