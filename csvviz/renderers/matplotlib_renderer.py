@@ -5,6 +5,7 @@ import pandas as pd
 import seaborn as sns
 from matplotlib.figure import Figure
 
+from csvviz.exceptions import ConflictingFlagsError
 from csvviz.specs import (
     AreaSpec,
     BarSpec,
@@ -25,10 +26,20 @@ class MatplotlibRenderer:
 
     def render_bar(self, spec: BarSpec, df: pd.DataFrame) -> Figure:
         self._apply_theme(spec)
-        fig, ax = self._new_figure(spec)
-
         x, y = (spec.yvar, spec.xvar) if spec.horizontal else (spec.xvar, spec.yvar)
 
+        if spec.facet:
+            return self._facet_figure(
+                spec,
+                df,
+                kind="bar",
+                x=x,
+                y=y,
+                hue=spec.colorvar,
+                orient="h" if spec.horizontal else "v",
+            )
+
+        fig, ax = self._new_figure(spec)
         if spec.stacked:
             self._draw_stacked_bar(ax, df, spec)
         elif spec.colorvar:
@@ -50,15 +61,22 @@ class MatplotlibRenderer:
                 color=(spec.colors[0] if spec.colors else None),
                 orient="h" if spec.horizontal else "v",
             )
-
         if spec.sort:
             self._apply_bar_sort(ax, spec)
-
         self._finalize(fig, ax, spec)
         return fig
 
     def render_line(self, spec: LineSpec, df: pd.DataFrame) -> Figure:
         self._apply_theme(spec)
+        if spec.facet:
+            return self._facet_figure(
+                spec,
+                df,
+                kind="line",
+                x=spec.xvar,
+                y=spec.yvar,
+                hue=spec.colorvar,
+            )
         fig, ax = self._new_figure(spec)
         sns.lineplot(
             data=df,
@@ -73,6 +91,17 @@ class MatplotlibRenderer:
 
     def render_scatter(self, spec: ScatterSpec, df: pd.DataFrame) -> Figure:
         self._apply_theme(spec)
+        if spec.facet:
+            return self._facet_figure(
+                spec,
+                df,
+                kind="scatter",
+                x=spec.xvar,
+                y=spec.yvar,
+                hue=spec.colorvar,
+                size=spec.sizevar,
+                alpha=spec.alpha,
+            )
         fig, ax = self._new_figure(spec)
         sns.scatterplot(
             data=df,
@@ -89,6 +118,16 @@ class MatplotlibRenderer:
 
     def render_hist(self, spec: HistSpec, df: pd.DataFrame) -> Figure:
         self._apply_theme(spec)
+        if spec.facet:
+            return self._facet_figure(
+                spec,
+                df,
+                kind="hist",
+                x=spec.xvar,
+                hue=spec.colorvar,
+                bins=spec.bins or "auto",
+                cumulative=spec.cumulative,
+            )
         fig, ax = self._new_figure(spec)
         sns.histplot(
             data=df,
@@ -103,6 +142,10 @@ class MatplotlibRenderer:
         return fig
 
     def render_area(self, spec: AreaSpec, df: pd.DataFrame) -> Figure:
+        if spec.facet:
+            raise ConflictingFlagsError(
+                f"{spec.__class__.__name__} does not support faceting in v0.5"
+            )
         self._apply_theme(spec)
         fig, ax = self._new_figure(spec)
 
@@ -130,6 +173,10 @@ class MatplotlibRenderer:
         return fig
 
     def render_heatmap(self, spec: HeatmapSpec, df: pd.DataFrame) -> Figure:
+        if spec.facet:
+            raise ConflictingFlagsError(
+                f"{spec.__class__.__name__} does not support faceting in v0.5"
+            )
         self._apply_theme(spec)
         fig, ax = self._new_figure(spec)
         pivot = df.pivot_table(
@@ -138,6 +185,29 @@ class MatplotlibRenderer:
         sns.heatmap(pivot, ax=ax)
         self._finalize(fig, ax, spec)
         return fig
+
+    def _facet_figure(self, spec: BaseSpec, df: pd.DataFrame, kind: str, **kwargs) -> Figure:
+        """Use seaborn's faceted constructors. Returns g.fig from the FacetGrid."""
+        common = dict(
+            data=df,
+            col=spec.facet,
+            col_wrap=spec.facet_cols,
+            palette=spec.palette,
+        )
+        if kind in ("bar", "count", "box", "violin", "strip", "swarm", "boxen", "point"):
+            g = sns.catplot(kind=kind, **common, **kwargs)
+        elif kind in ("scatter", "line"):
+            g = sns.relplot(kind=kind, **common, **kwargs)
+        elif kind == "hist":
+            g = sns.displot(kind="hist", **common, **kwargs)
+        else:
+            raise ValueError(f"no faceted constructor for kind={kind!r}")
+        w_px = spec.width_px or DEFAULT_WIDTH_PX
+        h_px = spec.height_px or DEFAULT_HEIGHT_PX
+        g.fig.set_size_inches(w_px / DEFAULT_DPI, h_px / DEFAULT_DPI)
+        if spec.title:
+            g.fig.suptitle(spec.title)
+        return g.fig
 
     # --- helpers ---
 

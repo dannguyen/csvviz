@@ -154,3 +154,56 @@ def test_render_heatmap_returns_figure(renderer):
     fig = renderer.render_heatmap(spec, df)
     assert isinstance(fig, Figure)
     assert len(fig.axes) >= 1
+
+
+def test_render_bar_with_facet(renderer):
+    spec = BarSpec(
+        input_path=str(FIXTURES / "facetable.csv"),
+        xvar="product",
+        yvar="sales",
+        facet="region",
+        facet_cols=3,
+    )
+    df = _load(spec)
+    fig = renderer.render_bar(spec, df)
+    assert isinstance(fig, Figure)
+    assert len(fig.axes) >= 3
+
+
+def test_render_line_with_facet(renderer):
+    spec = LineSpec(
+        input_path=str(FIXTURES / "facetable.csv"),
+        xvar="product",
+        yvar="sales",
+        facet="region",
+    )
+    df = _load(spec)
+    fig = renderer.render_line(spec, df)
+    assert isinstance(fig, Figure)
+    assert len(fig.axes) >= 3
+
+
+def test_render_scatter_with_facet(renderer):
+    spec = ScatterSpec(
+        input_path=str(FIXTURES / "facetable.csv"),
+        xvar="product",
+        yvar="sales",
+        facet="region",
+    )
+    df = _load(spec)
+    fig = renderer.render_scatter(spec, df)
+    assert isinstance(fig, Figure)
+    assert len(fig.axes) >= 3
+
+
+def test_render_hist_with_facet(renderer):
+    spec = HistSpec(
+        input_path=str(FIXTURES / "facetable.csv"),
+        xvar="sales",
+        facet="region",
+        bins=3,
+    )
+    df = _load(spec)
+    fig = renderer.render_hist(spec, df)
+    assert isinstance(fig, Figure)
+    assert len(fig.axes) >= 3
