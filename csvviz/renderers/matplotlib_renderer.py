@@ -58,10 +58,34 @@ class MatplotlibRenderer:
         return fig
 
     def render_line(self, spec: LineSpec, df: pd.DataFrame) -> Figure:
-        raise NotImplementedError
+        self._apply_theme(spec)
+        fig, ax = self._new_figure(spec)
+        sns.lineplot(
+            data=df,
+            x=spec.xvar,
+            y=spec.yvar,
+            hue=spec.colorvar,
+            ax=ax,
+            palette=spec.palette,
+        )
+        self._finalize(fig, ax, spec)
+        return fig
 
     def render_scatter(self, spec: ScatterSpec, df: pd.DataFrame) -> Figure:
-        raise NotImplementedError
+        self._apply_theme(spec)
+        fig, ax = self._new_figure(spec)
+        sns.scatterplot(
+            data=df,
+            x=spec.xvar,
+            y=spec.yvar,
+            hue=spec.colorvar,
+            size=spec.sizevar,
+            alpha=spec.alpha,
+            ax=ax,
+            palette=spec.palette,
+        )
+        self._finalize(fig, ax, spec)
+        return fig
 
     def render_hist(self, spec: HistSpec, df: pd.DataFrame) -> Figure:
         raise NotImplementedError

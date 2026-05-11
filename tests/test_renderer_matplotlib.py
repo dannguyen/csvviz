@@ -6,7 +6,7 @@ from matplotlib.figure import Figure
 
 from csvviz.data import load_csv
 from csvviz.renderers.matplotlib_renderer import MatplotlibRenderer
-from csvviz.specs import BarSpec
+from csvviz.specs import BarSpec, LineSpec, ScatterSpec
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -57,4 +57,42 @@ def test_render_bar_stacked_requires_colorvar_in_data(renderer, tmp_path):
     spec = BarSpec(input_path=str(p), xvar="month", yvar="sales", colorvar="product", stacked=True)
     df = _load(spec)
     fig = renderer.render_bar(spec, df)
+    assert isinstance(fig, Figure)
+
+
+def test_render_line_single_series(renderer):
+    spec = LineSpec(input_path=str(FIXTURES / "stocks.csv"), xvar="date", yvar="price")
+    df = _load(spec)
+    fig = renderer.render_line(spec, df)
+    assert isinstance(fig, Figure)
+    assert len(fig.axes[0].get_lines()) >= 1
+
+
+def test_render_line_multi_series_via_colorvar(renderer):
+    spec = LineSpec(
+        input_path=str(FIXTURES / "stocks.csv"),
+        xvar="date",
+        yvar="price",
+        colorvar="company",
+    )
+    df = _load(spec)
+    fig = renderer.render_line(spec, df)
+    assert len(fig.axes[0].get_lines()) >= 2
+
+
+def test_render_scatter_returns_figure(renderer, tmp_path):
+    p = tmp_path / "scatter.csv"
+    p.write_text("x,y,c\n1,2,A\n3,4,B\n5,6,A\n7,8,B\n")
+    spec = ScatterSpec(input_path=str(p), xvar="x", yvar="y", colorvar="c", alpha=0.5)
+    df = _load(spec)
+    fig = renderer.render_scatter(spec, df)
+    assert isinstance(fig, Figure)
+
+
+def test_render_scatter_with_sizevar(renderer, tmp_path):
+    p = tmp_path / "sc.csv"
+    p.write_text("x,y,s\n1,2,10\n3,4,20\n5,6,30\n")
+    spec = ScatterSpec(input_path=str(p), xvar="x", yvar="y", sizevar="s")
+    df = _load(spec)
+    fig = renderer.render_scatter(spec, df)
     assert isinstance(fig, Figure)
