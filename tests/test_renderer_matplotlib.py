@@ -143,3 +143,14 @@ def test_render_area_normalized(renderer):
     df = _load(spec)
     fig = renderer.render_area(spec, df)
     assert isinstance(fig, Figure)
+
+
+from csvviz.specs import HeatmapSpec
+
+
+def test_render_heatmap_returns_figure(renderer):
+    spec = HeatmapSpec(input_path=str(FIXTURES / "hot.csv"))
+    df = _load(spec)
+    fig = renderer.render_heatmap(spec, df)
+    assert isinstance(fig, Figure)
+    assert len(fig.axes) >= 1

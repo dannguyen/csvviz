@@ -130,7 +130,14 @@ class MatplotlibRenderer:
         return fig
 
     def render_heatmap(self, spec: HeatmapSpec, df: pd.DataFrame) -> Figure:
-        raise NotImplementedError
+        self._apply_theme(spec)
+        fig, ax = self._new_figure(spec)
+        pivot = df.pivot_table(
+            index=spec.yvar, columns=spec.xvar, values=spec.valuevar, aggfunc="sum"
+        )
+        sns.heatmap(pivot, ax=ax)
+        self._finalize(fig, ax, spec)
+        return fig
 
     # --- helpers ---
 
