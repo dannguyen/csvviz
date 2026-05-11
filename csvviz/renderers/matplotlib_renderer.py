@@ -88,10 +88,46 @@ class MatplotlibRenderer:
         return fig
 
     def render_hist(self, spec: HistSpec, df: pd.DataFrame) -> Figure:
-        raise NotImplementedError
+        self._apply_theme(spec)
+        fig, ax = self._new_figure(spec)
+        sns.histplot(
+            data=df,
+            x=spec.xvar,
+            hue=spec.colorvar,
+            bins=spec.bins or "auto",
+            cumulative=spec.cumulative,
+            ax=ax,
+            palette=spec.palette,
+        )
+        self._finalize(fig, ax, spec)
+        return fig
 
     def render_area(self, spec: AreaSpec, df: pd.DataFrame) -> Figure:
-        raise NotImplementedError
+        self._apply_theme(spec)
+        fig, ax = self._new_figure(spec)
+
+        if spec.colorvar and spec.stacked:
+            pivot = df.pivot_table(
+                index=spec.xvar,
+                columns=spec.colorvar,
+                values=spec.yvar,
+                aggfunc="sum",
+            ).fillna(0)
+            if spec.normalized:
+                pivot = pivot.div(pivot.sum(axis=1), axis=0) * 100.0
+            ax.stackplot(pivot.index, pivot.T.values, labels=list(pivot.columns))
+            ax.legend(loc="best")
+        elif spec.colorvar:
+            for series_name, group in df.groupby(spec.colorvar):
+                ax.fill_between(
+                    group[spec.xvar], group[spec.yvar], alpha=0.4, label=str(series_name)
+                )
+            ax.legend(loc="best")
+        else:
+            ax.fill_between(df[spec.xvar], df[spec.yvar], alpha=0.6)
+
+        self._finalize(fig, ax, spec)
+        return fig
 
     def render_heatmap(self, spec: HeatmapSpec, df: pd.DataFrame) -> Figure:
         raise NotImplementedError

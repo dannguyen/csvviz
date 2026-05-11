@@ -6,7 +6,7 @@ from matplotlib.figure import Figure
 
 from csvviz.data import load_csv
 from csvviz.renderers.matplotlib_renderer import MatplotlibRenderer
-from csvviz.specs import BarSpec, LineSpec, ScatterSpec
+from csvviz.specs import AreaSpec, BarSpec, HistSpec, LineSpec, ScatterSpec
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -95,4 +95,51 @@ def test_render_scatter_with_sizevar(renderer, tmp_path):
     spec = ScatterSpec(input_path=str(p), xvar="x", yvar="y", sizevar="s")
     df = _load(spec)
     fig = renderer.render_scatter(spec, df)
+    assert isinstance(fig, Figure)
+
+
+def test_render_hist_returns_figure(renderer):
+    spec = HistSpec(input_path=str(FIXTURES / "tings.csv"), xvar="amount", bins=5)
+    df = _load(spec)
+    fig = renderer.render_hist(spec, df)
+    assert isinstance(fig, Figure)
+
+
+def test_render_hist_cumulative(renderer):
+    spec = HistSpec(input_path=str(FIXTURES / "tings.csv"), xvar="amount", cumulative=True)
+    df = _load(spec)
+    fig = renderer.render_hist(spec, df)
+    assert isinstance(fig, Figure)
+
+
+def test_render_area_single_series(renderer):
+    spec = AreaSpec(input_path=str(FIXTURES / "stocks.csv"), xvar="date", yvar="price")
+    df = _load(spec)
+    fig = renderer.render_area(spec, df)
+    assert isinstance(fig, Figure)
+
+
+def test_render_area_stacked(renderer):
+    spec = AreaSpec(
+        input_path=str(FIXTURES / "stocks.csv"),
+        xvar="date",
+        yvar="price",
+        colorvar="company",
+        stacked=True,
+    )
+    df = _load(spec)
+    fig = renderer.render_area(spec, df)
+    assert isinstance(fig, Figure)
+
+
+def test_render_area_normalized(renderer):
+    spec = AreaSpec(
+        input_path=str(FIXTURES / "stocks.csv"),
+        xvar="date",
+        yvar="price",
+        colorvar="company",
+        normalized=True,
+    )
+    df = _load(spec)
+    fig = renderer.render_area(spec, df)
     assert isinstance(fig, Figure)
