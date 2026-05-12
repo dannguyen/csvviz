@@ -1,12 +1,19 @@
 from pathlib import Path
 
-import pandas as pd
 import pytest
 from matplotlib.figure import Figure
 
 from csvviz.data import load_csv
+from csvviz.exceptions import ConflictingFlagsError
 from csvviz.renderers.matplotlib_renderer import MatplotlibRenderer
-from csvviz.specs import AreaSpec, BarSpec, HistSpec, LineSpec, ScatterSpec
+from csvviz.specs import (
+    AreaSpec,
+    BarSpec,
+    HeatmapSpec,
+    HistSpec,
+    LineSpec,
+    ScatterSpec,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -145,9 +152,6 @@ def test_render_area_normalized(renderer):
     assert isinstance(fig, Figure)
 
 
-from csvviz.specs import HeatmapSpec
-
-
 def test_render_heatmap_returns_figure(renderer):
     spec = HeatmapSpec(input_path=str(FIXTURES / "hot.csv"))
     df = _load(spec)
@@ -207,3 +211,80 @@ def test_render_hist_with_facet(renderer):
     fig = renderer.render_hist(spec, df)
     assert isinstance(fig, Figure)
     assert len(fig.axes) >= 3
+
+
+def test_render_bar_sort_y_ascending(renderer):
+    spec = BarSpec(input_path=str(FIXTURES / "tings.csv"), sort="y")
+    df = _load(spec)
+    fig = renderer.render_bar(spec, df)
+    # tings.csv values: Alice=20, Bob=10, Carson=30, Dina=50, Ellie=42
+    labels = [t.get_text() for t in fig.axes[0].get_xticklabels()]
+    assert labels == ["Bob", "Alice", "Carson", "Ellie", "Dina"]
+
+
+def test_render_bar_sort_y_descending(renderer):
+    spec = BarSpec(input_path=str(FIXTURES / "tings.csv"), sort="-y")
+    df = _load(spec)
+    fig = renderer.render_bar(spec, df)
+    labels = [t.get_text() for t in fig.axes[0].get_xticklabels()]
+    assert labels == ["Dina", "Ellie", "Carson", "Alice", "Bob"]
+
+
+def test_render_bar_facet_with_stacked_raises(renderer):
+    spec = BarSpec(
+        input_path=str(FIXTURES / "facetable.csv"),
+        xvar="product",
+        yvar="sales",
+        colorvar="region",
+        facet="region",
+        stacked=True,
+    )
+    df = _load(spec)
+    with pytest.raises(ConflictingFlagsError):
+        renderer.render_bar(spec, df)
+
+
+def test_render_bar_facet_with_sort_raises(renderer):
+    spec = BarSpec(
+        input_path=str(FIXTURES / "facetable.csv"),
+        xvar="product",
+        yvar="sales",
+        facet="region",
+        sort="y",
+    )
+    df = _load(spec)
+    with pytest.raises(ConflictingFlagsError):
+        renderer.render_bar(spec, df)
+
+
+def test_render_bar_stacked_with_sort_raises(renderer, tmp_path):
+    p = tmp_path / "s.csv"
+    p.write_text("a,b,c\nx,A,1\nx,B,2\ny,A,3\ny,B,4\n")
+    spec = BarSpec(
+        input_path=str(p),
+        xvar="a",
+        yvar="c",
+        colorvar="b",
+        stacked=True,
+        sort="y",
+    )
+    df = _load(spec)
+    with pytest.raises(ConflictingFlagsError):
+        renderer.render_bar(spec, df)
+
+
+def test_render_bar_facet_applies_ylim(renderer):
+    spec = BarSpec(
+        input_path=str(FIXTURES / "facetable.csv"),
+        xvar="product",
+        yvar="sales",
+        facet="region",
+        ylim=(0, 50),
+    )
+    df = _load(spec)
+    fig = renderer.render_bar(spec, df)
+    for ax in fig.axes:
+        if ax.has_data():
+            ylo, yhi = ax.get_ylim()
+            assert abs(ylo - 0) < 0.01
+            assert abs(yhi - 50) < 0.01

@@ -1,7 +1,5 @@
-from pathlib import Path
 from unittest.mock import patch
 
-import matplotlib
 import matplotlib.pyplot as plt
 import pytest
 

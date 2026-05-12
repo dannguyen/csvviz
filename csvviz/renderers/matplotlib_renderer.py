@@ -29,6 +29,12 @@ class MatplotlibRenderer:
         x, y = (spec.yvar, spec.xvar) if spec.horizontal else (spec.xvar, spec.yvar)
 
         if spec.facet:
+            if spec.stacked:
+                raise ConflictingFlagsError(
+                    "--stacked/--normalized is not supported with --facet in v0.5"
+                )
+            if spec.sort:
+                raise ConflictingFlagsError("--sort is not supported with --facet in v0.5")
             return self._facet_figure(
                 spec,
                 df,
@@ -37,9 +43,16 @@ class MatplotlibRenderer:
                 y=y,
                 hue=spec.colorvar,
                 orient="h" if spec.horizontal else "v",
+                order=self._bar_order(df, spec),
+            )
+
+        if spec.stacked and spec.sort:
+            raise ConflictingFlagsError(
+                "--sort is not supported with --stacked/--normalized in v0.5"
             )
 
         fig, ax = self._new_figure(spec)
+        order = self._bar_order(df, spec)
         if spec.stacked:
             self._draw_stacked_bar(ax, df, spec)
         elif spec.colorvar:
@@ -50,6 +63,7 @@ class MatplotlibRenderer:
                 hue=spec.colorvar,
                 ax=ax,
                 palette=spec.palette,
+                order=order,
                 orient="h" if spec.horizontal else "v",
             )
         else:
@@ -59,10 +73,9 @@ class MatplotlibRenderer:
                 y=y,
                 ax=ax,
                 color=(spec.colors[0] if spec.colors else None),
+                order=order,
                 orient="h" if spec.horizontal else "v",
             )
-        if spec.sort:
-            self._apply_bar_sort(ax, spec)
         self._finalize(fig, ax, spec)
         return fig
 
@@ -194,7 +207,7 @@ class MatplotlibRenderer:
             col_wrap=spec.facet_cols,
             palette=spec.palette,
         )
-        if kind in ("bar", "count", "box", "violin", "strip", "swarm", "boxen", "point"):
+        if kind == "bar":
             g = sns.catplot(kind=kind, **common, **kwargs)
         elif kind in ("scatter", "line"):
             g = sns.relplot(kind=kind, **common, **kwargs)
@@ -207,6 +220,17 @@ class MatplotlibRenderer:
         g.fig.set_size_inches(w_px / DEFAULT_DPI, h_px / DEFAULT_DPI)
         if spec.title:
             g.fig.suptitle(spec.title)
+        if spec.xlim:
+            g.set(xlim=spec.xlim)
+        if spec.ylim:
+            g.set(ylim=spec.ylim)
+        if spec.xlabel:
+            g.set_xlabels(spec.xlabel)
+        if spec.ylabel:
+            g.set_ylabels(spec.ylabel)
+        if spec.no_legend and g._legend is not None:
+            g._legend.remove()
+            g._legend = None
         return g.fig
 
     # --- helpers ---
@@ -246,17 +270,15 @@ class MatplotlibRenderer:
         kind = "barh" if spec.horizontal else "bar"
         pivot.plot(kind=kind, stacked=True, ax=ax, color=spec.colors)
 
-    def _apply_bar_sort(self, ax, spec: BarSpec) -> None:
+    def _bar_order(self, df: pd.DataFrame, spec: BarSpec) -> list | None:
+        """Compute category ordering for sns.barplot's order= from spec.sort."""
+        if not spec.sort:
+            return None
         reverse = spec.sort.startswith("-")
         key = spec.sort.lstrip("-")
-        if key not in ("x", "y"):
-            return
-        labels = [t.get_text() for t in ax.get_xticklabels()]
-        heights = [p.get_height() for p in ax.patches[: len(labels)]]
-        order = sorted(
-            range(len(labels)),
-            key=lambda i: heights[i],
-            reverse=reverse if key == "y" else not reverse,
-        )
-        ax.set_xticks(range(len(order)))
-        ax.set_xticklabels([labels[i] for i in order])
+        if key == "x":
+            return sorted(df[spec.xvar].unique(), reverse=reverse)
+        if key == "y":
+            agg = df.groupby(spec.xvar)[spec.yvar].sum().sort_values(ascending=not reverse)
+            return list(agg.index)
+        return None

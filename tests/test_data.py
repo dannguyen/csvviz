@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import pandas as pd
 import pytest
 
 from csvviz.data import load_csv
@@ -46,8 +45,53 @@ def test_heatmap_valuevar_defaults_to_third_column():
 def test_hist_does_not_resolve_yvar():
     spec = HistSpec(input_path=str(FIXTURES / "tings.csv"))
     load_csv(spec)
-    assert spec.xvar == "name"
+    # tings.csv: name (str), amount (numeric) — hist skips non-numeric first column
+    assert spec.xvar == "amount"
     assert spec.yvar is None
+
+
+def test_scatter_defaults_skip_non_numeric_columns(tmp_path):
+    from csvviz.specs import ScatterSpec
+
+    p = tmp_path / "cars.csv"
+    p.write_text(
+        "Name,Miles_per_Gallon,Cylinders\n" "chevy,18.0,8\n" "buick,15.0,8\n" "honda,30.0,4\n"
+    )
+    spec = ScatterSpec(input_path=str(p))
+    load_csv(spec)
+    assert spec.xvar == "Miles_per_Gallon"
+    assert spec.yvar == "Cylinders"
+
+
+def test_scatter_with_one_numeric_column_raises(tmp_path):
+    from csvviz.specs import ScatterSpec
+
+    p = tmp_path / "thin.csv"
+    p.write_text("name,amount\nAlice,10\nBob,20\n")
+    spec = ScatterSpec(input_path=str(p))
+    with pytest.raises(EmptyDataError) as exc:
+        load_csv(spec)
+    assert "two numeric" in str(exc.value)
+
+
+def test_scatter_with_no_numeric_columns_raises(tmp_path):
+    from csvviz.specs import ScatterSpec
+
+    p = tmp_path / "text.csv"
+    p.write_text("a,b\nx,y\nz,w\n")
+    spec = ScatterSpec(input_path=str(p))
+    with pytest.raises(EmptyDataError) as exc:
+        load_csv(spec)
+    assert "numeric" in str(exc.value)
+
+
+def test_hist_with_no_numeric_columns_raises(tmp_path):
+    p = tmp_path / "text.csv"
+    p.write_text("a,b\nx,y\nz,w\n")
+    spec = HistSpec(input_path=str(p))
+    with pytest.raises(EmptyDataError) as exc:
+        load_csv(spec)
+    assert "numeric" in str(exc.value)
 
 
 def test_invalid_xvar_raises():

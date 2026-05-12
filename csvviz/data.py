@@ -36,17 +36,35 @@ def _read(input_path: str | None) -> pd.DataFrame:
 
 
 def _resolve_defaults(spec: "BaseSpec", df: pd.DataFrame) -> None:
-    from csvviz.specs import HeatmapSpec, HistSpec
+    from csvviz.specs import HeatmapSpec, HistSpec, ScatterSpec
 
     cols = list(df.columns)
+    numeric_cols = [c for c in cols if pd.api.types.is_numeric_dtype(df[c])]
+    needs_numeric_x = isinstance(spec, (ScatterSpec, HistSpec))
+
     if spec.xvar is None:
-        spec.xvar = cols[0]
-    # Hist does not use a y column; do not resolve.
-    if not isinstance(spec, HistSpec):
-        if spec.yvar is None:
+        if needs_numeric_x:
+            if not numeric_cols:
+                raise EmptyDataError(
+                    f"{type(spec).__name__} needs at least one numeric column; got {cols}"
+                )
+            spec.xvar = numeric_cols[0]
+        else:
+            spec.xvar = cols[0]
+
+    if isinstance(spec, HistSpec):
+        pass  # hist has no y column
+    elif spec.yvar is None:
+        if isinstance(spec, ScatterSpec):
+            candidates = [c for c in numeric_cols if c != spec.xvar]
+            if not candidates:
+                raise EmptyDataError(f"scatter needs at least two numeric columns; got {cols}")
+            spec.yvar = candidates[0]
+        else:
             if len(cols) < 2:
                 raise EmptyDataError(f"chart type needs at least 2 columns; got {cols}")
             spec.yvar = cols[1]
+
     if isinstance(spec, HeatmapSpec) and spec.valuevar is None:
         if len(cols) < 3:
             raise EmptyDataError(f"heatmap needs at least 3 columns; got {cols}")
