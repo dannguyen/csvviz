@@ -1,0 +1,10 @@
+region,product,sales
+N,A,10
+N,B,20
+N,C,5
+S,A,15
+S,B,25
+S,C,10
+E,A,12
+E,B,18
+E,C,7

@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "csvviz"
+version = "0.5.0"
+description = "Create visualizations from CSV files on the command line"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Dan Nguyen", email = "dansonguyen@gmail.com" }]
+requires-python = ">=3.10"
+dependencies = [
+    "click>=8.1",
+    "pandas>=2.0",
+    "matplotlib>=3.7",
+    "seaborn>=0.13",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "black>=24",
+]
+
+[project.scripts]
+csvviz = "csvviz.cli:cli"
+
+[tool.setuptools.packages.find]
+include = ["csvviz*"]
+exclude = ["old-csvviz*", "tests*", "examples*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]

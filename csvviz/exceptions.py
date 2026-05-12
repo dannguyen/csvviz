@@ -1,16 +1,18 @@
-class VizValueError(ValueError):
-    pass
+class CsvvizError(Exception):
+    """Base class for all csvviz user-facing errors."""
 
 
-class InvalidColorScheme(VizValueError):
-    pass
+class InvalidColumnError(CsvvizError):
+    """A referenced column is not in the CSV."""
 
 
-class InvalidDataReference(VizValueError):
-    def __init__(self, msg):
-        super().__init__(f"InvalidDataReference: {msg}")
+class ConflictingFlagsError(CsvvizError):
+    """Flags combine in a way that doesn't make sense."""
 
 
-class ConflictingArgs(VizValueError):
-    def __init__(self, msg):
-        super().__init__(f"ConflictingArgs: {msg}")
+class EmptyDataError(CsvvizError):
+    """The input CSV is empty or has too few columns for the chart type."""
+
+
+class OutputError(CsvvizError):
+    """The output path or format is invalid."""
